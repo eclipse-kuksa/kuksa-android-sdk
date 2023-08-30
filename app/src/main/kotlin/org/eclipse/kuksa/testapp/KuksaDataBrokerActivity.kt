@@ -195,14 +195,9 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     }
 
     private fun subscribeProperty(property: Property) {
-        dataBrokerEngine.subscribe(
-            property,
-            object : PropertyObserver {
-                override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
-                    Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
-                    outputViewModel.appendOutput(updatedValue.toString())
-                }
-            },
-        )
+        dataBrokerEngine.subscribe(property) { vssPath, updatedValue ->
+            Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
+            outputViewModel.appendOutput(updatedValue.toString())
+        }
     }
 }

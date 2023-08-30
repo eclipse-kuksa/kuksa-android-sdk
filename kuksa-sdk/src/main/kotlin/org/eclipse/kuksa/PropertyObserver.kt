@@ -24,7 +24,7 @@ import org.eclipse.kuksa.proto.v1.Types
 /**
  * The Observer used to notify about changes to subscribed properties.
  */
-interface PropertyObserver {
+fun interface PropertyObserver {
     /**
      * Will be triggered when the underlying vssPath changed it's value.
      *
