@@ -1,11 +1,13 @@
 [versions]
 activityKtx = "1.7.2"
-androidGradlePlugin = "8.1.0" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
+androidGradlePlugin = "8.1.1" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
 datastore = "1.0.0"
 datastorePreferences = "1.0.0"
 kotlin = "1.9.0"
+kotlinpoet = "1.14.2"
 kotlinxSerializationJson = "1.6.0-RC"
 runtimeLivedata = "1.5.0"
+symbolProcessingApi = "1.9.0-1.0.12"
 tomcatAnnotations = "6.0.53"
 detekt = "1.23.1"
 ktlint = "0.0" # Maintained inside ktlint.gradle.kts
@@ -31,7 +33,9 @@ androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedat
 grpc-okhttp = { group = "io.grpc", name = "grpc-okhttp", version.ref = "grpc" }
 grpc-protobuf = { group = "io.grpc", name = "grpc-protobuf-lite", version.ref = "grpc" }
 grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "symbolProcessingApi" }
 tomcat-annotations = { group = "org.apache.tomcat", name = "annotations-api", version.ref = "tomcatAnnotations" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }

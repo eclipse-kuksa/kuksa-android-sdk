@@ -10,6 +10,7 @@ plugins {
 android {
     namespace = "com.etas.kuksa.sdk"
     compileSdk = 33
+    version = "1.0.0"
 
     defaultConfig {
         minSdk = 27
