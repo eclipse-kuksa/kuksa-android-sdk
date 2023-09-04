@@ -23,8 +23,8 @@ import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.model.Property
-import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
+import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 
@@ -36,7 +36,7 @@ interface DataBrokerEngine {
     fun updateProperty(
         property: Property,
         datapoint: Datapoint,
-        callback: CoroutineCallback<KuksaValV1.SetResponse>,
+        callback: CoroutineCallback<SetResponse>,
     )
 
     fun subscribe(property: Property, propertyObserver: PropertyObserver)

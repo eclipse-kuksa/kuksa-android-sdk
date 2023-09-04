@@ -17,19 +17,8 @@
  *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.vssprocessor
 
-import org.eclipse.kuksa.proto.v1.Types.DataEntry
-
-/**
- * The Observer used to notify about changes to subscribed properties.
- */
-fun interface PropertyObserver {
-    /**
-     * Will be triggered when the underlying vssPath changed it's value.
-     *
-     * @param vssPath the underlying vssPath
-     * @param updatedValue the updated value
-     */
-    fun onPropertyChanged(vssPath: String, updatedValue: DataEntry)
-}
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.SOURCE)
+annotation class VssDefinition(val vssDefinitionPath: String)

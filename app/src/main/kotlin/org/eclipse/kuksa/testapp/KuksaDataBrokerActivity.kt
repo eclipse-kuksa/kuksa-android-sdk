@@ -31,12 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
-import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
@@ -52,6 +50,7 @@ import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.extension.valueType
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
+import org.eclipse.kuksa.vssprocessor.VssDefinition
 
 @VssDefinition("vss_rel_4.0.yaml")
 class KuksaDataBrokerActivity : ComponentActivity() {
