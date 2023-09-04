@@ -1,3 +1,10 @@
+plugins {
+    id("com.android.application")
+    id("com.google.devtools.ksp")
+    kotlin("plugin.serialization")
+    kotlin("android")
+}
+
 android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -5,6 +12,14 @@ android {
     }
     kotlinOptions {
         jvmTarget = libs.versions.jvmTarget.get()
+    }
+    kotlin {
+        sourceSets.main {
+            kotlin.srcDir("build/generated/ksp/main/kotlin")
+        }
+        sourceSets.test {
+            kotlin.srcDir("build/generated/ksp/test/kotlin")
+        }
     }
     buildFeatures {
         compose = true
@@ -67,14 +82,10 @@ android {
     }
 }
 
-plugins {
-    id("com.android.application")
-    kotlin("plugin.serialization") version "1.9.0"
-    kotlin("android")
-}
-
 dependencies {
     implementation(project(":kuksa-sdk"))
+    implementation(project(":vss-processor"))
+    ksp(project(":vss-processor"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
