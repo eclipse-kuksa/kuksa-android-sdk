@@ -53,6 +53,7 @@ import org.eclipse.kuksa.testapp.extension.valueType
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
+@VssDefinition("vss_rel_4.0.yaml")
 class KuksaDataBrokerActivity : ComponentActivity() {
     private val topAppBarViewModel: TopAppBarViewModel by viewModels()
     private val connectionViewModel: ConnectionViewModel by viewModels()

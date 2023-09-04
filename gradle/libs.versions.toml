@@ -15,7 +15,7 @@ androidxAppCompat = "1.6.1"
 grpc = "1.57.2"
 protobufGradlePlugin = "0.9.3"
 protobuf = "3.22.3"
-kotest = "5.6.2"
+kotest = "5.7.1"
 mockk = "1.13.7"
 androidxLifecycle = "2.6.1"
 kotlinxCoroutines = "1.7.3"
@@ -34,6 +34,7 @@ grpc-okhttp = { group = "io.grpc", name = "grpc-okhttp", version.ref = "grpc" }
 grpc-protobuf = { group = "io.grpc", name = "grpc-protobuf-lite", version.ref = "grpc" }
 grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "symbolProcessingApi" }
 tomcat-annotations = { group = "org.apache.tomcat", name = "annotations-api", version.ref = "tomcatAnnotations" }
