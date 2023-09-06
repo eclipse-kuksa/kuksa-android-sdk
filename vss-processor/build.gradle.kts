@@ -12,5 +12,4 @@ dependencies {
     implementation(libs.kotlinpoet)
     implementation(libs.kotlinpoet.ksp)
     implementation(libs.symbol.processing.api)
-    implementation(libs.kotlinx.serialization.json)
 }

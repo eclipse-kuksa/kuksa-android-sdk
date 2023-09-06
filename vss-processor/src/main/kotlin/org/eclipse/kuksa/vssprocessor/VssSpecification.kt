@@ -26,6 +26,6 @@ interface VssSpecification {
     val type: String
 }
 
-interface VSSProperty<T> {
+interface VssProperty<T> {
     val value: T
 }
