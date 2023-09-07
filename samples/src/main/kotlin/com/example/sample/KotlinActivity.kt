@@ -31,11 +31,10 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.model.Property
-import org.eclipse.kuksa.proto.v1.Types.DataEntry
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import java.io.IOException
 
-@Suppress("UNUSED_VARIABLE", "SwallowedException")
+@Suppress("UNUSED_VARIABLE", "SwallowedException", "UNUSED_ANONYMOUS_PARAMETER")
 class KotlinActivity : AppCompatActivity() {
 
     private var dataBrokerConnection: DataBrokerConnection? = null

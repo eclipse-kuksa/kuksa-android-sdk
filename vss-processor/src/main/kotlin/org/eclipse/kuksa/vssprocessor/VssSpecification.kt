@@ -24,6 +24,7 @@ interface VssSpecification {
     val vssPath: String
     val description: String
     val type: String
+    val comment: String
 }
 
 interface VssProperty<T> {

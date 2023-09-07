@@ -55,8 +55,11 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
         private set
 
     var isConnected by mutableStateOf(false)
+        private set
     var isConnecting by mutableStateOf(false)
+        private set
     var isDisconnected by mutableStateOf(true)
+        private set
 
     init {
         snapshotFlow { connectionViewState }

@@ -51,6 +51,7 @@ import java.io.File
 import java.io.InputStreamReader
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
 class VssDefinitionProcessor(
@@ -90,7 +91,7 @@ class VssDefinitionProcessor(
             val simpleSpecificationElements = parseSpecifications(definitionFile)
             val specificationElements = fillChildSpecifications(simpleSpecificationElements)
 
-            generateModels(specificationElements)
+            generateModelFiles(specificationElements)
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.
@@ -185,13 +186,10 @@ class VssDefinitionProcessor(
             return vssPathToElements
         }
 
-        private fun generateModels(classToSpecifications: Map<String, Set<VssSpecificationElement>>) {
-            val typeEnums = mutableSetOf<String>()
-
+        private fun generateModelFiles(classToSpecifications: Map<String, Set<VssSpecificationElement>>) {
             classToSpecifications.forEach { (className, vssSpecifications) ->
                 val prefixedClassName = CLASS_NAME_PREFIX + className
                 val mainSpecification = vssSpecifications.first()
-                typeEnums.add(mainSpecification.type.uppercase())
 
                 val classBuilder = TypeSpec.classBuilder(prefixedClassName)
                     .addModifiers(KModifier.DATA)
@@ -228,7 +226,7 @@ class VssDefinitionProcessor(
 
                     // Nested VssSpecification properties should be added as constructor parameters
                     val mainClassPropertySpec = classPropertySpecs.first()
-                    if (mainClassPropertySpec.name.equals(specification.name, true)) {
+                    if (mainClassPropertySpec.initializer != null) { // Only add a default for initializer
                         val defaultClassName = CLASS_NAME_PREFIX + specification.name
                         val defaultParameter = createDefaultParameterSpec(mainClassPropertySpec.name, defaultClassName)
                         constructorBuilder.addParameter(defaultParameter)
@@ -245,8 +243,6 @@ class VssDefinitionProcessor(
                 val file = fileBuilder.build()
                 file.writeTo(codeGenerator, false)
             }
-
-            generateEnumFile(FILE_NAME_VSS_TYPE, typeEnums)
         }
 
         private fun createDefaultParameterSpec(
@@ -263,23 +259,36 @@ class VssDefinitionProcessor(
         ): List<PropertySpec> {
             val propertySpecs = mutableListOf<PropertySpec>()
             val members = VssSpecification::class.memberProperties
+
+            fun createPrimitiveDataTypeSpec(member: KProperty1<VssSpecification, *>): PropertySpec {
+                val memberName = member.name
+                val memberType = member.returnType.asTypeName()
+                val initialValue = member.get(specification) ?: ""
+
+                return PropertySpec
+                    .builder(memberName, memberType)
+                    .mutable(false)
+                    .addModifiers(KModifier.OVERRIDE)
+                    .getter(
+                        FunSpec.getterBuilder()
+                            .addStatement("return %S", initialValue)
+                            .build(),
+                    ).build()
+            }
+
+            fun createObjectTypeSpec(typeName: String, variableName: String): PropertySpec {
+                val prefixedTypeName = ClassName(PACKAGE_NAME, CLASS_NAME_PREFIX + typeName)
+                return PropertySpec
+                    .builder(variableName, prefixedTypeName)
+                    .initializer(variableName)
+                    .build()
+            }
+
             // Add primitive data types
             if (specification.name == className) {
                 members.forEach { member ->
-                    val memberName = member.name
-                    val memberType = member.returnType.asTypeName()
-                    val initialValue = member.get(specification) ?: ""
-
-                    val propertySpec = PropertySpec
-                        .builder(memberName, memberType)
-                        .mutable(false)
-                        .addModifiers(KModifier.OVERRIDE)
-                        .getter(
-                            FunSpec.getterBuilder()
-                                .addStatement("return %S", initialValue)
-                                .build(),
-                        ).build()
-                    propertySpecs.add(propertySpec)
+                    val primitiveDataTypeSpec = createPrimitiveDataTypeSpec(member)
+                    propertySpecs.add(primitiveDataTypeSpec)
                 }
 
                 return propertySpecs
@@ -295,14 +304,8 @@ class VssDefinitionProcessor(
             val variableName = (variablePrefix + specificationName)
                 .replaceFirstChar { it.lowercase() }
 
-            val typeName = ClassName(PACKAGE_NAME, CLASS_NAME_PREFIX + specificationName)
-            logger.error("$typeName")
-            return listOf(
-                PropertySpec
-                    .builder(variableName, typeName)
-                    .initializer(variableName)
-                    .build(),
-            )
+            val objectTypeSpec = createObjectTypeSpec(specificationName, variableName)
+            return listOf(objectTypeSpec)
         }
 
         private fun generateEnumFile(name: String, enumNames: Set<String>) {
@@ -347,6 +350,7 @@ class VssDefinitionProcessor(
         override var vssPath: String = "",
         override var description: String = "",
         override var type: String = "",
+        override var comment: String = "",
         var datatype: String = "",
     ) : VssSpecification {
         val name: String
@@ -420,7 +424,6 @@ class VssDefinitionProcessor(
     companion object {
         private const val PACKAGE_NAME = "org.eclipse.kuksa.vss"
         private const val DEFAULT_FILE_NAME = "VssProcessor"
-        private const val FILE_NAME_VSS_TYPE = "VssParentType"
         private const val PROPERTY_VALUE_NAME = "value"
         private const val CLASS_NAME_PREFIX = "Vss"
         private const val ASSETS_BUILD_DIRECTORY = "intermediates/assets/"
