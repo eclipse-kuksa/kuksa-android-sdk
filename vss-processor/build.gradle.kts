@@ -1,8 +1,9 @@
 plugins {
     kotlin("jvm")
+    `maven-publish`
 }
 
-group = "com.etas.kuksa.vss-processor"
+group = "org.eclipse.kuksa.vss-processor"
 version = "1.0.0"
 
 dependencies {
@@ -12,4 +13,16 @@ dependencies {
     implementation(libs.kotlinpoet)
     implementation(libs.kotlinpoet.ksp)
     implementation(libs.symbol.processing.api)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "org.eclipse.kuksa.vss-processor"
+            artifactId = "vss-processor"
+            version = "1.0.0"
+
+            from(components["java"])
+        }
+    }
 }
