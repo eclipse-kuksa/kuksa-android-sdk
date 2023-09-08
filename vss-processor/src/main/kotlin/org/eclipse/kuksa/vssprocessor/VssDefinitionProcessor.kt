@@ -276,7 +276,6 @@ class VssDefinitionProcessor(
             }
 
             // Add primitive data types
-//            logger.error("${specification.name} = $className")
             if (specification.name == className) {
                 members.forEach { member ->
                     val primitiveDataTypeSpec = createPrimitiveDataTypeSpec(member)
@@ -355,9 +354,9 @@ class VssDefinitionProcessor(
             val elementVssPath = yamlElement.first().substringBefore(":")
 
             val yamlElementJoined = yamlElement
-                .joinToString(separator = ",")
-                .substringAfter(",") // Remove vssPath (already parsed)
-                .prependIndent(",") // So the parsing is consistent for the first element
+                .joinToString(separator = ";")
+                .substringAfter(";") // Remove vssPath (already parsed)
+                .prependIndent(";") // So the parsing is consistent for the first element
             val members = VssSpecificationElement::class.memberProperties
             val fieldsToSet = mutableListOf<Pair<String, Any?>>()
 
@@ -371,8 +370,8 @@ class VssDefinitionProcessor(
                 if (!yamlElementJoined.contains(memberName)) continue
 
                 val memberValue = yamlElementJoined
-                    .substringAfter(",$memberName: ") // Also parse "," to not confuse type != datatype
-                    .substringBefore(",")
+                    .substringAfter(";$memberName: ") // Also parse "," to not confuse type != datatype
+                    .substringBefore(";")
 
                 val fieldInfo = Pair(memberName, memberValue)
                 fieldsToSet.add(fieldInfo)
