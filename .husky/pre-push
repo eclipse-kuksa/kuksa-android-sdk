@@ -1,0 +1,19 @@
+readonly CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
+
+# Only check protected branches
+readonly PROTECTED_BRANCHES="^(feature|feat|bugfix|fix|task)\-[A-Z0-9._-]+$"
+if [[ ! ${CURRENT_BRANCH} =~ ${PROTECTED_BRANCHES} ]]; then
+	echo "Not a protected branch - Ignoring pre push validation"
+
+	exit 0
+fi
+
+echo "Found protected branch - Pre push validation"
+
+echo "Checking for Detekt Issues"
+./gradlew detekt || exit 1
+
+echo "Checking for ktlint issues"
+./gradlew ktlintCheck || exit 1
+
+echo "✅ Your commit 🪨!"

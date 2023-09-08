@@ -1,0 +1,62 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package grpc {
+
+    ManagedChannelBuilder --> ManagedChannel
+
+    class ManagedChannel
+    class ManagedChannelBuilder
+
+}
+
+package kuksa {
+
+    package proto {
+        class Field
+        class Datapoint
+        class DataEntry
+        class SetResponse
+        class GetResponse
+        class DataEntryError
+    }
+
+    DataBrokerConnector -down-> DataBrokerException
+    DataBrokerConnector -down-> DataBrokerConnection
+    DataBrokerConnection -down-> PropertyObserver
+    DataBrokerConnection -down-> Property
+    DataBrokerConnection -left-> DataBrokerException
+    TimeoutConfig -left-* DataBrokerConnector
+
+    class DataBrokerConnector {
+        + connect(ManagedChannel): DataBrokerConnection
+    }
+
+    class TimeoutConfig {
+        + timeout: Long
+        + timeUnit: TimeUnit
+    }
+
+    class DataBrokerConnection {
+        + subscribe(List<Property>, PropertyObserver)
+        + fetchProperty(Property): GetResponse
+        + updateProperty(Property, Datapoint): SetResponse
+        + disconnect()
+    }
+    
+    interface PropertyObserver {
+        + onPropertyChanged(vssPath: String, Types.DataEntry)
+    }
+
+    class Property {
+        + vssPath: String
+        + types: List<Types.Field>
+    }
+
+    class DataBrokerException
+}
+
+DataBrokerConnector -up-> ManagedChannel
+DataBrokerConnection -right-> proto
+
+@enduml

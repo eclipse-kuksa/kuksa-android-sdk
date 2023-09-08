@@ -1,0 +1,14 @@
+name: commitlint
+
+on:
+  pull_request
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - uses: wagoid/commitlint-github-action@v5

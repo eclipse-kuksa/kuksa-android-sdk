@@ -1,0 +1,29 @@
+name: build
+
+on:
+  pull_request
+
+jobs:
+  build-project:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Run 'assemble' with Gradle Wrapper
+        run: ./gradlew assemble
+
+      - name: Run 'check' with Gradle Wrapper
+        run: ./gradlew ktlintCheck detekt
+
+      - name: Run 'test' with Gradle Wrapper
+        run: ./gradlew test -Dkotest.tags="!Integration"

@@ -1,0 +1,47 @@
+# Default Configuration:
+# https://github.com/detekt/detekt/blob/main/detekt-core/src/main/resources/default-detekt-config.yml
+# Check for Compose options: https://detekt.dev/docs/introduction/compose/
+
+build:
+  maxIssues: 0
+
+style:
+  MagicNumber:
+    # rule is to sensitive (e.g. you can't define a for loop without using const for from, to and stepSize)
+    ignoreRanges: true
+    ignoreEnums: true
+    ignorePropertyDeclaration: true # Compose
+  UnusedPrivateMember:
+    active: false
+    ignoreAnnotated: [ 'Composable' ]
+  WildcardImport:
+    active: false
+  ReturnCount:
+    excludeGuardClauses: true
+
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated: [ 'Composable', 'Preview' ] # Compose
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][_A-Za-z0-9]*' # Compose
+
+complexity:
+  LongParameterList:
+    active: true
+    ignoreAnnotated: [ 'Composable', 'Preview' ] # Compose
+  LongMethod:
+    active: true
+    ignoreAnnotated: [ 'Composable', 'Preview' ] # Compose
+  CyclomaticComplexMethod:
+    active: true
+    ignoreSimpleWhenEntries: true
+
+formatting:
+  TrailingCommaOnCallSite:
+    active: true
+  TrailingCommaOnDeclarationSite:
+    active: true
+  NoWildcardImports:
+    active: false

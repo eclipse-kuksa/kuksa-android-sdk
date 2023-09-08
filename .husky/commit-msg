@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+. "$(dirname "$0")/_/husky.sh"
+
+readonly CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
+
+# Only check protected feature branche
+readonly PROTECTED_BRANCHES="^(feature|feat|bugfix|fix|task)\-[A-Z0-9._-]+$"
+if [[ ! ${CURRENT_BRANCH} =~ ${PROTECTED_BRANCHES} ]]; then
+	echo "Not a protected branch - Ignore linting"
+
+	exit 0
+fi
+
+echo "Found protected branch - Linting commit message"
+yarn commitlint --edit "$1" || exit 1
+
+echo "✅ Your commit 🪨!"
+
