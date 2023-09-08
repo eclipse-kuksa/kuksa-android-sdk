@@ -59,6 +59,7 @@ class VssDefinitionProcessor(
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     private val visitor = VssDefinitionVisitor()
+    private val yamlParser = YamlParser()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(VssDefinition::class.qualifiedName.toString())
@@ -88,8 +89,8 @@ class VssDefinitionProcessor(
                 return
             }
 
-            val simpleSpecificationElements = parseSpecifications(definitionFile)
-            val specificationElements = fillChildSpecifications(simpleSpecificationElements)
+            val simpleSpecificationElements = yamlParser.parseSpecifications(definitionFile)
+            val specificationElements = mapChildSpecifications(simpleSpecificationElements)
 
             generateModelFiles(specificationElements)
         }
@@ -104,7 +105,221 @@ class VssDefinitionProcessor(
             return assetsFolder.walk().first { it.name == fileName }
         }
 
-        private fun parseSpecifications(definitionFile: File): List<VssSpecificationElement> {
+        // Takes all defined elements and nests them accordingly to their parents / child depending on the vssPath.
+        // Map<ParentVssPath, ChildElements>
+        private fun mapChildSpecifications(
+            specificationElements: List<VssSpecificationElement>,
+        ): Map<VssPath, VssSpecificationElement> {
+            val vssPathToElement = specificationElements.associateBy({ VssPath(it.vssPath) }, { it })
+            for (element in specificationElements) {
+                val parentKey = VssPath(element.parentVssPath)
+                val parentSpecification = vssPathToElement[parentKey] ?: continue
+
+                parentSpecification.childSpecifications.add(element) // It must be a child of the parent
+            }
+
+            return vssPathToElement
+        }
+
+        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssSpecificationElement>) {
+            val duplicateSpecificationNames = vssPathToSpecification.keys
+                .groupBy { it.leaf }
+                .filter { it.value.size > 1 }
+                .keys
+
+            logger.logging("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
+
+            for ((vssPath, vssSpecification) in vssPathToSpecification) {
+                // Every duplicate is produced as a nested class - No separate file should be generated
+                if (duplicateSpecificationNames.contains(vssPath.leaf)) {
+                    continue
+                }
+
+                val classSpec = createSpecificationClassSpec(vssSpecification, duplicateSpecificationNames)
+
+                val file = FileSpec.builder(PACKAGE_NAME, classSpec.name!!)
+                    .addType(classSpec)
+                    .build()
+
+                file.writeTo(codeGenerator, false)
+            }
+        }
+
+        private fun createSpecificationClassSpec(
+            vssSpecification: VssSpecificationElement,
+            nestedLeafNames: Set<String> = emptySet(),
+        ): TypeSpec {
+            val vssPath = VssPath(vssSpecification.vssPath)
+            val vssLeafName = vssPath.leaf
+            val childSpecifications = vssSpecification.childSpecifications
+
+            val nestedChildSpecs = mutableListOf<TypeSpec>()
+            val constructorBuilder = FunSpec.constructorBuilder()
+            val propertySpecs = mutableListOf<PropertySpec>()
+            val superInterfaces = mutableSetOf<TypeName>(VssSpecification::class.asTypeName())
+
+            // The last element in the chain should have a value like "isLocked".
+            if (childSpecifications.isEmpty()) {
+                val (valuePropertySpec, parameterSpec) = createValueSpec(vssSpecification)
+
+                constructorBuilder.addParameter(parameterSpec)
+                propertySpecs.add(valuePropertySpec)
+
+                // Final leafs should implement the vss property interface
+                val vssPropertyInterface = VssProperty::class.asTypeName()
+                    .plusParameter(vssSpecification.datatypeProperty)
+                superInterfaces.add(vssPropertyInterface)
+            }
+
+            val propertySpec = createPropertySpecs(vssLeafName, vssSpecification)
+            propertySpecs.addAll(propertySpec)
+
+            // Parses all specifications into properties
+            childSpecifications.forEach { childSpecification ->
+                // This nested specification has an ambiguous name, add as nested class
+                // The package name is different for nested classes (no qualifier)
+                val hasAmbiguousName = nestedLeafNames.contains(childSpecification.name)
+                val packageName = if (hasAmbiguousName) "" else PACKAGE_NAME
+
+                val childPropertySpec = createPropertySpecs(vssLeafName, childSpecification, packageName)
+                propertySpecs.addAll(childPropertySpec)
+
+                // Nested VssSpecification properties should be added as constructor parameters
+                val mainClassPropertySpec = childPropertySpec.first()
+                if (mainClassPropertySpec.initializer != null) { // Only add a default for initializer
+                    if (hasAmbiguousName) {
+                        val childSpec = createSpecificationClassSpec(childSpecification, nestedLeafNames)
+                        nestedChildSpecs.add(childSpec)
+                    }
+
+                    val defaultClassName = CLASS_NAME_PREFIX + childSpecification.name
+                    val defaultParameter = createDefaultParameterSpec(
+                        mainClassPropertySpec.name,
+                        defaultClassName,
+                        packageName,
+                    )
+
+                    constructorBuilder.addParameter(defaultParameter)
+                }
+            }
+
+            val prefixedClassName = CLASS_NAME_PREFIX + vssLeafName
+            val className = ClassName(PACKAGE_NAME, prefixedClassName)
+
+            return TypeSpec.classBuilder(className)
+                .addModifiers(KModifier.DATA)
+                .primaryConstructor(constructorBuilder.build())
+                .addSuperinterfaces(superInterfaces)
+                .addProperties(propertySpecs)
+                .addTypes(nestedChildSpecs)
+                .build()
+        }
+
+        private fun createValueSpec(mainSpecification: VssSpecificationElement): Pair<PropertySpec, ParameterSpec> {
+            val valuePropertySpec = PropertySpec
+                .builder(PROPERTY_VALUE_NAME, mainSpecification.datatypeProperty)
+                .initializer(PROPERTY_VALUE_NAME)
+                .addModifiers(KModifier.OVERRIDE)
+                .build()
+
+            // Adds a default value (mainly 0 or an empty string)
+            val parameterSpec = ParameterSpec.builder(
+                valuePropertySpec.name,
+                valuePropertySpec.type,
+            ).defaultValue("%L", mainSpecification.defaultValue).build()
+            return Pair(valuePropertySpec, parameterSpec)
+        }
+
+        private fun createDefaultParameterSpec(
+            parameterName: String,
+            defaultClassName: String,
+            packageName: String = PACKAGE_NAME,
+        ) = ParameterSpec
+            .builder(parameterName, ClassName(packageName, defaultClassName))
+            .defaultValue("%L()", defaultClassName)
+            .build()
+
+        private fun createPropertySpecs(
+            className: String,
+            specification: VssSpecificationElement,
+            packageName: String = PACKAGE_NAME,
+        ): List<PropertySpec> {
+            val propertySpecs = mutableListOf<PropertySpec>()
+            val members = VssSpecification::class.memberProperties
+
+            fun createPrimitiveDataTypeSpec(member: KProperty1<VssSpecification, *>): PropertySpec {
+                val memberName = member.name
+                val memberType = member.returnType.asTypeName()
+                val initialValue = member.get(specification) ?: ""
+
+                return PropertySpec
+                    .builder(memberName, memberType)
+                    .mutable(false)
+                    .addModifiers(KModifier.OVERRIDE)
+                    .getter(
+                        FunSpec.getterBuilder()
+                            .addStatement("return %S", initialValue)
+                            .build(),
+                    ).build()
+            }
+
+            fun createObjectTypeSpec(
+                typeName: String,
+                variableName: String,
+                packageName: String = PACKAGE_NAME,
+            ): PropertySpec {
+                val prefixedTypeName = ClassName(packageName, CLASS_NAME_PREFIX + typeName)
+                return PropertySpec
+                    .builder(variableName, prefixedTypeName)
+                    .initializer(variableName)
+                    .build()
+            }
+
+            // Add primitive data types
+//            logger.error("${specification.name} = $className")
+            if (specification.name == className) {
+                members.forEach { member ->
+                    val primitiveDataTypeSpec = createPrimitiveDataTypeSpec(member)
+                    propertySpecs.add(primitiveDataTypeSpec)
+                }
+
+                return propertySpecs
+            }
+
+            // Add nested child classes
+            // Fixes duplicates e.g. type as variable and nested type
+            val specificationName = specification.name
+            val isVariableOccupied = members.find { member ->
+                member.name.equals(specificationName, true)
+            }
+            val variablePrefix = if (isVariableOccupied != null) CLASS_NAME_PREFIX else ""
+            val variableName = (variablePrefix + specificationName)
+                .replaceFirstChar { it.lowercase() }
+
+            val objectTypeSpec = createObjectTypeSpec(specificationName, variableName, packageName)
+            return listOf(objectTypeSpec)
+        }
+
+        private fun generateEnumFile(name: String, enumNames: Set<String>) {
+            if (enumNames.isEmpty()) {
+                logger.warn("No enum elements found for generating!")
+                return
+            }
+
+            val enumBuilder = TypeSpec.enumBuilder(name)
+            enumNames.forEach { type ->
+                enumBuilder.addEnumConstant(type)
+            }
+
+            val file = FileSpec.builder(PACKAGE_NAME, name)
+                .addType(enumBuilder.build())
+                .build()
+            file.writeTo(codeGenerator, false)
+        }
+    }
+
+    class YamlParser {
+        fun parseSpecifications(definitionFile: File): List<VssSpecificationElement> {
             val specificationElements = mutableListOf<VssSpecificationElement>()
             val vssDefinitionStream = definitionFile.inputStream()
             val bufferedReader = BufferedReader(InputStreamReader(vssDefinitionStream))
@@ -116,7 +331,6 @@ class VssDefinitionProcessor(
                     val specificationElement = parseYamlElement(yamlAttributes)
                     specificationElements.add(specificationElement)
 
-                    logger.logging("Found next yaml Element: $specificationElements")
                     yamlAttributes.clear()
 
                     continue
@@ -170,161 +384,6 @@ class VssDefinitionProcessor(
             return vssSpecificationMember
         }
 
-        // Takes all defined elements and nests them accordingly to their parents / child depending on the vssPath.
-        // Map<ParentClassName, ChildElements>
-        private fun fillChildSpecifications(
-            specificationElements: List<VssSpecificationElement>,
-        ): Map<String, Set<VssSpecificationElement>> {
-            val vssPathToElements = specificationElements.associateBy({ it.name }, { mutableSetOf(it) })
-            for (element in specificationElements) {
-                val parentKey = element.parentKey
-                val parentSpecifications = vssPathToElements[parentKey] ?: continue
-
-                parentSpecifications.add(element) // It must be a child of the parent
-            }
-
-            return vssPathToElements
-        }
-
-        private fun generateModelFiles(classToSpecifications: Map<String, Set<VssSpecificationElement>>) {
-            classToSpecifications.forEach { (className, vssSpecifications) ->
-                val prefixedClassName = CLASS_NAME_PREFIX + className
-                val mainSpecification = vssSpecifications.first()
-
-                val classBuilder = TypeSpec.classBuilder(prefixedClassName)
-                    .addModifiers(KModifier.DATA)
-                val constructorBuilder = FunSpec.constructorBuilder()
-                val propertySpecs = mutableListOf<PropertySpec>()
-                val superInterfaces = mutableSetOf<TypeName>(VssSpecification::class.asTypeName())
-
-                // The last element in the chain should have a value like "isLocked".
-                if (vssSpecifications.size == 1) {
-                    val valuePropertySpec = PropertySpec
-                        .builder(PROPERTY_VALUE_NAME, mainSpecification.datatypeProperty)
-                        .initializer(PROPERTY_VALUE_NAME)
-                        .addModifiers(KModifier.OVERRIDE)
-                        .build()
-                    propertySpecs.add(valuePropertySpec)
-
-                    // Adds a default value (mainly 0 or an empty string)
-                    constructorBuilder.addParameter(
-                        ParameterSpec.builder(
-                            valuePropertySpec.name,
-                            valuePropertySpec.type,
-                        ).defaultValue("%L", mainSpecification.defaultValue).build(),
-                    )
-
-                    val vssPropertyInterface = VssProperty::class.asTypeName()
-                        .plusParameter(mainSpecification.datatypeProperty)
-                    superInterfaces.add(vssPropertyInterface)
-                }
-
-                // Parses all specifications into properties
-                vssSpecifications.forEach { specification ->
-                    val classPropertySpecs = createPropertySpecs(className, specification)
-                    propertySpecs.addAll(classPropertySpecs)
-
-                    // Nested VssSpecification properties should be added as constructor parameters
-                    val mainClassPropertySpec = classPropertySpecs.first()
-                    if (mainClassPropertySpec.initializer != null) { // Only add a default for initializer
-                        val defaultClassName = CLASS_NAME_PREFIX + specification.name
-                        val defaultParameter = createDefaultParameterSpec(mainClassPropertySpec.name, defaultClassName)
-                        constructorBuilder.addParameter(defaultParameter)
-                    }
-                }
-
-                val fileBuilder = FileSpec.builder(PACKAGE_NAME, prefixedClassName)
-                val classSpec = classBuilder
-                    .primaryConstructor(constructorBuilder.build())
-                    .addSuperinterfaces(superInterfaces)
-                    .addProperties(propertySpecs).build()
-                fileBuilder.addType(classSpec)
-
-                val file = fileBuilder.build()
-                file.writeTo(codeGenerator, false)
-            }
-        }
-
-        private fun createDefaultParameterSpec(
-            parameterName: String,
-            defaultClassName: String,
-        ) = ParameterSpec
-            .builder(parameterName, ClassName(PACKAGE_NAME, defaultClassName))
-            .defaultValue("%L()", defaultClassName)
-            .build()
-
-        private fun createPropertySpecs(
-            className: String,
-            specification: VssSpecificationElement,
-        ): List<PropertySpec> {
-            val propertySpecs = mutableListOf<PropertySpec>()
-            val members = VssSpecification::class.memberProperties
-
-            fun createPrimitiveDataTypeSpec(member: KProperty1<VssSpecification, *>): PropertySpec {
-                val memberName = member.name
-                val memberType = member.returnType.asTypeName()
-                val initialValue = member.get(specification) ?: ""
-
-                return PropertySpec
-                    .builder(memberName, memberType)
-                    .mutable(false)
-                    .addModifiers(KModifier.OVERRIDE)
-                    .getter(
-                        FunSpec.getterBuilder()
-                            .addStatement("return %S", initialValue)
-                            .build(),
-                    ).build()
-            }
-
-            fun createObjectTypeSpec(typeName: String, variableName: String): PropertySpec {
-                val prefixedTypeName = ClassName(PACKAGE_NAME, CLASS_NAME_PREFIX + typeName)
-                return PropertySpec
-                    .builder(variableName, prefixedTypeName)
-                    .initializer(variableName)
-                    .build()
-            }
-
-            // Add primitive data types
-            if (specification.name == className) {
-                members.forEach { member ->
-                    val primitiveDataTypeSpec = createPrimitiveDataTypeSpec(member)
-                    propertySpecs.add(primitiveDataTypeSpec)
-                }
-
-                return propertySpecs
-            }
-
-            // Add nested child classes
-            // Fixes duplicates e.g. type as variable and nested type
-            val specificationName = specification.name
-            val isVariableOccupied = members.find { member ->
-                member.name.equals(specificationName, true)
-            }
-            val variablePrefix = if (isVariableOccupied != null) CLASS_NAME_PREFIX else ""
-            val variableName = (variablePrefix + specificationName)
-                .replaceFirstChar { it.lowercase() }
-
-            val objectTypeSpec = createObjectTypeSpec(specificationName, variableName)
-            return listOf(objectTypeSpec)
-        }
-
-        private fun generateEnumFile(name: String, enumNames: Set<String>) {
-            if (enumNames.isEmpty()) {
-                logger.warn("No enum elements found for generating!")
-                return
-            }
-
-            val enumBuilder = TypeSpec.enumBuilder(name)
-            enumNames.forEach { type ->
-                enumBuilder.addEnumConstant(type)
-            }
-
-            val file = FileSpec.builder(PACKAGE_NAME, name)
-                .addType(enumBuilder.build())
-                .build()
-            file.writeTo(codeGenerator, false)
-        }
-
         private fun Any.setFields(
             fields: MutableList<Pair<String, Any?>>,
             remapNames: Map<String, String> = emptyMap(),
@@ -345,6 +404,13 @@ class VssDefinitionProcessor(
         }
     }
 
+    data class VssPath(val path: String) {
+        val leaf: String
+            get() = path.substringAfterLast(".")
+    }
+
+    // Reflects the specification file as a data model and is filled via reflection. That is why the variable names
+    // should exactly match the names inside the specification file and be of a string type.
     data class VssSpecificationElement(
         override var uuid: String = "",
         override var vssPath: String = "",
@@ -353,6 +419,8 @@ class VssDefinitionProcessor(
         override var comment: String = "",
         var datatype: String = "",
     ) : VssSpecification {
+        var childSpecifications = mutableListOf<VssSpecificationElement>()
+
         val name: String
             get() = vssPath.substringAfterLast(".")
         val datatypeProperty: TypeName
@@ -403,21 +471,25 @@ class VssDefinitionProcessor(
             }
 
         /**
+         * Return the parent [vssPath].
+         */
+        val parentVssPath: String
+            get() = vssPath.substringBeforeLast(".", "")
+
+        /**
          * Splits the vssPath into its parts.
          */
         private val specificationKeys: List<String>
             get() = vssPath.split(".")
 
-        // We can't use the vssPath or the uuid because it will result into duplicates for the last property like
-        // "isLocked". These children should be reused for multiple parents.
         override fun equals(other: Any?): Boolean {
             if (other !is VssSpecificationElement) return false
 
-            return name == other.name
+            return uuid == other.uuid
         }
 
         override fun hashCode(): Int {
-            return name.hashCode()
+            return uuid.hashCode()
         }
     }
 
