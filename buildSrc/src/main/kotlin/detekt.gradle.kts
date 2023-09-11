@@ -3,7 +3,7 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 
-val baselineFile = project.file("$rootDir/config/detekt/baseline/${project.name}.xml")
+val baselineFile = project.file("$rootDir/config/detekt/baseline.xml")
 
 plugins {
     id("io.gitlab.arturbosch.detekt") // see https://github.com/detekt/detekt
