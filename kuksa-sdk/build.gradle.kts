@@ -8,8 +8,8 @@ plugins {
 }
 
 android {
-    namespace = "com.etas.kuksa.sdk"
-    compileSdk = 33
+    namespace = "org.eclipse.kuksa.sdk"
+    compileSdk = 34
     version = "1.0.0"
 
     defaultConfig {
