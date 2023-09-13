@@ -5,10 +5,14 @@ plugins {
     id("org.jetbrains.kotlin.android")
 
     id("com.google.protobuf")
+    publish
 }
 
+group = "org.eclipse.kuksa"
+version = "0.1.0-SNAPSHOT"
+
 android {
-    namespace = "com.etas.kuksa.sdk"
+    namespace = "org.eclipse.kuksa"
     compileSdk = 33
 
     defaultConfig {
