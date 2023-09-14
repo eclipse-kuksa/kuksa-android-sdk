@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "org.eclipse.kuksa"
-version = "0.1.0-SNAPSHOT"
+version = rootProject.extra["projectVersion"].toString()
 
 android {
     namespace = "org.eclipse.kuksa"
