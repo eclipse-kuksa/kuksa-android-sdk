@@ -1,6 +1,0 @@
--keep,allowobfuscation,allowoptimization,allowshrinking class org.eclipse.kuksa.DataBrokerConnection { *; }
--keep,allowobfuscation,allowoptimization,allowshrinking class org.eclipse.kuksa.DataBrokerConnector { *; }
--keep,allowobfuscation,allowoptimization,allowshrinking class org.eclipse.kuksa.model.Property { *; }
--keep,allowobfuscation,allowoptimization,allowshrinking interface org.eclipse.kuksa.PropertyObserver { *; }
--keep,allowobfuscation,allowoptimization,allowshrinking class org.eclipse.kuksa.CoroutineCallback { *; }
--keep,allowobfuscation,allowoptimization,allowshrinking class org.eclipse.kuksa.TimeoutConfig { *; }
