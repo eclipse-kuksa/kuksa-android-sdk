@@ -103,10 +103,3 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
 }
-
-tasks.register("testTask") {
-    val hasProperty = project.hasProperty("minify")
-    doLast {
-        println("minify: $hasProperty")
-    }
-}
