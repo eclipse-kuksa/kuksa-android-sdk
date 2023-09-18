@@ -33,10 +33,17 @@ android {
         }
     }
     buildTypes {
-        debug { isMinifyEnabled = false }
-        release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+        // for local builds, used to find shrinking issues
+        val isMinify = project.hasProperty("minify")
+        if (isMinify) {
+            debug {
+                // while isDebuggable is set to true no obfuscation takes place,
+                // the shrinking phase will still remove unused classes
+                isDebuggable = true
+
+                isMinifyEnabled = true
+                proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            }
         }
     }
     namespace = "org.eclipse.kuksa.testapp"
@@ -95,4 +102,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling.test.manifest)
 
     implementation(libs.androidx.activity.compose)
+}
+
+tasks.register("testTask") {
+    val hasProperty = project.hasProperty("minify")
+    doLast {
+        println("minify: $hasProperty")
+    }
 }
