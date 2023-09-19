@@ -33,12 +33,15 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.TimeoutConfig
+import org.eclipse.kuksa.VssPropertyObserver
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
+import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.extension.open
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 import java.io.IOException
 
 class KotlinDataBrokerEngine(
@@ -154,6 +157,14 @@ class KotlinDataBrokerEngine(
     override fun subscribe(property: Property, propertyObserver: PropertyObserver) {
         val properties = listOf(property)
         dataBrokerConnection?.subscribe(properties, propertyObserver)
+    }
+
+    override fun <T : VssSpecification> subscribe(
+        specification: T,
+        fields: List<Types.Field>,
+        propertyObserver: VssPropertyObserver<T>,
+    ) {
+        dataBrokerConnection?.subscribe(specification, fields, propertyObserver)
     }
 
     override fun disconnect() {

@@ -29,13 +29,16 @@ import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.PropertyObserver;
 import org.eclipse.kuksa.TimeoutConfig;
+import org.eclipse.kuksa.VssPropertyObserver;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
+import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
 import org.eclipse.kuksa.testapp.extension.AssetManagerExtensionKt;
 import org.eclipse.kuksa.testapp.model.Certificate;
 import org.eclipse.kuksa.testapp.model.ConnectionInfo;
+import org.eclipse.kuksa.vsscore.model.VssSpecification;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -178,6 +181,15 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
         List<Property> properties = Collections.singletonList(property);
         dataBrokerConnection.subscribe(properties, propertyObserver);
+    }
+
+    @Override
+    public <T extends VssSpecification> void subscribe(@NonNull T specification, @NonNull List<? extends Types.Field> fields, @NonNull VssPropertyObserver<T> propertyObserver) {
+        if (dataBrokerConnection == null) {
+            return;
+        }
+
+        dataBrokerConnection.subscribe(specification, fields, propertyObserver);
     }
 
     public void disconnect() {

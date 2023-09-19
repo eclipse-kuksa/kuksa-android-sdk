@@ -43,6 +43,8 @@ dependencies {
     // needs to be api as long as we expose ProtoBuf specific objects
     api(libs.grpc.protobuf)
 
+    implementation(kotlin("reflect"))
+
     implementation(libs.grpc.okhttp)
     implementation(libs.grpc.stub)
     implementation(libs.tomcat.annotations)

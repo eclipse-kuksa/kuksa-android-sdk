@@ -32,8 +32,18 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.proto.v1.Types.BoolArray
+import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.VALGrpc
 import org.eclipse.kuksa.util.LogTag
+import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.findHeritageLine
+import org.eclipse.kuksa.vsscore.model.heritage
+import org.eclipse.kuksa.vsscore.model.name
+import kotlin.reflect.KParameter
+import kotlin.reflect.full.instanceParameter
+import kotlin.reflect.full.memberFunctions
 
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
@@ -45,7 +55,6 @@ class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
-
     /**
      * Subscribes to the specified vssPath with the provided propertyObserver. Once subscribed the application will be
      * notified about any changes to the specified vssPath.
@@ -73,7 +82,7 @@ class DataBrokerConnection internal constructor(
 
         val callback = object : StreamObserver<SubscribeResponse> {
             override fun onNext(value: SubscribeResponse) {
-                Log.d(TAG, "onNext() called with: value = $value")
+                Log.v(TAG, "onNext() called with: value = $value")
 
                 for (entryUpdate in value.updatesList) {
                     val entry = entryUpdate.entry
@@ -82,7 +91,7 @@ class DataBrokerConnection internal constructor(
             }
 
             override fun onError(t: Throwable?) {
-                Log.d(TAG, "onError() called with: t = $t")
+                Log.w(TAG, "onError() called with: t = $t")
             }
 
             override fun onCompleted() {
@@ -95,6 +104,124 @@ class DataBrokerConnection internal constructor(
         } catch (e: StatusRuntimeException) {
             throw DataBrokerException(e.message, e)
         }
+    }
+
+    /**
+     *
+     */
+    @Suppress("LABEL_NAME_CLASH")
+    fun <T : VssSpecification> subscribe(
+        specification: T,
+        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
+        propertyObserver: VssPropertyObserver<T>,
+    ) {
+        val vssPathToSpecification = specification.heritage
+            .ifEmpty { setOf(specification) }
+            .filterIsInstance<VssProperty<*>>() // Only final leafs with a value can be observed
+            .groupBy { it.vssPath }
+            .mapValues { it.value.first() }
+        val leafProperties = vssPathToSpecification.values
+            .map { Property(it.vssPath, fields) }
+            .toList()
+
+        Log.d(TAG, "Subscribing to the following properties: $leafProperties")
+        subscribe(leafProperties) { vssPath, updatedValue ->
+            Log.d(TAG, "Update from subscribed property: $vssPath - $updatedValue")
+            val subscribedVssProperty = vssPathToSpecification[vssPath] ?: return@subscribe
+
+            val updatedVssProperty = subscribedVssProperty.copy(updatedValue.value)
+            val relevantChildren = specification.findHeritageLine(subscribedVssProperty).toMutableList()
+
+            // Replace the last specification (Property) with the changed one
+            if (relevantChildren.isNotEmpty()) {
+                relevantChildren.removeLast()
+                relevantChildren.add(updatedVssProperty)
+            }
+
+            val updatedVssSpecification = specification.deepCopy(relevantChildren)
+
+            propertyObserver.onPropertyChanged(updatedVssSpecification)
+        }
+    }
+
+    /**
+     * Creates a copy of the [VssSpecification] where the whole [VssSpecification.findHeritageLine] is replaced
+     * with modified heirs.
+     *
+     * Example: VssVehicle->VssCabin->VssWindowChildLockEngaged
+     * A deep copy is necessary for a nested history tree with at least two generations. The VssWindowChildLockEngaged
+     * is replaced inside VssCabin where this again is replaced inside VssVehicle.
+     *
+     * @param changedHeritageLine the line of heirs
+     * @param generation the generation to start copying with starting from the [VssSpecification] to [deepCopy]
+     * @return a copy where every heir in the given [changedHeritageLine] is replaced with a another copy.
+     */
+    fun <T : VssSpecification> T.deepCopy(changedHeritageLine: List<VssSpecification>, generation: Int = 0): T {
+        val childSpecification = changedHeritageLine[generation]
+        if (generation == changedHeritageLine.size - 1) { // Reached the end, use the changed VssProperty
+            return childSpecification.copy()
+        }
+
+        val childCopy = childSpecification.deepCopy(changedHeritageLine, generation + 1)
+        val childMap = mapOf(childSpecification.name to childCopy)
+
+        return copy(childMap)
+    }
+
+    /**
+     * Creates a copy of a [VssProperty] where the [VssProperty.value] is changed to the given [Datapoint].
+     *
+     * @param datapoint the [Datapoint.value_] is converted to the correct datatype depending on the [VssProperty.value]
+     * @return a copy of the [VssProperty] with the updated [VssProperty.value]
+     */
+    @Suppress("IMPLICIT_CAST_TO_ANY")
+    fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
+        with(datapoint) {
+            val value = when (value::class) {
+                String::class -> string
+                Boolean::class -> bool
+                Float::class -> float
+                Double::class -> double
+                Int::class -> int32
+                Long::class -> int64
+                Unit::class -> uint64
+                Array<String>::class -> stringArray.valuesList
+                IntArray::class -> int32Array.valuesList.toIntArray()
+                BoolArray::class -> boolArray.valuesList.toBooleanArray()
+
+                else -> string
+            }
+
+            val valueMap = mapOf("value" to value)
+            return this@copy.copy(valueMap) as VssProperty<T>
+        }
+    }
+
+    /**
+     * Uses reflection to create a copy with any constructor parameter which matches the given [paramToValue] map.
+     * It is recommend to only use data classes.
+     *
+     * @param paramToValue <PropertyName, value> to match the constructor parameters
+     * @return a copy of the class
+     * @throws [NoSuchElementException] if the class has no "copy" method
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> Any.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
+        val instanceClass = this::class
+
+        val copyFunction = instanceClass::memberFunctions.get().first { it.name == "copy" }
+        val valueArgs = copyFunction.parameters
+            .filter { parameter ->
+                parameter.kind == KParameter.Kind.VALUE
+            }.mapNotNull { parameter ->
+                paramToValue[parameter.name]?.let { value -> parameter to value }
+            }
+
+        val copy = copyFunction.callBy(
+            mapOf(copyFunction.instanceParameter!! to this) + valueArgs,
+        ) ?: this
+
+        return copy as T
     }
 
     /**
