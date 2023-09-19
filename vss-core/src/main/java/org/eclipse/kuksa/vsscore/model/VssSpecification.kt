@@ -20,6 +20,7 @@
 package org.eclipse.kuksa.vsscore.model
 
 import kotlin.reflect.KClass
+import kotlin.reflect.full.declaredMemberProperties
 
 /**
  * Represents a node inside a VSS specification file.
@@ -63,6 +64,23 @@ val VssSpecification.name: String
     get() = vssPath.substringAfterLast(".")
 
 /**
+ * Return the parent [VssSpecification.vssPath].
+ */
+val VssSpecification.parentVssPath: String
+    get() = vssPath.substringBeforeLast(".", "")
+
+/**
+ * Returns the parent key depending on the [VssSpecification.vssPath].
+ */
+val VssSpecification.parentKey: String
+    get() {
+        val keys = specificationKeys
+        if (keys.size < 2) return ""
+
+        return keys[keys.size - 2]
+    }
+
+/**
  * Iterates through all nested children which also may have children and aggregates them into one big collection.
  */
 val VssSpecification.heritage: List<VssSpecification>
@@ -74,3 +92,44 @@ fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecifica
         specificationKeys.contains(child.name)
     }
 }
+
+/**
+ * Uses the [variablePrefix] to generate a unique variable name. The first character is at least lowercased.
+ * If the [name] is something like "ABS" then it is converted to "abs" instead of "aBS".
+ */
+val VssSpecification.variableName: String // Fixes duplicates e.g. type as variable and nested type
+    get() {
+        val fullName = variablePrefix + name
+
+        // Names like "ABS" should not be called "aBS" but rather "abs"
+        val (_, notUpperCases) = name.partition { it.isUpperCase() }
+        if (notUpperCases.isEmpty()) return fullName.lowercase()
+
+        return fullName.replaceFirstChar { it.lowercase() }
+    }
+
+/**
+ * Similar to the [variableName] but does not lowercase the [name] wherever necessary.
+ */
+val VssSpecification.className: String
+    get() = classNamePrefix + name
+
+private val classNamePrefix: String
+    get() = "Vss"
+
+/**
+ * Used in case of conflicted naming with child properties.
+ */
+private val VssSpecification.variablePrefix: String
+    get() = if (isVariableOccupied) classNamePrefix else ""
+
+/**
+ * True if the [name] clashes with a property name.
+ */
+private val VssSpecification.isVariableOccupied: Boolean
+    get() {
+        val declaredMemberProperties = VssSpecification::class.declaredMemberProperties
+        return declaredMemberProperties.find { member ->
+            member.name.equals(name, true)
+        } != null
+    }
