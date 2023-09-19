@@ -40,7 +40,7 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.findHeritageLine
 import org.eclipse.kuksa.vsscore.model.heritage
-import org.eclipse.kuksa.vsscore.model.name
+import org.eclipse.kuksa.vsscore.model.variableName
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.memberFunctions
@@ -91,7 +91,7 @@ class DataBrokerConnection internal constructor(
             }
 
             override fun onError(t: Throwable?) {
-                Log.w(TAG, "onError() called with: t = $t")
+                Log.e(TAG, "onError() called with: t = $t, cause: ${t?.cause}")
             }
 
             override fun onCompleted() {
@@ -107,12 +107,21 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
+     * Subscribes to the specified [VssSpecification] with the provided propertyObserver. Only a [VssProperty]
+     * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
+     * [subscribe] method will find all [VssProperty] children and subscribed them instead. Once subscribed the
+     * application will be notified about any changes to every subscribed [VssProperty].
      *
+     * @param specification the [VssSpecification] to subscribe to
+     * @param fields the [Types.Field] to subscribe to
+     * @param propertyObserver the observer to notify in case of changes
+     *
+     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     @Suppress("LABEL_NAME_CLASH")
     fun <T : VssSpecification> subscribe(
         specification: T,
-        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
+        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
         propertyObserver: VssPropertyObserver<T>,
     ) {
         val vssPathToSpecification = specification.heritage
@@ -157,15 +166,15 @@ class DataBrokerConnection internal constructor(
      * @return a copy where every heir in the given [changedHeritageLine] is replaced with a another copy.
      */
     fun <T : VssSpecification> T.deepCopy(changedHeritageLine: List<VssSpecification>, generation: Int = 0): T {
-        val childSpecification = changedHeritageLine[generation]
-        if (generation == changedHeritageLine.size - 1) { // Reached the end, use the changed VssProperty
-            return childSpecification.copy()
+        if (generation == changedHeritageLine.size) { // Reached the end, use the changed VssProperty
+            return this
         }
 
+        val childSpecification = changedHeritageLine[generation]
         val childCopy = childSpecification.deepCopy(changedHeritageLine, generation + 1)
-        val childMap = mapOf(childSpecification.name to childCopy)
+        val parameterNameToChild = mapOf(childSpecification.variableName to childCopy)
 
-        return copy(childMap)
+        return copy(parameterNameToChild)
     }
 
     /**
