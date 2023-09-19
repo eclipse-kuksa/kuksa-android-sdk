@@ -17,23 +17,23 @@
  *
  */
 
-package org.eclipse.kuksa.util
-
-import kotlin.reflect.KClass
+package org.eclipse.kuksa.extension
 
 /**
- * Utility class used to provide LogTags for Android Logger.
+ * Creates Log Tags for the Android Logging Method. It will take care of the max allowed length of 23 characters by
+ * removing all subsequent characters.
  */
-internal object LogTag {
-    private const val MAX_TAG_LENGTH = 23
+internal inline val <reified T> T.TAG: String
+    get() = logTag
 
-    /**
-     * Provides a LogTag for a java class type.
-     */
-    fun of(clazz: Class<*>) = clazz.simpleName.take(MAX_TAG_LENGTH)
+/**
+ * Creates Log Tags for the Android Logging Method. It will take care of the max allowed length of 23 characters by
+ * removing all subsequent characters.
+ */
+internal inline val <reified T> T.logTag: String
+    get() = T::class.java.name
+        .substringAfterLast(".")
+        .substringBefore("$")
+        .take(MAX_CHARS_LOG_TAG)
 
-    /**
-     * Provides a LogTag for a kotlin class type.
-     */
-    fun of(clazz: KClass<*>) = of(clazz.java)
-}
+internal const val MAX_CHARS_LOG_TAG = 23

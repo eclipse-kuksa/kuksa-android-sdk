@@ -54,7 +54,7 @@ interface VssProperty<T : Any> : VssSpecification {
 /**
  * Splits the [VssSpecification.vssPath] into its parts.
  */
-val VssSpecification.specificationKeys: List<String>
+val VssSpecification.vssPathComponents: List<String>
     get() = vssPath.split(".")
 
 /**
@@ -74,7 +74,7 @@ val VssSpecification.parentVssPath: String
  */
 val VssSpecification.parentKey: String
     get() {
-        val keys = specificationKeys
+        val keys = vssPathComponents
         if (keys.size < 2) return ""
 
         return keys[keys.size - 2]
@@ -87,7 +87,7 @@ val VssSpecification.heritage: List<VssSpecification>
     get() = children.toList() + children.flatMap { it.heritage }
 
 fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecification> {
-    val specificationKeys = heir.specificationKeys
+    val specificationKeys = heir.vssPathComponents
     return heritage.filter { child ->
         specificationKeys.contains(child.name)
     }

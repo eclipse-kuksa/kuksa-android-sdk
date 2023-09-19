@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.extension
+package org.eclipse.kuksa.extension
 
 import android.util.Log
 import org.eclipse.kuksa.proto.v1.Types
@@ -25,6 +25,9 @@ import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 
 private const val CSV_DELIMITER = ","
+
+val Types.Metadata.valueType: Datapoint.ValueCase
+    get() = dataType.dataPointValueCase
 
 fun Datapoint.ValueCase.createDatapoint(value: String): Datapoint {
     val datapointBuilder = Datapoint.newBuilder()
@@ -79,10 +82,6 @@ fun Datapoint.ValueCase.createDatapoint(value: String): Datapoint {
 
             Datapoint.ValueCase.BOOL_ARRAY ->
                 datapointBuilder.boolArray = createBoolArray(value)
-
-            else -> {
-                throw UnsupportedOperationException("Unhandled Datapoint type: $this")
-            }
         }
     } catch (e: NumberFormatException) {
         Log.w(TAG, "Could not convert value: $value to ValueCase: $this")

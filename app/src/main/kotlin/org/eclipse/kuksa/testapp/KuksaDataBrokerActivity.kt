@@ -32,6 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.extension.metadata
+import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -46,10 +47,11 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.Connec
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
-import org.eclipse.kuksa.testapp.extension.valueType
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vssprocessor.VssDefinition
 
 @VssDefinition("vss_rel_4.0.yaml")
@@ -57,6 +59,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     private val topAppBarViewModel: TopAppBarViewModel by viewModels()
     private val connectionViewModel: ConnectionViewModel by viewModels()
     private val vssPropertiesViewModel: VSSPropertiesViewModel by viewModels()
+    private val vssSpecificationsViewModel: VssSpecificationsViewModel by viewModels()
     private val outputViewModel: OutputViewModel by viewModels()
 
     private val dataBrokerConnectionCallback = object : CoroutineCallback<DataBrokerConnection>() {
@@ -88,12 +91,19 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             KuksaAppAndroidTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    DataBrokerView(topAppBarViewModel, connectionViewModel, vssPropertiesViewModel, outputViewModel)
+                    DataBrokerView(
+                        topAppBarViewModel,
+                        connectionViewModel,
+                        vssPropertiesViewModel,
+                        vssSpecificationsViewModel,
+                        outputViewModel,
+                    )
                 }
             }
         }
 
         dataBrokerEngine = kotlinDataBrokerEngine
+
         topAppBarViewModel.onCompatibilityModeChanged = { isCompatibilityModeEnabled ->
             dataBrokerEngine = if (isCompatibilityModeEnabled) {
                 javaDataBrokerEngine
@@ -122,6 +132,14 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
         vssPropertiesViewModel.onSubscribeProperty = { property: Property ->
             subscribeProperty(property)
+        }
+
+        vssSpecificationsViewModel.onSubscribeSpecification = { specification ->
+            subscribeSpecification(specification)
+        }
+
+        vssSpecificationsViewModel.onGetSpecification = { specification ->
+            fetchSpecification(specification)
         }
     }
 
@@ -195,9 +213,24 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     }
 
     private fun subscribeProperty(property: Property) {
+        Log.d(TAG, "Subscribing to property: $property")
         dataBrokerEngine.subscribe(property) { vssPath, updatedValue ->
             Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
-            outputViewModel.appendOutput(updatedValue.toString())
+            outputViewModel.appendOutput("Updated value: $updatedValue")
+        }
+    }
+
+    private fun fetchSpecification(specification: VssSpecification) {
+        dataBrokerEngine.fetchSpecification(specification) { updatedSpecification ->
+            Log.d(TAG, "Fetched specification: $updatedSpecification")
+            outputViewModel.appendOutput("Fetched specification: $updatedSpecification")
+        }
+    }
+
+    private fun subscribeSpecification(specification: VssSpecification) {
+        dataBrokerEngine.subscribe(specification) { updatedSpecification ->
+            Log.d(TAG, "onPropertyChanged path: changedValue = $updatedSpecification")
+            outputViewModel.appendOutput("Updated specification: $updatedSpecification")
         }
     }
 }

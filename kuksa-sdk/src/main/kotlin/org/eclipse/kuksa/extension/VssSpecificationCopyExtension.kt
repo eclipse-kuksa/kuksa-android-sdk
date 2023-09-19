@@ -1,0 +1,99 @@
+package org.eclipse.kuksa.extension
+
+import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.findHeritageLine
+import org.eclipse.kuksa.vsscore.model.heritage
+import org.eclipse.kuksa.vsscore.model.variableName
+
+/**
+ * Creates a copy of the [VssSpecification] where the whole [VssSpecification.findHeritageLine] is replaced
+ * with modified heirs.
+ *
+ * Example: VssVehicle->VssCabin->VssWindowChildLockEngaged
+ * A deep copy is necessary for a nested history tree with at least two generations. The VssWindowChildLockEngaged
+ * is replaced inside VssCabin where this again is replaced inside VssVehicle.
+ *
+ * @param changedHeritageLine the line of heirs
+ * @param generation the generation to start copying with starting from the [VssSpecification] to [deepCopy]
+ * @return a copy where every heir in the given [changedHeritageLine] is replaced with a another copy
+ */
+fun <T : VssSpecification> T.deepCopy(changedHeritageLine: List<VssSpecification>, generation: Int = 0): T {
+    if (generation == changedHeritageLine.size) { // Reached the end, use the changed VssProperty
+        return this
+    }
+
+    val childSpecification = changedHeritageLine[generation]
+    val childCopy = childSpecification.deepCopy(changedHeritageLine, generation + 1)
+    val parameterNameToChild = mapOf(childSpecification.variableName to childCopy)
+
+    return copy(parameterNameToChild)
+}
+
+/**
+ * Creates a copy of a [VssProperty] where the [VssProperty.value] is changed to the given [Datapoint].
+ *
+ * @param datapoint the [Datapoint.value_] is converted to the correct datatype depending on the [VssProperty.value]
+ * @return a copy of the [VssProperty] with the updated [VssProperty.value]
+ *
+ * @throws [NoSuchElementException] if the class has no "copy" method
+ * @throws [IllegalArgumentException] if the copied types do not match
+ */
+@Suppress("IMPLICIT_CAST_TO_ANY")
+fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
+    with(datapoint) {
+        val value = when (value::class) {
+            String::class -> string
+            Boolean::class -> bool
+            Float::class -> float
+            Double::class -> double
+            Int::class -> int32
+            Long::class -> int64
+            UInt::class -> uint32.toUInt()
+            Array<String>::class -> stringArray.valuesList
+            IntArray::class -> int32Array.valuesList.toIntArray()
+            Types.BoolArray::class -> boolArray.valuesList.toBooleanArray()
+
+            else -> throw NoSuchFieldException("Could not convert value: $value to actual type")
+        }
+
+        val valueMap = mapOf("value" to value)
+        return this@copy.copy(valueMap) as VssProperty<T>
+    }
+}
+
+/**
+ * Creates a copy of the [VssSpecification] where the heir with a matching [vssPath] is replaced with the
+ * [updatedValue].
+ *
+ * @param vssPath which is used to find the correct heir in the [VssSpecification]
+ * @param updatedValue which will be updated inside the matching [VssProperty]
+ * @return a copy where the heir with the matching [vssPath] is replaced with a another copy
+ *
+ * @throws [NoSuchElementException] if the class has no "copy" method
+ * @throws [IllegalArgumentException] if the copied types do not match
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T : VssSpecification> T.copy(vssPath: String, updatedValue: Datapoint): T {
+    val vssProperty = heritage
+        .filterIsInstance<VssProperty<*>>()
+        .find { it.vssPath == vssPath }
+        ?: this as VssProperty<*> // The given specification is already a VssProperty
+
+    val updatedVssProperty = vssProperty.copy(updatedValue)
+    val relevantChildren = findHeritageLine(vssProperty).toMutableList()
+
+    // Replace the last specification (Property) with the changed one
+    val updatedVssSpecification: T = if (relevantChildren.isNotEmpty()) {
+        relevantChildren.removeLast()
+        relevantChildren.add(updatedVssProperty)
+
+        this.deepCopy(relevantChildren)
+    } else {
+        updatedVssProperty as T // The property must be T since no children are available
+    }
+
+    return updatedVssSpecification
+}

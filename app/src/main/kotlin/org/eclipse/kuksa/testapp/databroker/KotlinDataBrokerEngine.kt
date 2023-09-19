@@ -33,7 +33,7 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.TimeoutConfig
-import org.eclipse.kuksa.VssPropertyObserver
+import org.eclipse.kuksa.VssSpecificationObserver
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -139,6 +139,15 @@ class KotlinDataBrokerEngine(
         }
     }
 
+    override fun <T : VssSpecification> fetchSpecification(
+        specification: T,
+        observer: VssSpecificationObserver<T>,
+    ) {
+        lifecycleScope.launch {
+            dataBrokerConnection?.fetchSpecification(specification, observer = observer)
+        }
+    }
+
     override fun updateProperty(
         property: Property,
         datapoint: Datapoint,
@@ -162,7 +171,7 @@ class KotlinDataBrokerEngine(
     override fun <T : VssSpecification> subscribe(
         specification: T,
         fields: List<Types.Field>,
-        propertyObserver: VssPropertyObserver<T>,
+        propertyObserver: VssSpecificationObserver<T>,
     ) {
         dataBrokerConnection?.subscribe(specification, fields, propertyObserver)
     }

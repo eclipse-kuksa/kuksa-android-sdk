@@ -24,11 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import org.eclipse.kuksa.extension.createDatapoint
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.proto.v1.Types.Field
-import org.eclipse.kuksa.testapp.extension.createDatapoint
 
 class VSSPropertiesViewModel : ViewModel() {
     var onGetProperty: (property: Property) -> Unit = { }

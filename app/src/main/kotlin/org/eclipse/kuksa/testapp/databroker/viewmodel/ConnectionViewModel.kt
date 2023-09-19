@@ -34,7 +34,6 @@ import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
 class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
-
     enum class ConnectionViewState {
         DISCONNECTED,
         CONNECTING,

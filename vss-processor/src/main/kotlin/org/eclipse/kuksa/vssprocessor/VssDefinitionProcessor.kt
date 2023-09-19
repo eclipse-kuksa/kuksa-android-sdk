@@ -78,6 +78,7 @@ class VssDefinitionProcessor(
 
         symbols.forEach { it.accept(visitor, Unit) }
 
+        logger.info("Deferred symbols: ${deferredSymbols.count()}")
         return deferredSymbols.toList()
     }
 

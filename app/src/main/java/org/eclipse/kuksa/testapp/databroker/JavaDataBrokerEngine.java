@@ -29,7 +29,7 @@ import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.PropertyObserver;
 import org.eclipse.kuksa.TimeoutConfig;
-import org.eclipse.kuksa.VssPropertyObserver;
+import org.eclipse.kuksa.VssSpecificationObserver;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
@@ -161,6 +161,13 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         dataBrokerConnection.fetchProperty(property, callback);
     }
 
+    @Override
+    public <T extends VssSpecification> void fetchSpecification(
+        @NonNull T specification,
+        @NonNull VssSpecificationObserver<T> observer) {
+
+    }
+
     public void updateProperty(
         @NonNull Property property,
         @NonNull Datapoint datapoint,
@@ -184,7 +191,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public <T extends VssSpecification> void subscribe(@NonNull T specification, @NonNull List<? extends Types.Field> fields, @NonNull VssPropertyObserver<T> propertyObserver) {
+    public <T extends VssSpecification> void subscribe(@NonNull T specification, @NonNull List<? extends Types.Field> fields, @NonNull VssSpecificationObserver<T> propertyObserver) {
         if (dataBrokerConnection == null) {
             return;
         }

@@ -18,6 +18,12 @@ style:
     active: false
   ReturnCount:
     excludeGuardClauses: true
+  ForbiddenComment:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
 
 naming:
   FunctionNaming:

@@ -26,24 +26,19 @@ import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.extension.TAG
+import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.VALGrpc
-import org.eclipse.kuksa.util.LogTag
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.findHeritageLine
 import org.eclipse.kuksa.vsscore.model.heritage
-import org.eclipse.kuksa.vsscore.model.variableName
-import kotlin.reflect.KParameter
-import kotlin.reflect.full.instanceParameter
-import kotlin.reflect.full.memberFunctions
 
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
@@ -114,123 +109,39 @@ class DataBrokerConnection internal constructor(
      *
      * @param specification the [VssSpecification] to subscribe to
      * @param fields the [Types.Field] to subscribe to
-     * @param propertyObserver the observer to notify in case of changes
+     * @param observer the observer to notify in case of changes
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    @Suppress("LABEL_NAME_CLASH")
     fun <T : VssSpecification> subscribe(
         specification: T,
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
-        propertyObserver: VssPropertyObserver<T>,
+        observer: VssSpecificationObserver<T>,
     ) {
-        val vssPathToSpecification = specification.heritage
+        val vssPathToVssProperty = specification.heritage
             .ifEmpty { setOf(specification) }
             .filterIsInstance<VssProperty<*>>() // Only final leafs with a value can be observed
             .groupBy { it.vssPath }
-            .mapValues { it.value.first() }
-        val leafProperties = vssPathToSpecification.values
+            .mapValues { it.value.first() } // Always one result because the vssPath is unique
+        val leafProperties = vssPathToVssProperty.values
             .map { Property(it.vssPath, fields) }
             .toList()
 
-        Log.d(TAG, "Subscribing to the following properties: $leafProperties")
-        subscribe(leafProperties) { vssPath, updatedValue ->
-            Log.d(TAG, "Update from subscribed property: $vssPath - $updatedValue")
-            val subscribedVssProperty = vssPathToSpecification[vssPath] ?: return@subscribe
+        try {
+            Log.d(TAG, "Subscribing to the following properties: $leafProperties")
 
-            val updatedVssProperty = subscribedVssProperty.copy(updatedValue.value)
-            val relevantChildren = specification.findHeritageLine(subscribedVssProperty).toMutableList()
+            // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we would
+            // override the last heir value with every new response.
+            var updatedVssSpecification = specification
+            subscribe(leafProperties) { vssPath, updatedValue ->
+                Log.d(TAG, "Update from subscribed property: $vssPath - $updatedValue")
 
-            // Replace the last specification (Property) with the changed one
-            if (relevantChildren.isNotEmpty()) {
-                relevantChildren.removeLast()
-                relevantChildren.add(updatedVssProperty)
+                updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
+                observer.onSpecificationChanged(updatedVssSpecification)
             }
-
-            val updatedVssSpecification = specification.deepCopy(relevantChildren)
-
-            propertyObserver.onPropertyChanged(updatedVssSpecification)
+        } catch (e: java.lang.RuntimeException) {
+            throw DataBrokerException(e.message, e)
         }
-    }
-
-    /**
-     * Creates a copy of the [VssSpecification] where the whole [VssSpecification.findHeritageLine] is replaced
-     * with modified heirs.
-     *
-     * Example: VssVehicle->VssCabin->VssWindowChildLockEngaged
-     * A deep copy is necessary for a nested history tree with at least two generations. The VssWindowChildLockEngaged
-     * is replaced inside VssCabin where this again is replaced inside VssVehicle.
-     *
-     * @param changedHeritageLine the line of heirs
-     * @param generation the generation to start copying with starting from the [VssSpecification] to [deepCopy]
-     * @return a copy where every heir in the given [changedHeritageLine] is replaced with a another copy.
-     */
-    fun <T : VssSpecification> T.deepCopy(changedHeritageLine: List<VssSpecification>, generation: Int = 0): T {
-        if (generation == changedHeritageLine.size) { // Reached the end, use the changed VssProperty
-            return this
-        }
-
-        val childSpecification = changedHeritageLine[generation]
-        val childCopy = childSpecification.deepCopy(changedHeritageLine, generation + 1)
-        val parameterNameToChild = mapOf(childSpecification.variableName to childCopy)
-
-        return copy(parameterNameToChild)
-    }
-
-    /**
-     * Creates a copy of a [VssProperty] where the [VssProperty.value] is changed to the given [Datapoint].
-     *
-     * @param datapoint the [Datapoint.value_] is converted to the correct datatype depending on the [VssProperty.value]
-     * @return a copy of the [VssProperty] with the updated [VssProperty.value]
-     */
-    @Suppress("IMPLICIT_CAST_TO_ANY")
-    fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
-        with(datapoint) {
-            val value = when (value::class) {
-                String::class -> string
-                Boolean::class -> bool
-                Float::class -> float
-                Double::class -> double
-                Int::class -> int32
-                Long::class -> int64
-                Unit::class -> uint64
-                Array<String>::class -> stringArray.valuesList
-                IntArray::class -> int32Array.valuesList.toIntArray()
-                BoolArray::class -> boolArray.valuesList.toBooleanArray()
-
-                else -> string
-            }
-
-            val valueMap = mapOf("value" to value)
-            return this@copy.copy(valueMap) as VssProperty<T>
-        }
-    }
-
-    /**
-     * Uses reflection to create a copy with any constructor parameter which matches the given [paramToValue] map.
-     * It is recommend to only use data classes.
-     *
-     * @param paramToValue <PropertyName, value> to match the constructor parameters
-     * @return a copy of the class
-     * @throws [NoSuchElementException] if the class has no "copy" method
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun <T> Any.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
-        val instanceClass = this::class
-
-        val copyFunction = instanceClass::memberFunctions.get().first { it.name == "copy" }
-        val valueArgs = copyFunction.parameters
-            .filter { parameter ->
-                parameter.kind == KParameter.Kind.VALUE
-            }.mapNotNull { parameter ->
-                paramToValue[parameter.name]?.let { value -> parameter to value }
-            }
-
-        val copy = copyFunction.callBy(
-            mapOf(copyFunction.instanceParameter!! to this) + valueArgs,
-        ) ?: this
-
-        return copy as T
     }
 
     /**
@@ -261,6 +172,44 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
+     * Retrieves the [VssSpecification] and returns it to the corresponding Callback. The retrieved [VssSpecification]
+     * is of the same type as the inputted. All underlying heirs are changed to reflect the data broker state.
+     *
+     * @param specification to retrieve
+     * @param fields to retrieve
+     * @param observer to notify as soon as the [VssSpecification] was retrieved
+     *
+     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
+     */
+    suspend fun <T : VssSpecification> fetchSpecification(
+        specification: T,
+        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
+        observer: VssSpecificationObserver<T>,
+    ) {
+        try {
+            val property = Property(specification.vssPath, fields)
+            val response = fetchProperty(property)
+            val entries = response.entriesList
+
+            if (entries.isEmpty()) {
+                Log.w(TAG, "No entries found for fetched specification!")
+                return
+            }
+
+            // Update every heir specification
+            // TODO: Can be optimized to not replacing the whole heritage line for every child entry one by one
+            var updatedSpecification: T = specification
+            entries.forEach { entry ->
+                updatedSpecification = updatedSpecification.copy(entry.path, entry.value)
+            }
+
+            observer.onSpecificationChanged(updatedSpecification)
+        } catch (e: RuntimeException) {
+            throw DataBrokerException(e.message, e)
+        }
+    }
+
+    /**
      * Updates the underlying property of the specified vssPath with the updatedProperty. Notifies the callback
      * about (un)successful operation.
      *
@@ -271,7 +220,7 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun updateProperty(
         property: Property,
-        updatedDatapoint: Types.Datapoint,
+        updatedDatapoint: Datapoint,
     ): SetResponse {
         Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
         return withContext(defaultDispatcher) {
@@ -302,9 +251,5 @@ class DataBrokerConnection internal constructor(
     fun disconnect() {
         Log.d(TAG, "disconnect() called")
         managedChannel.shutdown()
-    }
-
-    private companion object {
-        private val TAG = LogTag.of(DataBrokerConnection::class)
     }
 }
