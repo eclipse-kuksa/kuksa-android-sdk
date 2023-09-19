@@ -7,6 +7,8 @@ group = "org.eclipse.kuksa.vss-processor"
 version = "1.0.0"
 
 dependencies {
+    implementation(project(":vss-core"))
+
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 

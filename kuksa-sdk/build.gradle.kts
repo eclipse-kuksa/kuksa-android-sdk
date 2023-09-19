@@ -38,6 +38,8 @@ android {
 }
 
 dependencies {
+    api(project(":vss-core")) // Models are exposed
+
     // needs to be api as long as we expose ProtoBuf specific objects
     api(libs.grpc.protobuf)
 
