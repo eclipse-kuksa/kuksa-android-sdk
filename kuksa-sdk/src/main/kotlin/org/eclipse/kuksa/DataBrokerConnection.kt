@@ -116,7 +116,7 @@ class DataBrokerConnection internal constructor(
     @JvmOverloads
     fun <T : VssSpecification> subscribe(
         specification: T,
-        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
+        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
         observer: VssSpecificationObserver<T>,
     ) {
         val vssPathToVssProperty = specification.heritage
@@ -195,7 +195,7 @@ class DataBrokerConnection internal constructor(
     @JvmOverloads
     suspend fun <T : VssSpecification> fetchSpecification(
         specification: T,
-        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
+        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
     ): T {
         return withContext(dispatcher) {
             try {

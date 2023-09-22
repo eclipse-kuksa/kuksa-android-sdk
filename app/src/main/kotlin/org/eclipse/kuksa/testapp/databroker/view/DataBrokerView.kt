@@ -95,7 +95,7 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
-import org.eclipse.kuksa.testapp.extension.view.LargeDropdownMenu
+import org.eclipse.kuksa.testapp.extension.view.LazyDropdownMenu
 import org.eclipse.kuksa.testapp.extension.view.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
@@ -413,7 +413,7 @@ fun DataBrokerSpecifications(viewModel: VssSpecificationsViewModel) {
         Headline(name = "Specifications")
 
         var selectedIndex by remember { mutableStateOf(0) }
-        LargeDropdownMenu(
+        LazyDropdownMenu(
             modifier = Modifier
                 .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
             items = viewModel.specifications,

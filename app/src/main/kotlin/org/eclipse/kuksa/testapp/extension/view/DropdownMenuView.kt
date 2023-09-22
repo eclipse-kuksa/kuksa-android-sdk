@@ -88,7 +88,7 @@ fun <T> SimpleExposedDropdownMenuBox(
 }
 
 @Composable
-fun LargeDropdownMenuItem(
+fun LazyDropdownMenuItem(
     text: String,
     selected: Boolean,
     enabled: Boolean,
@@ -116,7 +116,7 @@ fun LargeDropdownMenuItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T> LargeDropdownMenu(
+fun <T> LazyDropdownMenu(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     label: String = "",
@@ -124,11 +124,11 @@ fun <T> LargeDropdownMenu(
     selectedIndex: Int = -1,
     onItemSelected: (index: Int, item: T) -> Unit,
     itemToString: (T) -> String = { it.toString() },
-    drawItem: @Composable (T, Boolean, Boolean, () -> Unit) -> Unit = { item, selected, itemEnabled, onClick ->
-        LargeDropdownMenuItem(
+    nextItem: @Composable (T, Boolean, () -> Unit) -> Unit = { item, selected, onClick ->
+        LazyDropdownMenuItem(
             text = itemToString(item),
             selected = selected,
-            enabled = itemEnabled,
+            enabled = true,
             onClick = onClick,
         )
     },
@@ -165,6 +165,7 @@ fun <T> LargeDropdownMenu(
             shape = RoundedCornerShape(12.dp),
         ) {
             val listState = rememberLazyListState()
+
             if (selectedIndex >= 0) {
                 LaunchedEffect("ScrollToSelected") {
                     listState.scrollToItem(index = selectedIndex)
@@ -174,7 +175,7 @@ fun <T> LargeDropdownMenu(
             LazyColumn(modifier = Modifier.fillMaxWidth(), state = listState) {
                 itemsIndexed(items) { index, item ->
                     val selectedItem = index == selectedIndex
-                    drawItem(item, selectedItem, true) {
+                    nextItem(item, selectedItem) {
                         onItemSelected(index, item)
                         expanded = false
                     }

@@ -55,22 +55,24 @@ import org.eclipse.kuksa.vsscore.model.className
 import org.eclipse.kuksa.vsscore.model.name
 import org.eclipse.kuksa.vsscore.model.parentVssPath
 import org.eclipse.kuksa.vsscore.model.variableName
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
 import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.memberProperties
 
+/**
+ * Generates a [VssNode] for every specification listed in the input file depending on the [VssDefinitionParser].
+ * These nodes are a usable kotlin data class reflection of the specification.
+ *
+ * @param codeGenerator to generate class files with
+ * @param logger to log output with
+ */
 class VssDefinitionProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     private val visitor = VssDefinitionVisitor()
-    private val yamlParser = YamlParser()
+    private val yamlParser = YamlDefinitionParser()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(VssDefinition::class.qualifiedName.toString())
@@ -376,92 +378,6 @@ class VssDefinitionProcessor(
         }
     }
 
-    class YamlParser {
-        fun parseSpecifications(definitionFile: File): List<VssSpecificationElement> {
-            val specificationElements = mutableListOf<VssSpecificationElement>()
-            val vssDefinitionStream = definitionFile.inputStream()
-            val bufferedReader = BufferedReader(InputStreamReader(vssDefinitionStream))
-
-            val yamlAttributes = mutableListOf<String>()
-            while (bufferedReader.ready()) {
-                val line = bufferedReader.readLine().trim()
-                if (line.isEmpty()) {
-                    val specificationElement = parseYamlElement(yamlAttributes)
-                    specificationElements.add(specificationElement)
-
-                    yamlAttributes.clear()
-
-                    continue
-                }
-
-                yamlAttributes.add(line)
-            }
-
-            bufferedReader.close()
-            vssDefinitionStream.close()
-
-            return specificationElements
-        }
-
-        // Example .yaml element:
-        //
-        // Vehicle.ADAS.ABS:
-        //  description: Antilock Braking System signals.
-        //  type: branch
-        //  uuid: 219270ef27c4531f874bbda63743b330
-        private fun parseYamlElement(yamlElement: List<String>): VssSpecificationElement {
-            val elementVssPath = yamlElement.first().substringBefore(":")
-
-            val yamlElementJoined = yamlElement
-                .joinToString(separator = ";")
-                .substringAfter(";") // Remove vssPath (already parsed)
-                .prependIndent(";") // So the parsing is consistent for the first element
-            val members = VssSpecificationElement::class.memberProperties
-            val fieldsToSet = mutableListOf<Pair<String, Any?>>()
-
-            // The VSSPath is an exception because it is parsed from the top level name.
-            val vssPathFieldInfo = Pair("vssPath", elementVssPath)
-            fieldsToSet.add(vssPathFieldInfo)
-
-            // Parse (example: "description: Antilock Braking System signals.") into name + value for all .yaml lines
-            for (member in members) {
-                val memberName = member.name
-                if (!yamlElementJoined.contains(memberName)) continue
-
-                val memberValue = yamlElementJoined
-                    .substringAfter(";$memberName: ") // Also parse "," to not confuse type != datatype
-                    .substringBefore(";")
-
-                val fieldInfo = Pair(memberName, memberValue)
-                fieldsToSet.add(fieldInfo)
-            }
-
-            val vssSpecificationMember = VssSpecificationElement()
-            vssSpecificationMember.setFields(fieldsToSet)
-
-            return vssSpecificationMember
-        }
-
-        private fun Any.setFields(
-            fields: MutableList<Pair<String, Any?>>,
-            remapNames: Map<String, String> = emptyMap(),
-        ) {
-            val nameToProperty = this::class.memberProperties.associateBy(KProperty<*>::name)
-            remapNames.forEach { (propertyName, newName) ->
-                val find = fields.find { it.first == propertyName } ?: return@forEach
-                fields.remove(find)
-                fields.add(Pair(find.first, newName))
-            }
-
-            fields.forEach { (propertyName, propertyValue) ->
-                nameToProperty[propertyName]
-                    .takeIf { it is KMutableProperty<*> }
-                    ?.let { it as KMutableProperty<*> }
-                    ?.setter?.call(this, propertyValue)
-            }
-        }
-    }
-
     data class VssPath(val path: String) {
         val leaf: String
             get() = path.substringAfterLast(".")
@@ -537,6 +453,9 @@ class VssDefinitionProcessor(
     }
 }
 
+/**
+ * Provides the environment for the [VssDefinitionProcessor].
+ */
 class VssDefinitionProcessorProvider : SymbolProcessorProvider {
     override fun create(
         environment: SymbolProcessorEnvironment,
