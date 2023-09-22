@@ -24,9 +24,8 @@ import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.VssSpecificationObserver
 import org.eclipse.kuksa.model.Property
-import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
+import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.vsscore.model.VssSpecification
@@ -35,17 +34,17 @@ interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?
 
     fun connect(connectionInfo: ConnectionInfo, callback: CoroutineCallback<DataBrokerConnection>)
-    fun fetchProperty(property: Property, callback: CoroutineCallback<GetResponse>)
-    fun <T : VssSpecification> fetchSpecification(specification: T, observer: VssSpecificationObserver<T>)
-    fun updateProperty(
+    suspend fun fetchProperty(property: Property): KuksaValV1.GetResponse?
+    suspend fun <T : VssSpecification> fetchSpecification(specification: T): VssSpecification?
+
+    suspend fun updateProperty(
         property: Property,
         datapoint: Datapoint,
-        callback: CoroutineCallback<SetResponse>,
-    )
+    ): SetResponse?
+
     fun subscribe(property: Property, propertyObserver: PropertyObserver)
     fun <T : VssSpecification> subscribe(
         specification: T,
-        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
         propertyObserver: VssSpecificationObserver<T>,
     )
 

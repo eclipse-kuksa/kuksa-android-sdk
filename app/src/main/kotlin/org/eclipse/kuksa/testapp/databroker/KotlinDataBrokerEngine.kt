@@ -37,7 +37,6 @@ import org.eclipse.kuksa.VssSpecificationObserver
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.extension.open
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
@@ -128,39 +127,16 @@ class KotlinDataBrokerEngine(
         }
     }
 
-    override fun fetchProperty(property: Property, callback: CoroutineCallback<GetResponse>) {
-        lifecycleScope.launch {
-            try {
-                val response = dataBrokerConnection?.fetchProperty(property) ?: return@launch
-                callback.onSuccess(response)
-            } catch (e: DataBrokerException) {
-                callback.onError(e)
-            }
-        }
+    override suspend fun fetchProperty(property: Property): GetResponse? {
+        return dataBrokerConnection?.fetchProperty(property)
     }
 
-    override fun <T : VssSpecification> fetchSpecification(
-        specification: T,
-        observer: VssSpecificationObserver<T>,
-    ) {
-        lifecycleScope.launch {
-            dataBrokerConnection?.fetchSpecification(specification, observer = observer)
-        }
+    override suspend fun <T : VssSpecification> fetchSpecification(specification: T): VssSpecification? {
+        return dataBrokerConnection?.fetchSpecification(specification)
     }
 
-    override fun updateProperty(
-        property: Property,
-        datapoint: Datapoint,
-        callback: CoroutineCallback<SetResponse>,
-    ) {
-        lifecycleScope.launch {
-            try {
-                val response = dataBrokerConnection?.updateProperty(property, datapoint) ?: return@launch
-                callback.onSuccess(response)
-            } catch (e: DataBrokerException) {
-                callback.onError(e)
-            }
-        }
+    override suspend fun updateProperty(property: Property, datapoint: Datapoint): SetResponse? {
+        return dataBrokerConnection?.updateProperty(property, datapoint)
     }
 
     override fun subscribe(property: Property, propertyObserver: PropertyObserver) {
@@ -170,10 +146,11 @@ class KotlinDataBrokerEngine(
 
     override fun <T : VssSpecification> subscribe(
         specification: T,
-        fields: List<Types.Field>,
         propertyObserver: VssSpecificationObserver<T>,
     ) {
-        dataBrokerConnection?.subscribe(specification, fields, propertyObserver)
+        lifecycleScope.launch {
+            dataBrokerConnection?.subscribe(specification, observer = propertyObserver)
+        }
     }
 
     override fun disconnect() {

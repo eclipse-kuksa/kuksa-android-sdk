@@ -48,7 +48,7 @@ import org.eclipse.kuksa.vsscore.model.heritage
  */
 class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
-    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     /**
      * Subscribes to the specified vssPath with the provided propertyObserver. Once subscribed the application will be
@@ -113,6 +113,7 @@ class DataBrokerConnection internal constructor(
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
+    @JvmOverloads
     fun <T : VssSpecification> subscribe(
         specification: T,
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
@@ -130,14 +131,25 @@ class DataBrokerConnection internal constructor(
         try {
             Log.d(TAG, "Subscribing to the following properties: $leafProperties")
 
-            // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we would
-            // override the last heir value with every new response.
+            // TODO: Remove as soon as the server supports subscribing to vssPaths which are not VssProperties
+            // Reduces the load on the observer for big VssSpecifications. We not wait for the initial update
+            // of all VssProperties before notifying the observer about the first batch
+            val initialSubscriptionUpdates = leafProperties.associate { it.vssPath to false }.toMutableMap()
+
+            // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we
+            // would override the last heir value with every new response.
             var updatedVssSpecification = specification
             subscribe(leafProperties) { vssPath, updatedValue ->
-                Log.d(TAG, "Update from subscribed property: $vssPath - $updatedValue")
+                Log.v(TAG, "Update from subscribed property: $vssPath - $updatedValue")
 
                 updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
-                observer.onSpecificationChanged(updatedVssSpecification)
+
+                initialSubscriptionUpdates[vssPath] = true
+                val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
+                if (isInitialSubscriptionComplete) {
+                    Log.d(TAG, "Initial update for subscribed property complete: $vssPath - $updatedValue")
+                    observer.onSpecificationChanged(updatedVssSpecification)
+                }
             }
         } catch (e: java.lang.RuntimeException) {
             throw DataBrokerException(e.message, e)
@@ -153,7 +165,7 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun fetchProperty(property: Property): GetResponse {
         Log.d(TAG, "fetchProperty() called with: property: $property")
-        return withContext(defaultDispatcher) {
+        return withContext(dispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
             val entryRequest = KuksaValV1.EntryRequest.newBuilder()
                 .setPath(property.vssPath)
@@ -177,35 +189,37 @@ class DataBrokerConnection internal constructor(
      *
      * @param specification to retrieve
      * @param fields to retrieve
-     * @param observer to notify as soon as the [VssSpecification] was retrieved
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
+    @JvmOverloads
     suspend fun <T : VssSpecification> fetchSpecification(
         specification: T,
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE, Types.Field.FIELD_METADATA),
-        observer: VssSpecificationObserver<T>,
-    ) {
-        try {
-            val property = Property(specification.vssPath, fields)
-            val response = fetchProperty(property)
-            val entries = response.entriesList
+    ): T {
+        return withContext(dispatcher) {
+            try {
+                val property = Property(specification.vssPath, fields)
+                val response = fetchProperty(property)
+                val entries = response.entriesList
 
-            if (entries.isEmpty()) {
-                Log.w(TAG, "No entries found for fetched specification!")
-                return
+                if (entries.isEmpty()) {
+                    Log.w(TAG, "No entries found for fetched specification!")
+                    return@withContext specification
+                }
+
+                // Update every heir specification
+                // TODO: Can be optimized to not replacing the whole heritage line for every child entry one by one
+                var updatedSpecification: T = specification
+                val heritage = updatedSpecification.heritage
+                entries.forEach { entry ->
+                    updatedSpecification = updatedSpecification.copy(entry.path, entry.value, heritage)
+                }
+
+                return@withContext updatedSpecification
+            } catch (e: RuntimeException) {
+                throw DataBrokerException(e.message, e)
             }
-
-            // Update every heir specification
-            // TODO: Can be optimized to not replacing the whole heritage line for every child entry one by one
-            var updatedSpecification: T = specification
-            entries.forEach { entry ->
-                updatedSpecification = updatedSpecification.copy(entry.path, entry.value)
-            }
-
-            observer.onSpecificationChanged(updatedSpecification)
-        } catch (e: RuntimeException) {
-            throw DataBrokerException(e.message, e)
         }
     }
 
@@ -223,7 +237,7 @@ class DataBrokerConnection internal constructor(
         updatedDatapoint: Datapoint,
     ): SetResponse {
         Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
-        return withContext(defaultDispatcher) {
+        return withContext(dispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
             val dataEntry = Types.DataEntry.newBuilder()
                 .setPath(property.vssPath)
