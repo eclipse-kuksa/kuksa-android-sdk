@@ -22,8 +22,6 @@ package org.eclipse.kuksa.testapp.databroker.view
 import android.app.Application
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -130,19 +128,16 @@ fun DataBrokerView(
             Column {
                 val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 DataBrokerConnection(connectionViewModel)
-                AnimatedVisibility(
-                    visible = connectionViewModel.isConnected && dataBrokerMode == DataBrokerMode.MANUAL,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    DataBrokerProperties(vssPropertiesViewModel)
-                }
-                AnimatedVisibility(
-                    visible = connectionViewModel.isConnected && dataBrokerMode == DataBrokerMode.SPECIFICATION,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    DataBrokerSpecifications(vssSpecificationsViewModel)
+                if (connectionViewModel.isConnected) {
+                    AnimatedContent(
+                        targetState = dataBrokerMode,
+                        label = "DataBrokerModeAnimation",
+                    ) { mode ->
+                        when (mode) {
+                            DataBrokerMode.MANUAL -> DataBrokerProperties(vssPropertiesViewModel)
+                            DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssSpecificationsViewModel)
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
             }
