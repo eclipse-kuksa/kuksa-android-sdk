@@ -19,15 +19,13 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class OutputViewModel : ViewModel() {
-    var output: String by mutableStateOf("")
+    var output = mutableStateListOf<String>()
         private set
 
     fun appendOutput(text: String) {
@@ -38,6 +36,6 @@ class OutputViewModel : ViewModel() {
     }
 
     fun clear() {
-        output = ""
+        output.clear()
     }
 }

@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -579,6 +578,8 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
     val shape = RoundedCornerShape(20.dp, 20.dp, 0.dp, 0.dp)
     val scrollState = rememberScrollState(0)
 
+    val output = viewModel.output
+
     Surface(
         modifier = modifier.height(500.dp),
         color = MaterialTheme.colorScheme.primary,
@@ -586,19 +587,20 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
     ) {
         Column(modifier = Modifier.verticalScroll(scrollState)) {
             Headline(name = "Output", color = Color.White)
-            Text(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-                    .padding(start = DefaultElementPadding, end = DefaultElementPadding),
-                text = viewModel.output,
-                textAlign = TextAlign.Start,
-                onTextLayout = {
-                    scope.launch {
-                        scrollState.animateScrollTo(scrollState.maxValue)
-                    }
-                },
-            )
+            output.forEach { outputElement ->
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = DefaultElementPadding, end = DefaultElementPadding),
+                    text = outputElement,
+                    textAlign = TextAlign.Start,
+                    onTextLayout = {
+                        scope.launch {
+                            scrollState.animateScrollTo(scrollState.maxValue)
+                        }
+                    },
+                )
+            }
         }
     }
 }
