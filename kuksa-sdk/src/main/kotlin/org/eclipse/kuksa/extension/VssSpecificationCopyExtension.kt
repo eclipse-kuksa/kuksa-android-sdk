@@ -52,7 +52,7 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
             Int::class -> int32
             Long::class -> int64
             UInt::class -> uint32.toUInt()
-            Array<String>::class -> stringArray.valuesList
+            Array<String>::class -> stringArray.valuesList.toList().toTypedArray()
             IntArray::class -> int32Array.valuesList.toIntArray()
             Types.BoolArray::class -> boolArray.valuesList.toBooleanArray()
 
@@ -60,7 +60,7 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
         }
 
         val valueMap = mapOf("value" to value)
-        return this@copy.copy(valueMap) as VssProperty<T>
+        return this@copy.copy(valueMap)
     }
 }
 
@@ -70,17 +70,24 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
  *
  * @param vssPath which is used to find the correct heir in the [VssSpecification]
  * @param updatedValue which will be updated inside the matching [VssProperty]
+ * @param consideredHeritage the heritage of the [VssSpecification] which is considered for searching. The default
+ * will always generate the up to date heritage of the current [VssSpecification]. For performance reason it may make
+ * sense to cache the input and reuse the [Collection] here.
  * @return a copy where the heir with the matching [vssPath] is replaced with a another copy
  *
  * @throws [NoSuchElementException] if the class has no "copy" method
  * @throws [IllegalArgumentException] if the copied types do not match
  */
 @Suppress("UNCHECKED_CAST")
-fun <T : VssSpecification> T.copy(vssPath: String, updatedValue: Datapoint): T {
-    val vssProperty = heritage
+fun <T : VssSpecification> T.copy(
+    vssPath: String,
+    updatedValue: Datapoint,
+    consideredHeritage: Collection<VssSpecification> = heritage,
+): T {
+    val vssSpecifications = consideredHeritage + this
+    val vssProperty = vssSpecifications
         .filterIsInstance<VssProperty<*>>()
-        .find { it.vssPath == vssPath }
-        ?: this as VssProperty<*> // The given specification is already a VssProperty
+        .find { it.vssPath == vssPath } ?: return this
 
     val updatedVssProperty = vssProperty.copy(updatedValue)
     val relevantChildren = findHeritageLine(vssProperty).toMutableList()

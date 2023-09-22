@@ -39,6 +39,9 @@ interface VssNode {
         get() = null
 }
 
+/**
+ * In addition of being a [VssNode] it represents the most common properties of a VSS specification.
+ */
 interface VssSpecification : VssNode {
     val uuid: String
     val vssPath: String
@@ -47,6 +50,9 @@ interface VssSpecification : VssNode {
     val comment: String
 }
 
+/**
+ * Some [VssSpecification] may have an additional [value] property. These are children which are not parents.
+ */
 interface VssProperty<T : Any> : VssSpecification {
     val value: T
 }
@@ -56,6 +62,19 @@ interface VssProperty<T : Any> : VssSpecification {
  */
 val VssSpecification.vssPathComponents: List<String>
     get() = vssPath.split(".")
+
+/**
+ * Generates a heritage line with the [VssSpecification.vssPath] from the most known parent.
+ * E.g. "Vehicle.OBD.Catalyst" -> [Vehicle, Vehicle.OBD, Vehicle.OBD.Catalyst]
+ */
+val VssSpecification.vssPathHeritageLine: List<String>
+    get() {
+        val components = vssPathComponents
+        return components.foldIndexed(emptyList()) { index, accumulation, _ ->
+            val nextComponent = components.subList(0, index + 1)
+            accumulation + nextComponent.joinToString(".")
+        }
+    }
 
 /**
  * Parses a name from the [VssSpecification.vssPath].
@@ -86,10 +105,16 @@ val VssSpecification.parentKey: String
 val VssSpecification.heritage: List<VssSpecification>
     get() = children.toList() + children.flatMap { it.heritage }
 
+/**
+ * Creates an inheritance line to the given heir. Similar to [vssPathHeritageLine] but the other way around.
+ *
+ * @param heir where the inheritance line should stop
+ * @return a [Collection] of the full heritage line in the form of [VssSpecification]
+ */
 fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecification> {
-    val specificationKeys = heir.vssPathComponents
+    val specificationKeys = heir.vssPathHeritageLine
     return heritage.filter { child ->
-        specificationKeys.contains(child.name)
+        specificationKeys.contains(child.vssPath)
     }
 }
 
