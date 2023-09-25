@@ -1,13 +1,14 @@
-package org.eclipse.kuksa.vssprocessor
+package org.eclipse.kuksa.vssprocessor.parser
 
+import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import kotlin.reflect.full.memberProperties
 
 internal class YamlDefinitionParser : VssDefinitionParser {
-    override fun parseSpecifications(definitionFile: File): List<VssDefinitionProcessor.VssSpecificationElement> {
-        val specificationElements = mutableListOf<VssDefinitionProcessor.VssSpecificationElement>()
+    override fun parseSpecifications(definitionFile: File): List<VssSpecificationSpecModel> {
+        val specificationElements = mutableListOf<VssSpecificationSpecModel>()
         val vssDefinitionStream = definitionFile.inputStream()
         val bufferedReader = BufferedReader(InputStreamReader(vssDefinitionStream))
 
@@ -38,14 +39,14 @@ internal class YamlDefinitionParser : VssDefinitionParser {
     //  description: Antilock Braking System signals.
     //  type: branch
     //  uuid: 219270ef27c4531f874bbda63743b330
-    private fun parseYamlElement(yamlElement: List<String>): VssDefinitionProcessor.VssSpecificationElement {
+    private fun parseYamlElement(yamlElement: List<String>): VssSpecificationSpecModel {
         val elementVssPath = yamlElement.first().substringBefore(":")
 
         val yamlElementJoined = yamlElement
             .joinToString(separator = ";")
             .substringAfter(";") // Remove vssPath (already parsed)
             .prependIndent(";") // So the parsing is consistent for the first element
-        val members = VssDefinitionProcessor.VssSpecificationElement::class.memberProperties
+        val members = VssSpecificationSpecModel::class.memberProperties
         val fieldsToSet = mutableListOf<Pair<String, Any?>>()
 
         // The VSSPath is an exception because it is parsed from the top level name.
@@ -65,7 +66,7 @@ internal class YamlDefinitionParser : VssDefinitionParser {
             fieldsToSet.add(fieldInfo)
         }
 
-        val vssSpecificationMember = VssDefinitionProcessor.VssSpecificationElement()
+        val vssSpecificationMember = VssSpecificationSpecModel()
         vssSpecificationMember.setFields(fieldsToSet)
 
         return vssSpecificationMember

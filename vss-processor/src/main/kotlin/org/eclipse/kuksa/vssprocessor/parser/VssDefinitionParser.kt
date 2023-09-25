@@ -1,6 +1,6 @@
-package org.eclipse.kuksa.vssprocessor
+package org.eclipse.kuksa.vssprocessor.parser
 
-import org.eclipse.kuksa.vssprocessor.VssDefinitionProcessor.VssSpecificationElement
+import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
@@ -8,16 +8,16 @@ import kotlin.reflect.full.memberProperties
 
 internal interface VssDefinitionParser {
     /**
-     * @param definitionFile to parse [VssSpecificationElement] with
+     * @param definitionFile to parse [VssSpecificationSpecModel] with
      */
-    fun parseSpecifications(definitionFile: File): List<VssSpecificationElement>
+    fun parseSpecifications(definitionFile: File): List<VssSpecificationSpecModel>
 }
 
 /**
  * @param fields to set via reflection. Pair<PropertyName, anyValue>.
  * @param remapNames which can be used if the propertyName does not match with the input name
  */
-fun VssSpecificationElement.setFields(
+internal fun VssSpecificationSpecModel.setFields(
     fields: List<Pair<String, Any?>>,
     remapNames: Map<String, String> = emptyMap(),
 ) {
