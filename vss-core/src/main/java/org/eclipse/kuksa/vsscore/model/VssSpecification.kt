@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa.vsscore.model
 
+import org.eclipse.kuksa.vsscore.model.extension.toCamelCase
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -124,11 +125,7 @@ fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecifica
  */
 val VssSpecification.variableName: String // Fixes duplicates e.g. type as variable and nested type
     get() {
-        val fullName = variablePrefix + name
-
-        // Names like "ABS" should not be called "aBS" but rather "abs"
-        val (_, notUpperCases) = name.partition { it.isUpperCase() }
-        if (notUpperCases.isEmpty()) return fullName.lowercase()
+        val fullName = (variablePrefix + name).toCamelCase
 
         return fullName.replaceFirstChar { it.lowercase() }
     }
@@ -137,7 +134,9 @@ val VssSpecification.variableName: String // Fixes duplicates e.g. type as varia
  * Similar to the [variableName] but does not lowercase the [name] wherever necessary.
  */
 val VssSpecification.className: String
-    get() = classNamePrefix + name
+    get() {
+        return (classNamePrefix + name).toCamelCase.replaceFirstChar { it.uppercase() }
+    }
 
 private val classNamePrefix: String
     get() = "Vss"

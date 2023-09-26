@@ -101,7 +101,7 @@ internal class VssSpecificationSpecModel(
             superInterfaces.add(vssPropertyInterface)
         }
 
-        val propertySpec = createVssSpecificationSpecs(vssLeafName, packageName = packageName)
+        val propertySpec = createVssSpecificationSpecs(className, packageName = packageName)
         propertySpecs.addAll(propertySpec)
 
         // Parses all specifications into properties
@@ -111,7 +111,7 @@ internal class VssSpecificationSpecModel(
             val hasAmbiguousName = nestedClasses.contains(childSpecification.name)
             val uniquePackageName = if (hasAmbiguousName) "" else packageName
 
-            val childPropertySpec = createVssSpecificationSpecs(vssLeafName, uniquePackageName, childSpecification)
+            val childPropertySpec = createVssSpecificationSpecs(className, uniquePackageName, childSpecification)
             propertySpecs.addAll(childPropertySpec)
 
             // Nested VssSpecification properties should be added as constructor parameters
@@ -136,8 +136,7 @@ internal class VssSpecificationSpecModel(
         val nodeSpecs = createVssNodeSpecs(childSpecifications)
         propertySpecs.addAll(nodeSpecs)
 
-        val prefixedClassName = CLASS_NAME_PREFIX + vssLeafName
-        val className = ClassName(packageName, prefixedClassName)
+        val className = ClassName(packageName, className)
 
         return TypeSpec.classBuilder(className)
             .addModifiers(KModifier.DATA)
@@ -202,14 +201,16 @@ internal class VssSpecificationSpecModel(
             packageName: String,
         ): PropertySpec {
             val prefixedTypeName = ClassName(packageName, specification.className)
+            val variableName = specification.variableName
+
             return PropertySpec
-                .builder(specification.variableName, prefixedTypeName)
-                .initializer(specification.variableName)
+                .builder(variableName, prefixedTypeName)
+                .initializer(variableName)
                 .build()
         }
 
         // Add primitive data types
-        if (specification.name == className) {
+        if (specification.className == className) {
             members.forEach { member ->
                 val primitiveDataTypeSpec = createInterfaceDataTypeSpec(member)
                 propertySpecs.add(primitiveDataTypeSpec)

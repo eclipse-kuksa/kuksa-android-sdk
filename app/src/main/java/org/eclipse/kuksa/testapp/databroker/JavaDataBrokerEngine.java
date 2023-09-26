@@ -152,7 +152,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         });
     }
 
-    @androidx.annotation.Nullable
+    @Nullable
     @Override
     public Object fetchProperty(@NonNull Property property, @NonNull Continuation<? super GetResponse> $completion) {
         if (dataBrokerConnection == null) {
@@ -162,7 +162,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         return dataBrokerConnection.fetchProperty(property, $completion);
     }
 
-    @androidx.annotation.Nullable
+    @Nullable
     @Override
     public <T extends VssSpecification> Object fetchSpecification(
         @NonNull T specification,
@@ -174,7 +174,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         return dataBrokerConnection.fetchSpecification(specification, $completion);
     }
 
-    @androidx.annotation.Nullable
+    @Nullable
     @Override
     public Object updateProperty(
         @NonNull Property property,

@@ -151,7 +151,7 @@ class DataBrokerConnection internal constructor(
                     observer.onSpecificationChanged(updatedVssSpecification)
                 }
             }
-        } catch (e: java.lang.RuntimeException) {
+        } catch (e: RuntimeException) {
             throw DataBrokerException(e.message, e)
         }
     }
