@@ -13,14 +13,7 @@ android {
     kotlinOptions {
         jvmTarget = libs.versions.jvmTarget.get()
     }
-    kotlin {
-        sourceSets.main {
-            kotlin.srcDir("build/generated/ksp/main/kotlin")
-        }
-        sourceSets.test {
-            kotlin.srcDir("build/generated/ksp/test/kotlin")
-        }
-    }
+
     buildFeatures {
         compose = true
     }
@@ -57,7 +50,10 @@ android {
                 isDebuggable = true
 
                 isMinifyEnabled = true
-                proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro",
+                )
             }
         }
     }
@@ -84,7 +80,6 @@ android {
 
 dependencies {
     implementation(project(":kuksa-sdk"))
-    implementation(project(":vss-processor"))
     ksp(project(":vss-processor"))
 
     implementation(libs.androidx.appcompat)

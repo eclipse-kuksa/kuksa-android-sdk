@@ -1,0 +1,2 @@
+-keep class org.eclipse.kuksa.proto.v1.** { *; }
+-keep class com.google.protobuf.** { *; }
