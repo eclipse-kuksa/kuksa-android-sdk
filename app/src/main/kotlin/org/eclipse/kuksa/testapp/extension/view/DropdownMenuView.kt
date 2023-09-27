@@ -29,13 +29,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun <T> SimpleExposedDropdownMenuBox(
     modifier: Modifier = Modifier,
@@ -44,6 +46,8 @@ fun <T> SimpleExposedDropdownMenuBox(
     transformValue: (T) -> String = { it.toString() },
     onValueChange: (T) -> Unit = {},
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     var expanded by remember { mutableStateOf(false) }
     val firstElement = list.firstOrNull()?.let {
         transformValue(it)
@@ -80,6 +84,7 @@ fun <T> SimpleExposedDropdownMenuBox(
                         expanded = false
                         selectedText = transformValue(it)
                         onValueChange(it)
+                        keyboardController?.hide()
                     },
                 )
             }

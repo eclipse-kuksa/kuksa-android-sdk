@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.vssprocessor
+package org.eclipse.kuksa.vsscore.model.annotation
 
 /**
  * Add this annotation to any class to trigger the model generation (Kotlin Symbol Processing) for the given

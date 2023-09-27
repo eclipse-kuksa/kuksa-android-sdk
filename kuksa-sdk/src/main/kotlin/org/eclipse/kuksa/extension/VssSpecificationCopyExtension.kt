@@ -2,11 +2,11 @@ package org.eclipse.kuksa.extension
 
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.vsscore.model.VssProperty
-import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.findHeritageLine
-import org.eclipse.kuksa.vsscore.model.heritage
-import org.eclipse.kuksa.vsscore.model.variableName
+import org.eclipse.kuksa.vsscore.model.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.model.findHeritageLine
+import org.eclipse.kuksa.vsscore.model.model.heritage
+import org.eclipse.kuksa.vsscore.model.model.variableName
 
 /**
  * Creates a copy of the [VssSpecification] where the whole [VssSpecification.findHeritageLine] is replaced

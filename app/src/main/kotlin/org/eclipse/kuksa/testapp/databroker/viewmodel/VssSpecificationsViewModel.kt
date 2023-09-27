@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.eclipse.kuksa.vss.VssVehicle
-import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.heritage
+import org.eclipse.kuksa.vsscore.model.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.model.heritage
 
 class VssSpecificationsViewModel : ViewModel() {
     var onGetSpecification: (specification: VssSpecification) -> Unit = { }

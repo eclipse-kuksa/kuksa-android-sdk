@@ -36,9 +36,9 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.VALGrpc
-import org.eclipse.kuksa.vsscore.model.VssProperty
-import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.heritage
+import org.eclipse.kuksa.vsscore.model.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.model.heritage
 
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the

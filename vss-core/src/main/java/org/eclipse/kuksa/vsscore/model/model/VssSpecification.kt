@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.vsscore.model
+package org.eclipse.kuksa.vsscore.model.model
 
 import org.eclipse.kuksa.vsscore.model.extension.toCamelCase
 import kotlin.reflect.KClass

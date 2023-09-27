@@ -28,7 +28,7 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.model.VssSpecification
 
 interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?

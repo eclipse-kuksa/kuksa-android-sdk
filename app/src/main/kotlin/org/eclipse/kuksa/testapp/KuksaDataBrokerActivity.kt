@@ -51,8 +51,8 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
-import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vssprocessor.VssDefinition
+import org.eclipse.kuksa.vsscore.model.annotation.VssDefinition
+import org.eclipse.kuksa.vsscore.model.model.VssSpecification
 
 @VssDefinition("vss_rel_4.0.yaml")
 class KuksaDataBrokerActivity : ComponentActivity() {

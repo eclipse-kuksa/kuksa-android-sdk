@@ -20,7 +20,7 @@
 package org.eclipse.kuksa
 
 import org.eclipse.kuksa.proto.v1.Types.DataEntry
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.model.VssSpecification
 
 /**
  * The Observer is used to notify about changes to subscribed properties.

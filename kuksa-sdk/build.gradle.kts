@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "org.eclipse.kuksa.sdk"
+    namespace = "org.eclipse.kuksa"
     compileSdk = 34
     version = "1.0.0"
 
