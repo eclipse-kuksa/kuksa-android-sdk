@@ -49,7 +49,7 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 import org.eclipse.kuksa.vsscore.model.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.model.VssSpecification

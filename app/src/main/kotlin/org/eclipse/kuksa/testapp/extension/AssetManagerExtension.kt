@@ -20,7 +20,7 @@
 package org.eclipse.kuksa.testapp.extension
 
 import android.content.res.AssetManager
-import org.eclipse.kuksa.testapp.model.Certificate
+import org.eclipse.kuksa.testapp.databroker.model.Certificate
 import java.io.IOException
 import java.io.InputStream
 

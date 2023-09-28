@@ -36,8 +36,8 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
 import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
 import org.eclipse.kuksa.testapp.extension.AssetManagerExtensionKt;
-import org.eclipse.kuksa.testapp.model.Certificate;
-import org.eclipse.kuksa.testapp.model.ConnectionInfo;
+import org.eclipse.kuksa.testapp.databroker.model.Certificate;
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
 import org.eclipse.kuksa.vsscore.model.model.VssSpecification;
 import org.jetbrains.annotations.NotNull;
 

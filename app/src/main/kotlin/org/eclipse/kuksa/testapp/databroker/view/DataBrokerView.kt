@@ -47,7 +47,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -63,8 +62,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,10 +81,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
@@ -95,9 +91,11 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
-import org.eclipse.kuksa.testapp.extension.view.LazyDropdownMenu
-import org.eclipse.kuksa.testapp.extension.view.SimpleExposedDropdownMenuBox
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.extension.compose.Headline
+import org.eclipse.kuksa.testapp.extension.compose.LazyDropdownMenu
+import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
+import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
+import org.eclipse.kuksa.testapp.extension.compose.rememberCountdown
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
 val DefaultEdgePadding = 25.dp
@@ -200,59 +198,6 @@ private fun TopBar(
             }
         },
     )
-}
-
-@Composable
-fun OverflowMenu(content: @Composable () -> Unit) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    IconButton(onClick = {
-        showMenu = !showMenu
-    }) {
-        Icon(
-            imageVector = Icons.Outlined.MoreVert,
-            contentDescription = "Options",
-        )
-    }
-    DropdownMenu(
-        expanded = showMenu,
-        onDismissRequest = { showMenu = false },
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun Headline(name: String, modifier: Modifier = Modifier, color: Color = Color.Black) {
-    Text(
-        text = name,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 15.dp, bottom = 15.dp),
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.titleLarge,
-        color = color,
-    )
-}
-
-@Composable
-fun rememberCountdown(
-    initialMillis: Long,
-    step: Long = 1000,
-): MutableState<Long> {
-    val timeLeft = remember { mutableStateOf(initialMillis) }
-
-    LaunchedEffect(initialMillis, step) {
-        while (isActive && timeLeft.value > 0) {
-            val newTimeLeft = (timeLeft.value - step).coerceAtLeast(0)
-            timeLeft.value = newTimeLeft
-
-            val maximumDelay = step.coerceAtMost(newTimeLeft)
-            delay(maximumDelay)
-        }
-    }
-
-    return timeLeft
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

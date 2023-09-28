@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.extension.view
+package org.eclipse.kuksa.testapp.extension.compose
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
