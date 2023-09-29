@@ -62,7 +62,8 @@ internal class VssSpecificationSpecModel(
             return when (datatype) {
                 "string" -> String::class.asTypeName()
                 "boolean" -> Boolean::class.asTypeName()
-                "uint8", "uint16", "uint32" -> UInt::class.asTypeName()
+                // Do not use UInt because it is incompatible with @JvmOverloads annotation
+                "uint8", "uint16", "uint32" -> Int::class.asTypeName()
                 "int8", "int16", "int32" -> Int::class.asTypeName()
                 "float" -> Float::class.asTypeName()
                 "double" -> Double::class.asTypeName()
@@ -100,6 +101,7 @@ internal class VssSpecificationSpecModel(
 
         val nestedChildSpecs = mutableListOf<TypeSpec>()
         val constructorBuilder = FunSpec.constructorBuilder()
+            .addAnnotation(JvmOverloads::class)
         val propertySpecs = mutableListOf<PropertySpec>()
         val superInterfaces = mutableSetOf<TypeName>(VssSpecification::class.asTypeName())
 
