@@ -62,7 +62,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     val random = Random(System.currentTimeMillis())
                     val newValue = random.nextFloat()
                     val datapoint = Datapoint.newBuilder().setFloat(newValue).build()
-                    dataBrokerConnection.updateProperty(property, datapoint)
+                    dataBrokerConnection.update(property, datapoint)
 
                     then("The #onPropertyChanged callback is triggered with the new value") {
                         val capturingSlot = slot<Types.DataEntry>()
@@ -79,7 +79,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     `when`("The same value is set again") {
                         clearMocks(propertyObserver)
 
-                        dataBrokerConnection.updateProperty(property, datapoint)
+                        dataBrokerConnection.update(property, datapoint)
 
                         then("The #onPropertyChangedCallback should NOT be triggered again") {
                             verify(exactly = 0) { propertyObserver.onPropertyChanged(any(), any()) }
@@ -91,14 +91,14 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val validDatapoint = createRandomFloatDatapoint()
             `when`("Updating the Property with a valid Datapoint") {
                 // make sure that the value is set and known to us
-                val response = dataBrokerConnection.updateProperty(property, validDatapoint)
+                val response = dataBrokerConnection.update(property, validDatapoint)
 
                 then("No error should appear") {
                     assertFalse(response.hasError())
                 }
 
                 and("When fetching it afterwards") {
-                    val response1 = dataBrokerConnection.fetchProperty(property)
+                    val response1 = dataBrokerConnection.fetch(property)
 
                     then("The response contains the correctly set value") {
                         val entriesList = response1.entriesList
@@ -111,7 +111,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
             `when`("Updating the Property with a Datapoint of a wrong/different type") {
                 val datapoint = createRandomIntDatapoint()
-                val response = dataBrokerConnection.updateProperty(property, datapoint)
+                val response = dataBrokerConnection.update(property, datapoint)
 
                 then("It should fail with an errorCode 400 (type mismatch)") {
                     val errorsList = response.errorsList
@@ -122,7 +122,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 }
 
                 and("Fetching it afterwards") {
-                    val getResponse = dataBrokerConnection.fetchProperty(property)
+                    val getResponse = dataBrokerConnection.fetch(property)
 
                     then("The response contains the correctly set value") {
                         val entriesList = getResponse.entriesList
@@ -151,7 +151,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             `when`("Trying to update the INVALID property") {
                 // make sure that the value is set and known to us
                 val datapoint = createRandomFloatDatapoint()
-                val response = dataBrokerConnection.updateProperty(property, datapoint)
+                val response = dataBrokerConnection.update(property, datapoint)
 
                 then("It should fail with an errorCode 404 (path not found)") {
                     val errorsList = response.errorsList
@@ -163,7 +163,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             }
 
             `when`("Trying to fetch the INVALID property") {
-                val response = dataBrokerConnection.fetchProperty(property)
+                val response = dataBrokerConnection.fetch(property)
 
                 then("The response should not contain any entries") {
                     assertEquals(0, response.entriesList.size)

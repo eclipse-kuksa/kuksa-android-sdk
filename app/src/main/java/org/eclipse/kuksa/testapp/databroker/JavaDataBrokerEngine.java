@@ -35,10 +35,10 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
 import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
-import org.eclipse.kuksa.testapp.extension.AssetManagerExtensionKt;
 import org.eclipse.kuksa.testapp.databroker.model.Certificate;
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
-import org.eclipse.kuksa.vsscore.model.model.VssSpecification;
+import org.eclipse.kuksa.testapp.extension.AssetManagerExtensionKt;
+import org.eclipse.kuksa.vsscore.model.VssSpecification;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -55,7 +55,6 @@ import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.TlsChannelCredentials;
-import kotlin.coroutines.Continuation;
 
 public class JavaDataBrokerEngine implements DataBrokerEngine {
     private static final String TAG = JavaDataBrokerEngine.class.getSimpleName();
@@ -152,40 +151,38 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         });
     }
 
-    @Nullable
     @Override
-    public Object fetchProperty(@NonNull Property property, @NonNull Continuation<? super GetResponse> $completion) {
+    public void fetch(@NonNull Property property, @NonNull CoroutineCallback<GetResponse> callback) {
         if (dataBrokerConnection == null) {
-            return null;
+            return;
         }
 
-        return dataBrokerConnection.fetchProperty(property, $completion);
+        dataBrokerConnection.fetch(property, callback);
     }
 
-    @Nullable
     @Override
-    public <T extends VssSpecification> Object fetchSpecification(
+    public <T extends VssSpecification> void fetch(
         @NonNull T specification,
-        @NonNull Continuation<? super VssSpecification> $completion) {
-        if (dataBrokerConnection == null) {
-            return null;
-        }
-
-        return dataBrokerConnection.fetchSpecification(specification, $completion);
-    }
-
-    @Nullable
-    @Override
-    public Object updateProperty(
-        @NonNull Property property,
-        @NonNull Datapoint datapoint,
-        @NonNull Continuation<? super SetResponse> $completion
+        @NonNull CoroutineCallback<T> callback
     ) {
         if (dataBrokerConnection == null) {
-            return null;
+            return;
         }
 
-        return dataBrokerConnection.updateProperty(property, datapoint, $completion);
+        dataBrokerConnection.fetch(specification, callback);
+    }
+
+    @Override
+    public void update(
+        @NonNull Property property,
+        @NonNull Datapoint datapoint,
+        @NonNull CoroutineCallback<SetResponse> callback
+    ) {
+        if (dataBrokerConnection == null) {
+            return;
+        }
+
+        dataBrokerConnection.update(property, datapoint, callback);
     }
 
     @Override

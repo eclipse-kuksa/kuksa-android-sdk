@@ -24,25 +24,29 @@ import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.VssSpecificationObserver
 import org.eclipse.kuksa.model.Property
-import org.eclipse.kuksa.proto.v1.KuksaValV1
+import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.vsscore.model.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?
 
     fun connect(connectionInfo: ConnectionInfo, callback: CoroutineCallback<DataBrokerConnection>)
-    suspend fun fetchProperty(property: Property): KuksaValV1.GetResponse?
-    suspend fun <T : VssSpecification> fetchSpecification(specification: T): VssSpecification?
 
-    suspend fun updateProperty(
+    fun fetch(property: Property, callback: CoroutineCallback<GetResponse>)
+
+    fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>)
+
+    fun update(
         property: Property,
         datapoint: Datapoint,
-    ): SetResponse?
+        callback: CoroutineCallback<SetResponse>,
+    )
 
     fun subscribe(property: Property, propertyObserver: PropertyObserver)
+
     fun <T : VssSpecification> subscribe(
         specification: T,
         propertyObserver: VssSpecificationObserver<T>,

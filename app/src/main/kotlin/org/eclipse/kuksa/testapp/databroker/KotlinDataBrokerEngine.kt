@@ -38,9 +38,9 @@ import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.testapp.extension.open
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.vsscore.model.model.VssSpecification
+import org.eclipse.kuksa.testapp.extension.open
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 import java.io.IOException
 
 class KotlinDataBrokerEngine(
@@ -127,16 +127,37 @@ class KotlinDataBrokerEngine(
         }
     }
 
-    override suspend fun fetchProperty(property: Property): GetResponse? {
-        return dataBrokerConnection?.fetchProperty(property)
+    override fun fetch(property: Property, callback: CoroutineCallback<GetResponse>) {
+        lifecycleScope.launch {
+            try {
+                val response = dataBrokerConnection?.fetch(property) ?: return@launch
+                callback.onSuccess(response)
+            } catch (e: DataBrokerException) {
+                callback.onError(e)
+            }
+        }
     }
 
-    override suspend fun <T : VssSpecification> fetchSpecification(specification: T): VssSpecification? {
-        return dataBrokerConnection?.fetchSpecification(specification)
+    override fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>) {
+        lifecycleScope.launch {
+            try {
+                val response = dataBrokerConnection?.fetch(specification) ?: return@launch
+                callback.onSuccess(response)
+            } catch (e: DataBrokerException) {
+                callback.onError(e)
+            }
+        }
     }
 
-    override suspend fun updateProperty(property: Property, datapoint: Datapoint): SetResponse? {
-        return dataBrokerConnection?.updateProperty(property, datapoint)
+    override fun update(property: Property, datapoint: Datapoint, callback: CoroutineCallback<SetResponse>) {
+        lifecycleScope.launch {
+            try {
+                val response = dataBrokerConnection?.update(property, datapoint) ?: return@launch
+                callback.onSuccess(response)
+            } catch (e: DataBrokerException) {
+                callback.onError(e)
+            }
+        }
     }
 
     override fun subscribe(property: Property, propertyObserver: PropertyObserver) {

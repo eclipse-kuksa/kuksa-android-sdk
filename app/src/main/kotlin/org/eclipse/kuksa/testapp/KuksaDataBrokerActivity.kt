@@ -29,15 +29,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
-import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.proto.v1.KuksaValV1
+import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.JavaDataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.KotlinDataBrokerEngine
@@ -162,48 +161,56 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     private fun fetchProperty(property: Property) {
         Log.d(TAG, "Fetch property: $property")
 
-        lifecycleScope.launch {
-            try {
-                val result = dataBrokerEngine.fetchProperty(property)
+        dataBrokerEngine.fetch(
+            property,
+            object : CoroutineCallback<GetResponse>() {
+                override fun onSuccess(result: GetResponse?) {
+                    val automaticValueType = result?.metadata?.valueType ?: Datapoint.ValueCase.VALUE_NOT_SET
+                    Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
 
-                val automaticValueType = result?.metadata?.valueType ?: ValueCase.VALUE_NOT_SET
-                Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
+                    val errorsList = result?.errorsList
+                    errorsList?.forEach {
+                        outputViewModel.appendOutput(it.toString())
 
-                val errorsList = result?.errorsList
-                errorsList?.forEach {
-                    outputViewModel.appendOutput(it.toString())
-                    return@launch
+                        return
+                    }
+
+                    val vssProperties = vssPropertiesViewModel.vssProperties
+                        .copy(valueType = automaticValueType)
+                    vssPropertiesViewModel.updateVssProperties(vssProperties)
+
+                    outputViewModel.appendOutput(result.toString())
                 }
 
-                val vssProperties = vssPropertiesViewModel.vssProperties
-                    .copy(valueType = automaticValueType)
-                vssPropertiesViewModel.updateVssProperties(vssProperties)
-
-                outputViewModel.appendOutput(result.toString())
-            } catch (error: DataBrokerException) {
-                outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
-            }
-        }
+                override fun onError(error: Throwable) {
+                    outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
+                }
+            },
+        )
     }
 
     private fun updateProperty(property: Property, datapoint: Datapoint) {
         Log.d(TAG, "Update property: $property dataPoint: $datapoint, type: ${datapoint.valueCase}")
 
-        lifecycleScope.launch {
-            try {
-                val result = dataBrokerEngine.updateProperty(property, datapoint)
+        dataBrokerEngine.update(
+            property,
+            datapoint,
+            object : CoroutineCallback<KuksaValV1.SetResponse>() {
+                override fun onSuccess(result: KuksaValV1.SetResponse?) {
+                    val errorsList = result?.errorsList
+                    errorsList?.forEach {
+                        outputViewModel.appendOutput(it.toString())
+                        return
+                    }
 
-                val errorsList = result?.errorsList
-                errorsList?.forEach {
-                    outputViewModel.appendOutput(it.toString())
-                    return@launch
+                    outputViewModel.appendOutput(result.toString())
                 }
 
-                outputViewModel.appendOutput(result.toString())
-            } catch (error: DataBrokerException) {
-                outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
-            }
-        }
+                override fun onError(error: Throwable) {
+                    outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
+                }
+            },
+        )
     }
 
     private fun subscribeProperty(property: Property) {
@@ -215,15 +222,19 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     }
 
     private fun fetchSpecification(specification: VssSpecification) {
-        lifecycleScope.launch {
-            try {
-                val updatedSpecification = dataBrokerEngine.fetchSpecification(specification)
-                Log.d(TAG, "Fetched specification: $updatedSpecification")
-                outputViewModel.appendOutput("Fetched specification: $updatedSpecification")
-            } catch (error: DataBrokerException) {
-                outputViewModel.appendOutput("Could not fetch specification: ${error.message}")
-            }
-        }
+        dataBrokerEngine.fetch(
+            specification,
+            object : CoroutineCallback<VssSpecification>() {
+                override fun onSuccess(result: VssSpecification?) {
+                    Log.d(TAG, "Fetched specification: $result")
+                    outputViewModel.appendOutput("Fetched specification: $result")
+                }
+
+                override fun onError(error: Throwable) {
+                    outputViewModel.appendOutput("Could not fetch specification: ${error.message}")
+                }
+            },
+        )
     }
 
     private fun subscribeSpecification(specification: VssSpecification) {

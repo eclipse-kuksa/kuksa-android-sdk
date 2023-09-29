@@ -90,7 +90,7 @@ class KotlinActivity : AppCompatActivity() {
     fun fetchProperty(property: Property) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.fetchProperty(property) ?: return@launch
+                val response = dataBrokerConnection?.fetch(property) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle errors
@@ -101,7 +101,7 @@ class KotlinActivity : AppCompatActivity() {
     fun updateProperty(property: Property, datapoint: Datapoint) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.updateProperty(property, datapoint) ?: return@launch
+                val response = dataBrokerConnection?.update(property, datapoint) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle errors
