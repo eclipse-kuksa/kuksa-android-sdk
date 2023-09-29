@@ -1,4 +1,4 @@
-package org.eclipse.kuksa.vsscore.model.extension
+package org.eclipse.kuksa.vsscore.extension
 
 /**
  * Converts a string into the CamelCase convention.

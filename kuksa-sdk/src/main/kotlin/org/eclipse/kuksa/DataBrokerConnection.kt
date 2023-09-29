@@ -36,9 +36,9 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.VALGrpc
-import org.eclipse.kuksa.vsscore.model.model.VssProperty
-import org.eclipse.kuksa.vsscore.model.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.model.heritage
+import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.heritage
 
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
@@ -108,7 +108,8 @@ class DataBrokerConnection internal constructor(
      * application will be notified about any changes to every subscribed [VssProperty].
      *
      * @param specification the [VssSpecification] to subscribe to
-     * @param fields the [Types.Field] to subscribe to
+     * @param fields the [Types.Field] to subscribe to. The default value is a list with a
+     * single [Types.Field.FIELD_VALUE] entry.
      * @param observer the observer to notify in case of changes
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
@@ -163,7 +164,7 @@ class DataBrokerConnection internal constructor(
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    suspend fun fetchProperty(property: Property): GetResponse {
+    suspend fun fetch(property: Property): GetResponse {
         Log.d(TAG, "fetchProperty() called with: property: $property")
         return withContext(dispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
@@ -188,19 +189,19 @@ class DataBrokerConnection internal constructor(
      * is of the same type as the inputted. All underlying heirs are changed to reflect the data broker state.
      *
      * @param specification to retrieve
-     * @param fields to retrieve
+     * @param fields to retrieve. The default value is a list with a single [Types.Field.FIELD_VALUE] entry.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     @JvmOverloads
-    suspend fun <T : VssSpecification> fetchSpecification(
+    suspend fun <T : VssSpecification> fetch(
         specification: T,
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
     ): T {
         return withContext(dispatcher) {
             try {
                 val property = Property(specification.vssPath, fields)
-                val response = fetchProperty(property)
+                val response = fetch(property)
                 val entries = response.entriesList
 
                 if (entries.isEmpty()) {
@@ -232,7 +233,7 @@ class DataBrokerConnection internal constructor(
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    suspend fun updateProperty(
+    suspend fun update(
         property: Property,
         updatedDatapoint: Datapoint,
     ): SetResponse {

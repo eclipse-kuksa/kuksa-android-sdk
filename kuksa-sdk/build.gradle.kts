@@ -10,7 +10,7 @@ plugins {
 android {
     namespace = "org.eclipse.kuksa"
     compileSdk = 34
-    version = "1.0.0"
+    version = "0.1.0-SNAPSHOT"
 
     defaultConfig {
         minSdk = 27

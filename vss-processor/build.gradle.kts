@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.eclipse.kuksa.vss-processor"
-version = "1.0.0"
+version = "0.1.0-SNAPSHOT"
 
 dependencies {
     implementation(project(":vss-core"))
@@ -22,7 +22,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "org.eclipse.kuksa.vss-processor"
             artifactId = "vss-processor"
-            version = "1.0.0"
+            version = "0.1.0-SNAPSHOT"
 
             from(components["java"])
         }

@@ -29,4 +29,4 @@ package org.eclipse.kuksa
 class DataBrokerException(
     override val message: String? = null,
     override val cause: Throwable? = null,
-) : RuntimeException(message, cause)
+) : Exception(message, cause)

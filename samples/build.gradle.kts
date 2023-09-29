@@ -1,9 +1,9 @@
 android {
-    namespace = "com.example.samples"
+    namespace = "org.eclipse.kuksa.samples"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.samples"
+        applicationId = "org.eclipse.kuksa.samples"
         minSdk = 27
         targetSdk = 34
         versionCode = 1
@@ -30,15 +30,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":kuksa-sdk")) { isTransitive = false }
-
-    // transitive lib dependencies
-    implementation(libs.grpc.protobuf)
-
-    implementation(libs.grpc.okhttp)
-    implementation(libs.grpc.stub)
-    implementation(libs.tomcat.annotations)
-    implementation(libs.kotlinx.coroutines.android)
+    implementation(project(":kuksa-sdk"))
 
     // app dependencies
     implementation(libs.androidx.appcompat)

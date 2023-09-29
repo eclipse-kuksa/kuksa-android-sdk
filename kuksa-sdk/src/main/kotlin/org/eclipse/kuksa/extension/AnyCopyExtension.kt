@@ -34,7 +34,7 @@ import kotlin.reflect.full.memberFunctions
  * @throws [IllegalArgumentException] if the copied types do not match
  */
 @Suppress("UNCHECKED_CAST")
-fun <T : Any> T.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
+internal fun <T : Any> T.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
     val instanceClass = this::class
 
     val copyFunction = instanceClass::memberFunctions.get().first { it.name == "copy" }

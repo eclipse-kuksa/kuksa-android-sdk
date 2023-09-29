@@ -32,12 +32,12 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
-import org.eclipse.kuksa.vsscore.model.model.VssNode
-import org.eclipse.kuksa.vsscore.model.model.VssProperty
-import org.eclipse.kuksa.vsscore.model.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.model.className
-import org.eclipse.kuksa.vsscore.model.model.name
-import org.eclipse.kuksa.vsscore.model.model.variableName
+import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.className
+import org.eclipse.kuksa.vsscore.model.name
+import org.eclipse.kuksa.vsscore.model.variableName
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
@@ -97,9 +97,6 @@ internal class VssSpecificationSpecModel(
     override fun createClassSpec(nestedClasses: Set<String>, packageName: String, logger: KSPLogger): TypeSpec {
         this.packageName = packageName
         this.logger = logger
-
-        val vssPath = VssPath(vssPath)
-        val vssLeafName = vssPath.leaf
 
         val nestedChildSpecs = mutableListOf<TypeSpec>()
         val constructorBuilder = FunSpec.constructorBuilder()
@@ -305,7 +302,6 @@ internal class VssSpecificationSpecModel(
 
     companion object {
         private const val PROPERTY_VALUE_NAME = "value"
-        private const val CLASS_NAME_PREFIX = "Vss"
     }
 }
 

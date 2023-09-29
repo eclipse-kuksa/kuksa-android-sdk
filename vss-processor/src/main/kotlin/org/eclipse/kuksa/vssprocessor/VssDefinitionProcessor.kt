@@ -36,9 +36,9 @@ import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.writeTo
-import org.eclipse.kuksa.vsscore.model.annotation.VssDefinition
-import org.eclipse.kuksa.vsscore.model.model.VssNode
-import org.eclipse.kuksa.vsscore.model.model.parentVssPath
+import org.eclipse.kuksa.vsscore.annotation.VssDefinition
+import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.parentVssPath
 import org.eclipse.kuksa.vssprocessor.parser.YamlDefinitionParser
 import org.eclipse.kuksa.vssprocessor.spec.SpecModel
 import org.eclipse.kuksa.vssprocessor.spec.VssPath

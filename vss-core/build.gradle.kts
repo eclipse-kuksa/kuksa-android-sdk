@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.eclipse.kuksa.vss-core"
-version = "1.0.0"
+version = "0.1.0-SNAPSHOT"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -16,7 +16,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "org.eclipse.kuksa.vss-core"
             artifactId = "vss-core"
-            version = "1.0.0"
+            version = "0.1.0-SNAPSHOT"
 
             from(components["java"])
         }
