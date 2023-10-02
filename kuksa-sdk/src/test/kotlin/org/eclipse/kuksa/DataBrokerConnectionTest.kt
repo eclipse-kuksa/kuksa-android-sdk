@@ -21,19 +21,21 @@ package org.eclipse.kuksa
 
 import io.grpc.ManagedChannel
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.kotest.Integration
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.vssSpecification.VssDriver
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import test.databroker.DataBrokerConnectorProvider
-import test.kotest.Integration
 import kotlin.random.Random
 
 class DataBrokerConnectionTest : BehaviorSpec({
@@ -118,7 +120,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
-                    assertEquals(400, error.code)
+
+                    error.code shouldBe 400
                 }
 
                 and("Fetching it afterwards") {
@@ -133,6 +136,74 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 }
             }
         }
+
+        and("A Specification") {
+            val specification = VssDriver()
+            val property = Property(specification.heartRate.vssPath)
+
+            `when`("Fetching the specification") {
+
+                and("The initial value is different from the default for a child") {
+                    val newHartRateValue = 60
+                    val datapoint = Datapoint.newBuilder().setUint32(newHartRateValue).build()
+
+                    dataBrokerConnection.update(property, datapoint)
+
+                    then("Every child property has been updated with the correct value") {
+                        val updatedDriver = dataBrokerConnection.fetch(specification)
+                        val heartRate = updatedDriver.heartRate
+
+                        heartRate.value shouldBe newHartRateValue
+                    }
+                }
+            }
+
+            `when`("Subscribing to the specification") {
+                val propertyObserver = mockk<VssSpecificationObserver<VssDriver>>(relaxed = true)
+                dataBrokerConnection.subscribe(specification, observer = propertyObserver)
+
+                then("The #onSpeicifcationChanged method is triggered") {
+                    verify { propertyObserver.onSpecificationChanged(any()) }
+                }
+
+                and("The initial value is different from the default for a child") {
+                    val newHartRateValue = 70
+                    val datapoint = Datapoint.newBuilder().setUint32(newHartRateValue).build()
+
+                    dataBrokerConnection.update(property, datapoint)
+
+                    then("Every child property has been updated with the correct value") {
+                        val capturingSlots = mutableListOf<VssDriver>()
+
+                        verify(exactly = 2) { propertyObserver.onSpecificationChanged(capture(capturingSlots)) }
+
+                        val updatedDriver = capturingSlots[1]
+                        val heartRate = updatedDriver.heartRate
+
+                        heartRate.value shouldBe newHartRateValue
+                    }
+                }
+
+                and("Any subscribed Property was changed") {
+                    val newHartRateValue = 50
+                    val datapoint = Datapoint.newBuilder().setUint32(newHartRateValue).build()
+
+                    dataBrokerConnection.update(property, datapoint)
+
+                    then("The subscribed Specification should be updated") {
+                        val capturingSlots = mutableListOf<VssDriver>()
+
+                        verify(exactly = 3) { propertyObserver.onSpecificationChanged(capture(capturingSlots)) }
+
+                        val updatedDriver = capturingSlots[2]
+                        val heartRate = updatedDriver.heartRate
+
+                        heartRate.value shouldBe newHartRateValue
+                    }
+                }
+            }
+        }
+
         and("A Property with an INVALID VSS Path") {
             val fields = listOf(Types.Field.FIELD_VALUE)
             val property = Property("Vehicle.Some.Unknown.Path", fields)
@@ -158,7 +229,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
-                    assertEquals(404, error.code)
+
+                    error.code shouldBe 404
                 }
             }
 
@@ -174,7 +246,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
-                    assertEquals(404, error.code)
+
+                    error.code shouldBe 404
                 }
             }
         }
