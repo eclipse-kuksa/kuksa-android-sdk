@@ -17,11 +17,15 @@
  *
  */
 
-package test.kotest
+package org.eclipse.kuksa.databroker
 
-import io.kotest.core.NamedTag
+import java.util.concurrent.TimeUnit
 
-val Integration = NamedTag("Integration")
+object DataBrokerConfig {
+    const val HOST = "127.0.0.1"
+    const val PORT = 55556
 
-val Secure = NamedTag("Secure")
-val Insecure = NamedTag("Insecure")
+    // low timeout should be okay, since we are testing against a local service
+    const val TIMEOUT_SECONDS = 3L
+    val TIMEOUT_UNIT = TimeUnit.SECONDS
+}

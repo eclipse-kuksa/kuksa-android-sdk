@@ -17,11 +17,12 @@
  *
  */
 
-package test.kotest
+package org.eclipse.kuksa.kotest
 
-import io.kotest.core.config.AbstractProjectConfig
+import io.kotest.core.NamedTag
 
-// https://kotest.io/docs/framework/project-config.html
-object KotestProjectConfig : AbstractProjectConfig() {
-    override var displayFullTestPath: Boolean? = true
-}
+val Integration = NamedTag("Integration")
+val Unit = NamedTag("Unit")
+
+val Secure = NamedTag("Secure")
+val Insecure = NamedTag("Insecure")

@@ -17,15 +17,11 @@
  *
  */
 
-package test.databroker
+package org.eclipse.kuksa.kotest
 
-import java.util.concurrent.TimeUnit
+import io.kotest.core.config.AbstractProjectConfig
 
-object DataBrokerConfig {
-    const val HOST = "127.0.0.1"
-    const val PORT = 55556
-
-    // low timeout should be okay, since we are testing against a local service
-    const val TIMEOUT_SECONDS = 3L
-    val TIMEOUT_UNIT = TimeUnit.SECONDS
+// https://kotest.io/docs/framework/project-config.html
+object KotestProjectConfig : AbstractProjectConfig() {
+    override var displayFullTestPath: Boolean? = true
 }
