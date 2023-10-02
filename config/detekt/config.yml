@@ -18,6 +18,7 @@ style:
     active: false
   ReturnCount:
     excludeGuardClauses: true
+    max: 3 # Some elvis returns which are not recognized as guard clauses are still readable and clean
     # It is fine to have TO-DO statements
   ForbiddenComment:
     active: false

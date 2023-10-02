@@ -28,16 +28,15 @@ import kotlin.reflect.full.memberFunctions
  * It is recommend to only use data classes.
  *
  * @param paramToValue <PropertyName, value> to match the constructor parameters
- * @return a copy of the class
+ * @return a copy of the class or this if an error occurs
  *
- * @throws [NoSuchElementException] if the class has no "copy" method
  * @throws [IllegalArgumentException] if the copied types do not match
  */
 @Suppress("UNCHECKED_CAST")
 internal fun <T : Any> T.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
     val instanceClass = this::class
 
-    val copyFunction = instanceClass::memberFunctions.get().first { it.name == "copy" }
+    val copyFunction = instanceClass::memberFunctions.get().firstOrNull { it.name == "copy" } ?: return this
     val instanceParameter = copyFunction.instanceParameter ?: return this
 
     val valueArgs = copyFunction.parameters

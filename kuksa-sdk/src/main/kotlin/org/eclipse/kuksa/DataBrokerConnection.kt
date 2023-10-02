@@ -152,7 +152,7 @@ class DataBrokerConnection internal constructor(
                     observer.onSpecificationChanged(updatedVssSpecification)
                 }
             }
-        } catch (e: RuntimeException) {
+        } catch (e: Exception) {
             throw DataBrokerException(e.message, e)
         }
     }
@@ -218,7 +218,7 @@ class DataBrokerConnection internal constructor(
                 }
 
                 return@withContext updatedSpecification
-            } catch (e: RuntimeException) {
+            } catch (e: Exception) {
                 throw DataBrokerException(e.message, e)
             }
         }

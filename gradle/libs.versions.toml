@@ -1,6 +1,6 @@
 [versions]
 activityKtx = "1.7.2"
-androidGradlePlugin = "8.1.1" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
+androidGradlePlugin = "8.1.2" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
 datastore = "1.0.0"
 datastorePreferences = "1.0.0"
 kotlin = "1.9.0"
