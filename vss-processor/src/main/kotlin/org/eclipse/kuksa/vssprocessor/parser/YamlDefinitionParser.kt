@@ -19,35 +19,38 @@
 
 package org.eclipse.kuksa.vssprocessor.parser
 
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 
 internal class YamlDefinitionParser : VssDefinitionParser {
-    override fun parseSpecifications(definitionFile: File): List<VssSpecificationSpecModel> {
+    override fun parseSpecifications(definitionFile: File, elementDelimiter: String): List<VssSpecificationSpecModel> {
         val specificationElements = mutableListOf<VssSpecificationSpecModel>()
-        val vssDefinitionStream = definitionFile.inputStream()
-        val bufferedReader = BufferedReader(InputStreamReader(vssDefinitionStream))
+        definitionFile.useLines { lines ->
+            val yamlAttributes = mutableListOf<String>()
+            for (line in lines.toList()) {
+                val trimmedLine = line.trim()
+                if (trimmedLine == elementDelimiter) { // A new element will follow after the delimiter
+                    parseYamlElement(yamlAttributes)?.let { specificationElement ->
+                        specificationElements.add(specificationElement)
+                    }
 
-        val yamlAttributes = mutableListOf<String>()
-        while (bufferedReader.ready()) {
-            val line = bufferedReader.readLine().trim()
-            if (line.isEmpty()) {
-                val specificationElement = parseYamlElement(yamlAttributes)
-                specificationElements.add(specificationElement)
+                    yamlAttributes.clear()
 
-                yamlAttributes.clear()
+                    continue
+                }
 
-                continue
+                yamlAttributes.add(trimmedLine)
             }
 
-            yamlAttributes.add(line)
+            // Add the last element because no empty line will follow
+            parseYamlElement(yamlAttributes)?.let { specificationElement ->
+                specificationElements.add(specificationElement)
+            }
         }
-
-        bufferedReader.close()
-        vssDefinitionStream.close()
 
         return specificationElements
     }
@@ -58,13 +61,13 @@ internal class YamlDefinitionParser : VssDefinitionParser {
     //  description: Antilock Braking System signals.
     //  type: branch
     //  uuid: 219270ef27c4531f874bbda63743b330
-    private fun parseYamlElement(yamlElement: List<String>): VssSpecificationSpecModel {
+    private fun parseYamlElement(yamlElement: List<String>, delimiter: Char = ';'): VssSpecificationSpecModel? {
         val elementVssPath = yamlElement.first().substringBefore(":")
 
         val yamlElementJoined = yamlElement
-            .joinToString(separator = ";")
-            .substringAfter(";") // Remove vssPath (already parsed)
-            .prependIndent(";") // So the parsing is consistent for the first element
+            .joinToString(separator = delimiter.toString())
+            .substringAfter(delimiter) // Remove vssPath (already parsed)
+            .prependIndent(delimiter.toString()) // So the parsing is consistent for the first element
         val members = VssSpecificationSpecModel::class.memberProperties
         val fieldsToSet = mutableListOf<Pair<String, Any?>>()
 
@@ -77,9 +80,10 @@ internal class YamlDefinitionParser : VssDefinitionParser {
             val memberName = member.name
             if (!yamlElementJoined.contains(memberName)) continue
 
+            // Also parse the delimiter to not confuse type != datatype
             val memberValue = yamlElementJoined
-                .substringAfter(";$memberName: ") // Also parse "," to not confuse type != datatype
-                .substringBefore(";")
+                .substringAfter("$delimiter$memberName: ")
+                .substringBefore(delimiter)
 
             val fieldInfo = Pair(memberName, memberValue)
             fieldsToSet.add(fieldInfo)
@@ -88,6 +92,33 @@ internal class YamlDefinitionParser : VssDefinitionParser {
         val vssSpecificationMember = VssSpecificationSpecModel()
         vssSpecificationMember.setFields(fieldsToSet)
 
+        if (vssSpecificationMember.uuid.isEmpty()) return null
+
         return vssSpecificationMember
+    }
+}
+
+/**
+ * @param fields to set via reflection. Pair<PropertyName, anyValue>.
+ * @param remapNames which can be used if the propertyName does not match with the input name
+ */
+private fun VssSpecification.setFields(
+    fields: List<Pair<String, Any?>>,
+    remapNames: Map<String, String> = emptyMap(),
+) {
+    val nameToProperty = this::class.memberProperties.associateBy(KProperty<*>::name)
+
+    val remappedFields = fields.toMutableList()
+    remapNames.forEach { (propertyName, newName) ->
+        val find = fields.find { it.first == propertyName } ?: return@forEach
+        remappedFields.remove(find)
+        remappedFields.add(Pair(find.first, newName))
+    }
+
+    remappedFields.forEach { (propertyName, propertyValue) ->
+        nameToProperty[propertyName]
+            .takeIf { it is KMutableProperty<*> }
+            ?.let { it as KMutableProperty<*> }
+            ?.setter?.call(this, propertyValue)
     }
 }

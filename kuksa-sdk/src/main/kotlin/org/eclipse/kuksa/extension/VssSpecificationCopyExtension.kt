@@ -19,8 +19,8 @@
 
 package org.eclipse.kuksa.extension
 
-import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase.*
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.findHeritageLine
@@ -60,21 +60,27 @@ fun <T : VssSpecification> T.deepCopy(changedHeritageLine: List<VssSpecification
  * @throws [NoSuchElementException] if the class has no "copy" method
  * @throws [IllegalArgumentException] if the copied types do not match
  */
-@Suppress("IMPLICIT_CAST_TO_ANY")
 fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
     with(datapoint) {
-        val value = when (value::class) {
-            String::class -> string
-            Boolean::class -> bool
-            Float::class -> float
-            Double::class -> double
-            Int::class -> int32
-            Long::class -> int64
-            UInt::class -> uint32.toUInt()
-            Array<String>::class -> stringArray.valuesList.toList().toTypedArray()
-            IntArray::class -> int32Array.valuesList.toIntArray()
-            Types.BoolArray::class -> boolArray.valuesList.toBooleanArray()
+        val value: Any = when (valueCase) {
+            STRING -> string
+            BOOL -> bool
+            INT32 -> int32
+            INT64 -> int64
+            UINT32 -> uint32
+            UINT64 -> uint64
+            FLOAT -> float
+            DOUBLE -> double
+            STRING_ARRAY -> stringArray.valuesList
+            BOOL_ARRAY -> boolArray.valuesList.toBooleanArray()
+            INT32_ARRAY -> int32Array.valuesList.toIntArray()
+            INT64_ARRAY -> int64Array.valuesList.toLongArray()
+            UINT32_ARRAY -> uint32Array.valuesList.toIntArray()
+            UINT64_ARRAY -> uint64Array.valuesList.toLongArray()
+            FLOAT_ARRAY -> floatArray.valuesList.toFloatArray()
+            DOUBLE_ARRAY -> doubleArray.valuesList.toDoubleArray()
 
+            VALUE_NOT_SET -> 0
             else -> throw NoSuchFieldException("Could not convert value: $value to actual type")
         }
 

@@ -69,7 +69,7 @@ class VssDefinitionProcessor(
         return deferredSymbols.toList()
     }
 
-    inner class VssDefinitionVisitor : KSVisitorVoid() {
+    private inner class VssDefinitionVisitor : KSVisitorVoid() {
         @OptIn(KspExperimental::class)
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             val containingFile = classDeclaration.containingFile ?: return
