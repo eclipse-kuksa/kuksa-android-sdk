@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import org.eclipse.kuksa.CoroutineCallback;
 import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
+import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.PropertyObserver;
 import org.eclipse.kuksa.TimeoutConfig;
 import org.eclipse.kuksa.model.Property;
@@ -41,7 +42,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
@@ -61,6 +64,8 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
     @Nullable
     private DataBrokerConnection dataBrokerConnection = null;
+
+    private final Set<DisconnectListener> disconnectListeners = new HashSet<>();
 
     public JavaDataBrokerEngine(@NonNull AssetManager assetManager) {
         this.assetManager = assetManager;
@@ -135,7 +140,12 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         connector.connect(new CoroutineCallback<>() {
             @Override
             public void onSuccess(@Nullable DataBrokerConnection result) {
+                if (result == null) return;
+
                 JavaDataBrokerEngine.this.dataBrokerConnection = result;
+                for (DisconnectListener listener : disconnectListeners) {
+                    result.getDisconnectListeners().register(listener);
+                }
 
                 callback.onSuccess(result);
             }
@@ -186,6 +196,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         }
 
         dataBrokerConnection.disconnect();
+        dataBrokerConnection = null;
     }
 
     @Nullable
@@ -197,5 +208,21 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     @Override
     public void setDataBrokerConnection(@Nullable DataBrokerConnection dataBrokerConnection) {
         this.dataBrokerConnection = dataBrokerConnection;
+    }
+
+    @Override
+    public void registerDisconnectListener(@NonNull DisconnectListener listener) {
+        disconnectListeners.add(listener);
+        if (dataBrokerConnection != null) {
+            dataBrokerConnection.getDisconnectListeners().register(listener);
+        }
+    }
+
+    @Override
+    public void unregisterDisconnectListener(@NonNull DisconnectListener listener) {
+        disconnectListeners.remove(listener);
+        if (dataBrokerConnection != null) {
+            dataBrokerConnection.getDisconnectListeners().unregister(listener);
+        }
     }
 }

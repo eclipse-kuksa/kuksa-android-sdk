@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
+import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.model.Property
@@ -61,20 +62,26 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
     private val dataBrokerConnectionCallback = object : CoroutineCallback<DataBrokerConnection>() {
         override fun onSuccess(result: DataBrokerConnection?) {
-            outputViewModel.appendOutput("Connection to data broker was successful")
+            outputViewModel.appendOutput("Connection to DataBroker successful established")
             connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTED)
         }
 
         override fun onError(error: Throwable) {
-            outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
+            outputViewModel.appendOutput("Connection to DataBroker failed: ${error.message}")
             connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
         }
+    }
+
+    private val onDisconnectListener = DisconnectListener {
+        connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
+        outputViewModel.appendOutput("DataBroker disconnected")
     }
 
     private lateinit var dataBrokerEngine: DataBrokerEngine
     private val kotlinDataBrokerEngine by lazy {
         KotlinDataBrokerEngine(lifecycleScope, assets)
     }
+
     private val javaDataBrokerEngine by lazy {
         JavaDataBrokerEngine(assets)
     }
@@ -123,6 +130,18 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         vssPropertiesViewModel.onSubscribeProperty = { property: Property ->
             subscribeProperty(property)
         }
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+
+        dataBrokerEngine.registerDisconnectListener(onDisconnectListener)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        dataBrokerEngine.unregisterDisconnectListener(onDisconnectListener)
     }
 
     private fun connect(connectionInfo: ConnectionInfo) {
