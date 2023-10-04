@@ -43,7 +43,8 @@ interface VssNode {
 }
 
 /**
- * In addition of being a [VssNode] it represents the most common properties of a VSS specification.
+ * In addition of being a [VssNode] it represents the most common properties of a VSS specification. The [uuid] is a
+ * mandatory field and should never be empty.
  */
 interface VssSpecification : VssNode {
     val uuid: String
@@ -140,9 +141,6 @@ val VssSpecification.className: String
         return (classNamePrefix + name).toCamelCase.replaceFirstChar { it.uppercase() }
     }
 
-private val classNamePrefix: String
-    get() = "Vss"
-
 /**
  * Used in case of conflicted naming with child properties.
  */
@@ -159,3 +157,6 @@ private val VssSpecification.isVariableOccupied: Boolean
             member.name.equals(name, true)
         } != null
     }
+
+private val classNamePrefix: String
+    get() = "Vss"
