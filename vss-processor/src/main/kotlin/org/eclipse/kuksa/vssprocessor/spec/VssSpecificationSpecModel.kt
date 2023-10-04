@@ -114,7 +114,8 @@ internal class VssSpecificationSpecModel(
 
             // Final leafs should ONLY implement the vss property interface
             superInterfaces.clear()
-            val vssPropertyInterface = VssProperty::class.asTypeName()
+            val vssPropertyInterface = VssProperty::class
+                .asTypeName()
                 .plusParameter(datatypeProperty)
             superInterfaces.add(vssPropertyInterface)
         }

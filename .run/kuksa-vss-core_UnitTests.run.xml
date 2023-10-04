@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="kuksa-vss-processor" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="kuksa-vss-core:UnitTests" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
-      <option name="externalProjectPath" value="$PROJECT_DIR$/vss-processor" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
       <option name="scriptParameters" value="" />
       <option name="taskDescriptions">
@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":vss-processor:test" />
+          <option value=":vss-core:test" />
         </list>
       </option>
       <option name="vmOptions" value="" />

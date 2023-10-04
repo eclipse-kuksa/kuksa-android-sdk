@@ -19,8 +19,10 @@
 
 package org.eclipse.kuksa.vssSpecification
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.deepCopy
 import org.eclipse.kuksa.kotest.Unit
@@ -84,12 +86,12 @@ class VssSpecificationCopyTest : BehaviorSpec({
             val datapoint = Types.Datapoint.newBuilder().setBoolArray(boolArray).build()
 
             `when`("a copy is done") {
-                val copiedSpecification = heartRate.copy(datapoint)
+                val exception = shouldThrow<IllegalArgumentException> {
+                    heartRate.copy(datapoint)
+                }
 
-                then("it should default to valid value") {
-                    val heartRateValue = copiedSpecification.value
-
-                    heartRateValue shouldBe 0
+                then("it should throw an IllegalArgumentException") {
+                    exception.message shouldStartWith "argument type mismatch"
                 }
             }
         }
