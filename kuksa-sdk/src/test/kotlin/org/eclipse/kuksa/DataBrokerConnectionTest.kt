@@ -21,6 +21,7 @@ package org.eclipse.kuksa
 
 import io.grpc.ManagedChannel
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.slot
@@ -178,6 +179,32 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 }
             }
         }
+
+        // this test closes the connection, the connection can't be used afterward anymore
+        `when`("A DisconnectListener is registered successfully") {
+            val disconnectListener = mockk<DisconnectListener>()
+            val disconnectListeners = dataBrokerConnection.disconnectListeners
+            disconnectListeners.register(disconnectListener)
+
+            then("The number of registered DisconnectListeners should be 1") {
+                disconnectListeners.get().size shouldBe 1
+            }
+            `when`("Trying to register the same listener again") {
+                disconnectListeners.register(disconnectListener)
+
+                then("It is not added multiple times") {
+                    disconnectListeners.get().size shouldBe 1
+                }
+            }
+            `when`("The Connection is closed manually") {
+                dataBrokerConnection.disconnect()
+
+                then("The DisconnectListener is triggered") {
+                    verify { disconnectListener.onDisconnect() }
+                }
+            }
+        }
+        // connection is closed at this point
     }
     given("A DataBrokerConnection with a mocked ManagedChannel") {
         val managedChannel = mockk<ManagedChannel>(relaxed = true)

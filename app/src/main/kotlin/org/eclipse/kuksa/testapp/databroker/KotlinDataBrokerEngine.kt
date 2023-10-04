@@ -31,6 +31,7 @@ import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
+import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.TimeoutConfig
 import org.eclipse.kuksa.model.Property
@@ -46,6 +47,8 @@ class KotlinDataBrokerEngine(
     private val assetManager: AssetManager,
 ) : DataBrokerEngine {
     override var dataBrokerConnection: DataBrokerConnection? = null
+
+    private val disconnectListeners = mutableSetOf<DisconnectListener>()
 
     override fun connect(
         connectionInfo: ConnectionInfo,
@@ -118,6 +121,10 @@ class KotlinDataBrokerEngine(
         lifecycleScope.launch {
             try {
                 dataBrokerConnection = connector.connect()
+                    .also { connection ->
+                        disconnectListeners.forEach { listener -> connection.disconnectListeners.register(listener) }
+                    }
+
                 callback.onSuccess(dataBrokerConnection)
             } catch (e: DataBrokerException) {
                 callback.onError(e)
@@ -158,6 +165,17 @@ class KotlinDataBrokerEngine(
 
     override fun disconnect() {
         dataBrokerConnection?.disconnect()
+        dataBrokerConnection = null
+    }
+
+    override fun registerDisconnectListener(listener: DisconnectListener) {
+        disconnectListeners.add(listener)
+        dataBrokerConnection?.disconnectListeners?.register(listener)
+    }
+
+    override fun unregisterDisconnectListener(listener: DisconnectListener) {
+        disconnectListeners.remove(listener)
+        dataBrokerConnection?.disconnectListeners?.unregister(listener)
     }
 
     companion object {

@@ -45,6 +45,17 @@ class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
+    val disconnectListeners = MultiListener<DisconnectListener>()
+
+    init {
+        val state = managedChannel.getState(false)
+        managedChannel.notifyWhenStateChanged(state) {
+            val listeners = disconnectListeners.get()
+            listeners.forEach { listener ->
+                listener.onDisconnect()
+            }
+        }
+    }
 
     /**
      * Subscribes to the specified vssPath with the provided propertyObserver. Once subscribed the application will be
