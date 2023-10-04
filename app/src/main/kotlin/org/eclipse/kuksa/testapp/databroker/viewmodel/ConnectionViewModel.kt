@@ -43,7 +43,7 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
     var onConnect: (connectionInfo: ConnectionInfo) -> Unit = { }
     var onDisconnect: () -> Unit = { }
 
-    var connectionTimeoutMillis: Long by mutableLongStateOf(5_000)
+    var connectionTimeoutMillis: Long by mutableLongStateOf(TIMEOUT_DEFAULT)
         private set
 
     private val connectionInfoRepository = ConnectionInfoRepository(application)
@@ -82,5 +82,9 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             connectionInfoRepository.updateConnectionInfo(connectionInfo)
         }
+    }
+
+    companion object {
+        private const val TIMEOUT_DEFAULT = 5_000L
     }
 }

@@ -50,6 +50,11 @@ class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
+    val subscriptions: Set<Property>
+        get() = subscribedProperties
+
+    private val subscribedProperties = mutableSetOf<Property>()
+
     /**
      * Subscribes to the specified vssPath with the provided propertyObserver. Once subscribed the application will be
      * notified about any changes to the specified vssPath.
@@ -96,6 +101,8 @@ class DataBrokerConnection internal constructor(
 
         try {
             asyncStub.subscribe(request, callback)
+
+            subscribedProperties.addAll(properties)
         } catch (e: StatusRuntimeException) {
             throw DataBrokerException(e.message, e)
         }

@@ -19,7 +19,8 @@
 
 package org.eclipse.kuksa.model
 
-import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.proto.v1.Types.Field
+import org.eclipse.kuksa.proto.v1.Types.Field.FIELD_VALUE
 
 /**
  * A DataBroker Property.
@@ -31,7 +32,7 @@ data class Property(
     val vssPath: String,
 
     /**
-     * The corresponding field type of the Property.
+     * The corresponding field type of the Property. The default is [FIELD_VALUE].
      */
-    val fields: List<Types.Field>,
+    val fields: List<Field> = listOf(FIELD_VALUE),
 )

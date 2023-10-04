@@ -3,8 +3,9 @@ import com.google.protobuf.gradle.id
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-
     id("com.google.protobuf")
+
+    `maven-publish`
 }
 
 android {
@@ -19,7 +20,6 @@ android {
 
         consumerProguardFiles("consumer-rules.pro")
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -33,6 +33,19 @@ android {
             all {
                 it.useJUnitPlatform()
             }
+        }
+        kotlin {
+            compilerOptions {
+                // https://youtrack.jetbrains.com/issue/KT-48678/Coroutine-debugger-disable-was-optimised-out-compiler-feature
+                // We don't want local variables to be optimized out while debugging into tests
+                freeCompilerArgs.add("-Xdebug")
+            }
+        }
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
@@ -75,6 +88,20 @@ protobuf {
                         option("lite")
                     }
                 }
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "org.eclipse.kuksa"
+            artifactId = "kuksa-sdk"
+            version = "0.1.0-SNAPSHOT"
+
+            afterEvaluate {
+                from(components["release"])
             }
         }
     }

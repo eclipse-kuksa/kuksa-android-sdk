@@ -205,10 +205,10 @@ private fun TopBar(
 fun DataBrokerConnection(viewModel: ConnectionViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val connectionInfoState = viewModel.connectionInfoFlow.collectAsStateWithLifecycle(initialValue = ConnectionInfo())
+    val connectionInfoState by viewModel.connectionInfoFlow.collectAsStateWithLifecycle(initialValue = ConnectionInfo())
 
-    var connectionInfo by remember(connectionInfoState.value) {
-        mutableStateOf(connectionInfoState.value)
+    var connectionInfo by remember(connectionInfoState) {
+        mutableStateOf(connectionInfoState)
     }
 
     Headline("Connection")
@@ -224,7 +224,7 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                     TextField(
                         value = connectionInfo.host,
                         onValueChange = {
-                            val newConnectionInfo = connectionInfoState.value.copy(host = it)
+                            val newConnectionInfo = connectionInfoState.copy(host = it)
                             connectionInfo = newConnectionInfo
                         },
                         keyboardActions = KeyboardActions(
