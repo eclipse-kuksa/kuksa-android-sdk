@@ -15,6 +15,13 @@ dependencies {
     implementation(libs.kotlinpoet)
     implementation(libs.kotlinpoet.ksp)
     implementation(libs.symbol.processing.api)
+
+    testImplementation(libs.kotest)
+    testImplementation(libs.mockk)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 publishing {
