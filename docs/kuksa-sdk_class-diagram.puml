@@ -26,6 +26,8 @@ package kuksa {
     DataBrokerConnection -down-> PropertyObserver
     DataBrokerConnection -down-> Property
     DataBrokerConnection -left-> DataBrokerException
+    DataBrokerConnection -up-> MultiListener
+    MultiListener -right-> DisconnectListener
     TimeoutConfig -left-* DataBrokerConnector
 
     class DataBrokerConnector {
@@ -38,6 +40,7 @@ package kuksa {
     }
 
     class DataBrokerConnection {
+        + disconnectListeners: MultiListener<DisconnectListener>
         + subscribe(List<Property>, PropertyObserver)
         + fetchProperty(Property): GetResponse
         + updateProperty(Property, Datapoint): SetResponse
@@ -54,6 +57,15 @@ package kuksa {
     }
 
     class DataBrokerException
+
+    abstract class MultiListener<T> {
+        + register(T)
+        + unregister(T)
+    }
+
+    interface DisconnectListener {
+        + onDisconnect()
+    }
 }
 
 DataBrokerConnector -up-> ManagedChannel
