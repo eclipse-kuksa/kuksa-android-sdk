@@ -132,7 +132,7 @@ fun DataBrokerView(
                         label = "DataBrokerModeAnimation",
                     ) { mode ->
                         when (mode) {
-                            DataBrokerMode.MANUAL -> DataBrokerProperties(vssPropertiesViewModel)
+                            DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
                             DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssSpecificationsViewModel)
                         }
                     }
@@ -183,7 +183,7 @@ private fun TopBar(
                             val newMode = if (!topAppBarViewModel.isSpecificationModeEnabled) {
                                 DataBrokerMode.SPECIFICATION
                             } else {
-                                DataBrokerMode.MANUAL
+                                DataBrokerMode.VSS_PATH
                             }
                             topAppBarViewModel.updateDataBrokerMode(newMode)
                         }

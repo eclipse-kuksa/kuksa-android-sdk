@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.onEach
 
 class TopAppBarViewModel : ViewModel() {
     enum class DataBrokerMode {
-        MANUAL,
+        VSS_PATH,
         SPECIFICATION,
     }
 
@@ -41,7 +41,7 @@ class TopAppBarViewModel : ViewModel() {
     var onCompatibilityModeChanged: ((Boolean) -> Unit)? = null
     var onDataBrokerModeChanged: ((DataBrokerMode) -> Unit)? = null
 
-    var dataBrokerMode by mutableStateOf(DataBrokerMode.MANUAL)
+    var dataBrokerMode by mutableStateOf(DataBrokerMode.VSS_PATH)
         private set
 
     init {
@@ -51,7 +51,7 @@ class TopAppBarViewModel : ViewModel() {
 
         snapshotFlow { isSpecificationModeEnabled }
             .onEach {
-                val mode = if (isSpecificationModeEnabled) DataBrokerMode.SPECIFICATION else DataBrokerMode.MANUAL
+                val mode = if (isSpecificationModeEnabled) DataBrokerMode.SPECIFICATION else DataBrokerMode.VSS_PATH
                 onDataBrokerModeChanged?.invoke(mode)
             }
             .launchIn(viewModelScope)

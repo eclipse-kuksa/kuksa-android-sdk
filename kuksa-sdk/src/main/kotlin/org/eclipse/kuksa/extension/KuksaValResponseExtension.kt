@@ -40,7 +40,7 @@ val KuksaValV1.GetResponse.metadata: Types.Metadata?
 /**
  * Convenience property which returns the first value ([Types.Datapoint]) from the [KuksaValV1.GetResponse].
  */
-val KuksaValV1.GetResponse.value: Types.Datapoint?
+val KuksaValV1.GetResponse.firstValue: Types.Datapoint?
     get() {
         if (entriesList.isEmpty()) return null
 

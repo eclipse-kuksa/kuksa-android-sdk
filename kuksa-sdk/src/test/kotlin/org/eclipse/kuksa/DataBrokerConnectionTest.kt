@@ -144,8 +144,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
             `when`("Fetching the specification") {
 
                 and("The initial value is different from the default for a child") {
-                    val newHartRateValue = 60
-                    val datapoint = Datapoint.newBuilder().setUint32(newHartRateValue).build()
+                    val newHeartRateValue = 60
+                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
 
                     dataBrokerConnection.update(property, datapoint)
 
@@ -153,7 +153,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         val updatedDriver = dataBrokerConnection.fetch(specification)
                         val heartRate = updatedDriver.heartRate
 
-                        heartRate.value shouldBe newHartRateValue
+                        heartRate.value shouldBe newHeartRateValue
                     }
                 }
             }
@@ -162,13 +162,13 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val propertyObserver = mockk<VssSpecificationObserver<VssDriver>>(relaxed = true)
                 dataBrokerConnection.subscribe(specification, observer = propertyObserver)
 
-                then("The #onSpeicifcationChanged method is triggered") {
+                then("The #onSpecificationChanged method is triggered") {
                     verify { propertyObserver.onSpecificationChanged(any()) }
                 }
 
                 and("The initial value is different from the default for a child") {
-                    val newHartRateValue = 70
-                    val datapoint = Datapoint.newBuilder().setUint32(newHartRateValue).build()
+                    val newHeartRateValue = 70
+                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
 
                     dataBrokerConnection.update(property, datapoint)
 
@@ -180,13 +180,13 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         val updatedDriver = capturingSlots[1]
                         val heartRate = updatedDriver.heartRate
 
-                        heartRate.value shouldBe newHartRateValue
+                        heartRate.value shouldBe newHeartRateValue
                     }
                 }
 
                 and("Any subscribed Property was changed") {
-                    val newHartRateValue = 50
-                    val datapoint = Datapoint.newBuilder().setUint32(newHartRateValue).build()
+                    val newHeartRateValue = 50
+                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
 
                     dataBrokerConnection.update(property, datapoint)
 
@@ -198,7 +198,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         val updatedDriver = capturingSlots[2]
                         val heartRate = updatedDriver.heartRate
 
-                        heartRate.value shouldBe newHartRateValue
+                        heartRate.value shouldBe newHeartRateValue
                     }
                 }
             }

@@ -23,11 +23,23 @@ import io.kotest.matchers.shouldBe
 
 class StringExtensionTest : BehaviorSpec({
     given("Multiple strings") {
-        val testStrings = listOf("VSSVehicleID", "vehicleIDENTIFIER", "VVehicleABvolume")
+        val testStrings = listOf("VehicleId", "vehicleIDENTIFIER", "myGreatVEHICLE")
         `when`("converting it to camelcase") {
             val camelCaseStrings = testStrings.map { it.toCamelCase }
             then("it should be in a valid camelcase format") {
-                val expectedCamelCases = listOf("vssVehicleID", "vehicleIdentifier", "vVehicleABvolume")
+                val expectedCamelCases = listOf("vehicleId", "vehicleIdentifier", "myGreatVehicle")
+                camelCaseStrings shouldBe expectedCamelCases
+            }
+        }
+    }
+
+    // Special kotlin camelcase rule to keep abbreviations with two characters
+    given("Multiple strings with with two abbreviations in a row") {
+        val testStrings = listOf("VSSVehicleID", "VVehicleABvolume")
+        `when`("converting it to camelcase") {
+            val camelCaseStrings = testStrings.map { it.toCamelCase }
+            then("it should keep abbreviations with two characters") {
+                val expectedCamelCases = listOf("vssVehicleID", "vVehicleABvolume")
                 camelCaseStrings shouldBe expectedCamelCases
             }
         }

@@ -20,15 +20,13 @@
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
 import android.app.Application
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
@@ -53,21 +51,24 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
     var connectionViewState: ConnectionViewState by mutableStateOf(ConnectionViewState.DISCONNECTED)
         private set
 
-    var isConnected by mutableStateOf(false)
-        private set
-    var isConnecting by mutableStateOf(false)
-        private set
-    var isDisconnected by mutableStateOf(true)
-        private set
+    val isConnected by derivedStateOf {
+        when (connectionViewState) {
+            ConnectionViewState.CONNECTED -> true
+            else -> false
+        }
+    }
 
-    init {
-        snapshotFlow { connectionViewState }
-            .onEach {
-                isConnected = it == ConnectionViewState.CONNECTED
-                isConnecting = it == ConnectionViewState.CONNECTING
-                isDisconnected = it == ConnectionViewState.DISCONNECTED
-            }
-            .launchIn(viewModelScope)
+    val isConnecting by derivedStateOf {
+        when (connectionViewState) {
+            ConnectionViewState.CONNECTING -> true
+            else -> false
+        }
+    }
+    val isDisconnected by derivedStateOf {
+        when (connectionViewState) {
+            ConnectionViewState.DISCONNECTED -> true
+            else -> false
+        }
     }
 
     fun updateTimeout(timeoutMillis: Long) {

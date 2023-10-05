@@ -22,7 +22,7 @@ package org.eclipse.kuksa.vsscore.annotation
 /**
  * Add this annotation to any class to trigger the model generation (Kotlin Symbol Processing) for the given
  * Vehicle Signal Specification definition file. Only .yaml files are currently supported. The searched root folder
- * is the assets folder.
+ * is the assets folder (example path: app/src/main/assets).
  *
  * Example: @VssDefinition("vss_rel_4.0.yaml")
  */
