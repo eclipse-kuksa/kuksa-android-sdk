@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.eclipse.kuksa.CoroutineCallback;
 import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
+import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
@@ -42,6 +43,11 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.TlsChannelCredentials;
 
 public class JavaActivity extends AppCompatActivity {
+
+    private final DisconnectListener disconnectListener = () -> {
+        // connection closed manually or unexpectedly
+    };
+
     @Nullable
     private DataBrokerConnection dataBrokerConnection = null;
 
@@ -54,8 +60,10 @@ public class JavaActivity extends AppCompatActivity {
         connector.connect(new CoroutineCallback<DataBrokerConnection>() {
             @Override
             public void onSuccess(DataBrokerConnection result) {
-                dataBrokerConnection = result;
+                if (result == null) return;
 
+                dataBrokerConnection = result;
+                dataBrokerConnection.getDisconnectListeners().register(disconnectListener);
                 // handle result
             }
 
@@ -137,5 +145,13 @@ public class JavaActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void disconnect() {
+        if (dataBrokerConnection == null) return;
+
+        dataBrokerConnection.getDisconnectListeners().unregister(disconnectListener);
+        dataBrokerConnection.disconnect();
+        dataBrokerConnection = null;
     }
 }
