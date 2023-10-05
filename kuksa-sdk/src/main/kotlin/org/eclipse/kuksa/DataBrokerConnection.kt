@@ -51,7 +51,7 @@ class DataBrokerConnection internal constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     val subscriptions: Set<Property>
-        get() = subscribedProperties
+        get() = subscribedProperties.copy()
 
     private val subscribedProperties = mutableSetOf<Property>()
 

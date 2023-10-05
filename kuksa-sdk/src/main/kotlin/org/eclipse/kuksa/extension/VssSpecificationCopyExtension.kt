@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa.extension
 
+import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase.*
 import org.eclipse.kuksa.vsscore.model.VssProperty
@@ -80,8 +81,26 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
             FLOAT_ARRAY -> floatArray.valuesList.toFloatArray()
             DOUBLE_ARRAY -> doubleArray.valuesList.toDoubleArray()
 
-            VALUE_NOT_SET -> 0
-            else -> throw NoSuchFieldException("Could not convert value: $value to actual type")
+            // The server does not know the value type because it was never set yet
+            // but we know the expected type. Less types are not a problem here because they will default to 0 for
+            // uint, int, double and so on.
+            VALUE_NOT_SET -> {
+                when (value::class) {
+                    String::class -> string
+                    Boolean::class -> bool
+                    Float::class -> float
+                    Double::class -> double
+                    Int::class -> int32
+                    Long::class -> int64
+                    UInt::class -> uint32.toUInt()
+                    Array::class -> stringArray.valuesList.toList().toTypedArray()
+                    IntArray::class -> int32Array.valuesList.toIntArray()
+                    Types.BoolArray::class -> boolArray.valuesList.toBooleanArray()
+                    else -> throw NoSuchFieldException("Could not convert value: $value to type: ${value::class}")
+                }
+            }
+
+            null -> throw NoSuchFieldException("Could not convert value: $value to type: ${value::class}")
         }
 
         val valueMap = mapOf("value" to value)
