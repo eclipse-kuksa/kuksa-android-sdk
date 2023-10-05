@@ -40,6 +40,18 @@ class YamlDefinitionParserTest : BehaviorSpec({
             }
         }
         and("an incompatible yaml file") {
+            val incompatibleResourceUrl = classLoader.getResource("incompatible.yaml")!!
+            val incompatibleFile = File(incompatibleResourceUrl.path)
+
+            `when`("parsing the file") {
+                val parsedSpecifications = parser.parseSpecifications(incompatibleFile)
+
+                then("no entries should be returned") {
+                    parsedSpecifications.size shouldBe 0
+                }
+            }
+        }
+        and("an invalid yaml file") {
             val invalidResourceUrl = classLoader.getResource("invalid.yaml")!!
             val invalidFile = File(invalidResourceUrl.path)
 
