@@ -35,6 +35,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
                 val parsedSpecifications = parser.parseSpecifications(specificationFile)
 
                 then("the correct number of specification models should be parsed") {
+                    // These are exactly the specifications defined in the 4.0 file
                     parsedSpecifications.size shouldBe 1197
                 }
             }

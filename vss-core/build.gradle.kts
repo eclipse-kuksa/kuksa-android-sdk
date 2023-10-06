@@ -16,6 +16,14 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+
+    kotlin {
+        compilerOptions {
+            // https://youtrack.jetbrains.com/issue/KT-48678/Coroutine-debugger-disable-was-optimised-out-compiler-feature
+            // We don't want local variables to be optimized out while debugging into tests
+            freeCompilerArgs.add("-Xdebug")
+        }
+    }
 }
 
 publishing {
