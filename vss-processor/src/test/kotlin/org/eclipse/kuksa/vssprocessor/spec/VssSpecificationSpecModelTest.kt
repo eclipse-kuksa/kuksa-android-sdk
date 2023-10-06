@@ -53,6 +53,34 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
         }
     }
 
+    given("uint32 spec model") {
+        val specModel = VssSpecificationSpecModel(datatype = "uint32", vssPath = "Vehicle.IgnitionType")
+
+        `when`("creating a class spec") {
+            val classSpec = specModel.createClassSpec("test")
+
+            then("it should have a value with the correct datatype") {
+                val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
+
+                propertySpec.toString() shouldContain "kotlin.Int = 0"
+            }
+        }
+    }
+
+    given("int32 spec model") {
+        val specModel = VssSpecificationSpecModel(datatype = "int32", vssPath = "Vehicle.IgnitionType")
+
+        `when`("creating a class spec") {
+            val classSpec = specModel.createClassSpec("test")
+
+            then("it should have a value with the correct datatype") {
+                val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
+
+                propertySpec.toString() shouldContain "kotlin.Int = 0"
+            }
+        }
+    }
+
     given("uint64[] spec model") {
         val specModel = VssSpecificationSpecModel(datatype = "uint64[]", vssPath = "Vehicle.IgnitionType")
 
