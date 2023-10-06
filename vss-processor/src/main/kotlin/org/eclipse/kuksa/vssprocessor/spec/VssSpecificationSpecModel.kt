@@ -37,6 +37,7 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.className
 import org.eclipse.kuksa.vsscore.model.name
+import org.eclipse.kuksa.vsscore.model.parentKey
 import org.eclipse.kuksa.vsscore.model.variableName
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -51,11 +52,8 @@ internal class VssSpecificationSpecModel(
     override var type: String = "",
     override var comment: String = "",
     @Suppress("MemberVisibilityCanBePrivate") var datatype: String = "",
-) : VssSpecification, SpecModel {
-    var childSpecifications = mutableListOf<VssSpecificationSpecModel>()
-
-    private lateinit var logger: KSPLogger
-    private lateinit var packageName: String
+) : VssSpecification, SpecModel<VssSpecificationSpecModel> {
+    var logger: KSPLogger? = null
 
     private val datatypeProperty: TypeName
         get() {
@@ -65,19 +63,21 @@ internal class VssSpecificationSpecModel(
                 // Do not use UInt because it is incompatible with @JvmOverloads annotation
                 "uint8", "uint16", "uint32" -> Int::class.asTypeName()
                 "int8", "int16", "int32" -> Int::class.asTypeName()
+                "int64", "uint64" -> Long::class.asTypeName()
                 "float" -> Float::class.asTypeName()
                 "double" -> Double::class.asTypeName()
                 "string[]" -> Array::class.parameterizedBy(String::class)
                 "boolean[]" -> BooleanArray::class.asTypeName()
                 "uint8[]", "uint16[]", "uint32[]", "int8[]", "int16[]", "int32[]" -> IntArray::class.asTypeName()
-                else -> String::class.asTypeName()
+                "int64[]", "uint64[]" -> LongArray::class.asTypeName()
+                else -> Any::class.asTypeName()
             }
         }
 
     /**
      * Returns valid default values as string literals.
      */
-    private val defaultValue: String?
+    private val defaultValue: String
         get() {
             return when (datatypeProperty) {
                 String::class.asTypeName() -> "\"\""
@@ -90,14 +90,20 @@ internal class VssSpecificationSpecModel(
                 Array::class.parameterizedBy(String::class) -> "emptyArray<String>()"
                 IntArray::class.asTypeName() -> "IntArray(0)"
                 BooleanArray::class.asTypeName() -> "BooleanArray(0)"
+                LongArray::class.asTypeName() -> "LongArray(0)"
 
-                else -> null
+                else -> throw IllegalArgumentException("No default value found for $datatypeProperty!")
             }
         }
 
-    override fun createClassSpec(nestedClasses: Set<String>, packageName: String, logger: KSPLogger): TypeSpec {
-        this.packageName = packageName
-        this.logger = logger
+    override fun createClassSpec(
+        packageName: String,
+        relatedSpecifications: Collection<VssSpecificationSpecModel>,
+        nestedClasses: Collection<String>,
+    ): TypeSpec {
+        val childSpecifications = relatedSpecifications.filter { it.parentKey == name }
+        // Every specification has only one parent, do not check again for heirs
+        val reducedRelatedSpecifications = relatedSpecifications - childSpecifications.toSet() - this
 
         val nestedChildSpecs = mutableListOf<TypeSpec>()
         val constructorBuilder = FunSpec.constructorBuilder()
@@ -137,7 +143,15 @@ internal class VssSpecificationSpecModel(
             val mainClassPropertySpec = childPropertySpec.first()
             if (mainClassPropertySpec.initializer != null) { // Only add a default for initializer
                 if (hasAmbiguousName) {
-                    val childSpec = childSpecification.createClassSpec(nestedClasses, packageName, logger)
+                    // All children should contain the prefix vssPath (improves performance)
+                    val relevantRelatedSpecifications = reducedRelatedSpecifications.filter {
+                        it.vssPath.contains(childSpecification.vssPath + ".")
+                    }
+                    val childSpec = childSpecification.createClassSpec(
+                        packageName,
+                        relevantRelatedSpecifications,
+                        nestedClasses,
+                    )
                     nestedChildSpecs.add(childSpec)
                 }
 
@@ -301,6 +315,10 @@ internal class VssSpecificationSpecModel(
 
     override fun hashCode(): Int {
         return uuid.hashCode()
+    }
+
+    override fun toString(): String {
+        return vssPath
     }
 
     companion object {

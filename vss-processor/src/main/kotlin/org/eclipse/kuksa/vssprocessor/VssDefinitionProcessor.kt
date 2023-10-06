@@ -38,9 +38,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssNode
-import org.eclipse.kuksa.vsscore.model.parentVssPath
 import org.eclipse.kuksa.vssprocessor.parser.YamlDefinitionParser
-import org.eclipse.kuksa.vssprocessor.spec.SpecModel
 import org.eclipse.kuksa.vssprocessor.spec.VssPath
 import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
@@ -90,9 +88,9 @@ class VssDefinitionProcessor(
             }
 
             val simpleSpecificationElements = yamlParser.parseSpecifications(definitionFile)
-            val specificationElements = mapChildSpecifications(simpleSpecificationElements)
+            val vssPathToSpecificationElement = simpleSpecificationElements.associateBy({ VssPath(it.vssPath) }, { it })
 
-            generateModelFiles(specificationElements)
+            generateModelFiles(vssPathToSpecificationElement)
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.
@@ -105,23 +103,7 @@ class VssDefinitionProcessor(
             return assetsFolder.walk().first { it.name == fileName }
         }
 
-        // Takes all defined elements and nests them accordingly to their parents / child depending on the vssPath.
-        // Map<ParentVssPath, ChildElements>
-        private fun mapChildSpecifications(
-            specificationElements: List<VssSpecificationSpecModel>,
-        ): Map<VssPath, VssSpecificationSpecModel> {
-            val vssPathToElement = specificationElements.associateBy({ VssPath(it.vssPath) }, { it })
-            for (element in specificationElements) {
-                val parentKey = VssPath(element.parentVssPath)
-                val parentSpecification = vssPathToElement[parentKey] ?: continue
-
-                parentSpecification.childSpecifications.add(element) // It must be a child of the parent
-            }
-
-            return vssPathToElement
-        }
-
-        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, SpecModel>) {
+        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssSpecificationSpecModel>) {
             val duplicateSpecificationNames = vssPathToSpecification.keys
                 .groupBy { it.leaf }
                 .filter { it.value.size > 1 }
@@ -129,13 +111,18 @@ class VssDefinitionProcessor(
 
             logger.logging("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
 
-            for ((vssPath, vssSpecification) in vssPathToSpecification) {
+            for ((vssPath, specModel) in vssPathToSpecification) {
                 // Every duplicate is produced as a nested class - No separate file should be generated
                 if (duplicateSpecificationNames.contains(vssPath.leaf)) {
                     continue
                 }
 
-                val classSpec = vssSpecification.createClassSpec(duplicateSpecificationNames, PACKAGE_NAME, logger)
+                specModel.logger = logger
+                val classSpec = specModel.createClassSpec(
+                    PACKAGE_NAME,
+                    vssPathToSpecification.values,
+                    duplicateSpecificationNames,
+                )
 
                 val file = FileSpec.builder(PACKAGE_NAME, classSpec.name!!)
                     .addType(classSpec)

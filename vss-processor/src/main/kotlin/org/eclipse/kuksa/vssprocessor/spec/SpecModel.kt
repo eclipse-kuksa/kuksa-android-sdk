@@ -19,22 +19,23 @@
 
 package org.eclipse.kuksa.vssprocessor.spec
 
-import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.squareup.kotlinpoet.TypeSpec
 
 /**
  * Is used by the [SymbolProcessor] to generate a class spec which can be written into a file.
  */
-internal interface SpecModel {
+internal interface SpecModel<T : SpecModel<T>> {
     /**
-     * @param nestedClasses which can be used to create a class spec with nested classes.
      * @param packageName to use for the generated class specs.
-     * @param logger to use for log output.
+     * @param relatedSpecifications which can be used to generate children dependencies for the current and all
+     * [nestedClasses] models. The information used are depended on [T].
+     * @param nestedClasses which can be used to create a class spec with nested classes. The string can be used as
+     * identifier for finding the nested classes.
      */
     fun createClassSpec(
-        nestedClasses: Set<String> = emptySet(),
         packageName: String,
-        logger: KSPLogger,
+        relatedSpecifications: Collection<T> = emptyList(),
+        nestedClasses: Collection<String> = emptySet(),
     ): TypeSpec
 }
