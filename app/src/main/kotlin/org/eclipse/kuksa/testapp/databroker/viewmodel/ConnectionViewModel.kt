@@ -51,25 +51,9 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
     var connectionViewState: ConnectionViewState by mutableStateOf(ConnectionViewState.DISCONNECTED)
         private set
 
-    val isConnected by derivedStateOf {
-        when (connectionViewState) {
-            ConnectionViewState.CONNECTED -> true
-            else -> false
-        }
-    }
-
-    val isConnecting by derivedStateOf {
-        when (connectionViewState) {
-            ConnectionViewState.CONNECTING -> true
-            else -> false
-        }
-    }
-    val isDisconnected by derivedStateOf {
-        when (connectionViewState) {
-            ConnectionViewState.DISCONNECTED -> true
-            else -> false
-        }
-    }
+    val isConnected by derivedStateOf { connectionViewState == ConnectionViewState.CONNECTED }
+    val isConnecting by derivedStateOf { connectionViewState == ConnectionViewState.CONNECTING }
+    val isDisconnected by derivedStateOf { connectionViewState == ConnectionViewState.DISCONNECTED }
 
     fun updateTimeout(timeoutMillis: Long) {
         connectionTimeoutMillis = timeoutMillis

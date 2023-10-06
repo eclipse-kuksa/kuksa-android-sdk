@@ -50,6 +50,7 @@ class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
+    @Suppress("unused")
     val subscriptions: Set<Property>
         get() = subscribedProperties.copy()
 
@@ -109,9 +110,9 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [VssSpecification] with the provided propertyObserver. Only a [VssProperty]
+     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationObserver]. Only a [VssProperty]
      * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
-     * [subscribe] method will find all [VssProperty] children and subscribed them instead. Once subscribed the
+     * [subscribe] method will find all [VssProperty] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssProperty].
      *
      * @param specification the [VssSpecification] to subscribe to
@@ -121,6 +122,7 @@ class DataBrokerConnection internal constructor(
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
+    @Suppress("exceptions:TooGenericExceptionCaught") // Handling is bundled together
     @JvmOverloads
     fun <T : VssSpecification> subscribe(
         specification: T,
@@ -140,7 +142,7 @@ class DataBrokerConnection internal constructor(
             Log.d(TAG, "Subscribing to the following properties: $leafProperties")
 
             // TODO: Remove as soon as the server supports subscribing to vssPaths which are not VssProperties
-            // Reduces the load on the observer for big VssSpecifications. We not wait for the initial update
+            // Reduces the load on the observer for big VssSpecifications. We wait for the initial update
             // of all VssProperties before notifying the observer about the first batch
             val initialSubscriptionUpdates = leafProperties.associate { it.vssPath to false }.toMutableMap()
 
@@ -192,14 +194,15 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Retrieves the [VssSpecification] and returns it to the corresponding Callback. The retrieved [VssSpecification]
-     * is of the same type as the inputted. All underlying heirs are changed to reflect the data broker state.
+     * Retrieves the [VssSpecification] and returns it. The retrieved [VssSpecification]
+     * is of the same type as the inputted one. All underlying heirs are changed to reflect the data broker state.
      *
      * @param specification to retrieve
      * @param fields to retrieve. The default value is a list with a single [Types.Field.FIELD_VALUE] entry.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
+    @Suppress("exceptions:TooGenericExceptionCaught") // Handling is bundled together
     @JvmOverloads
     suspend fun <T : VssSpecification> fetch(
         specification: T,
@@ -217,7 +220,7 @@ class DataBrokerConnection internal constructor(
                 }
 
                 // Update every heir specification
-                // TODO: Can be optimized to not replacing the whole heritage line for every child entry one by one
+                // TODO: Can be optimized to not replace the whole heritage line for every child entry one by one
                 var updatedSpecification: T = specification
                 val heritage = updatedSpecification.heritage
                 entries.forEach { entry ->
