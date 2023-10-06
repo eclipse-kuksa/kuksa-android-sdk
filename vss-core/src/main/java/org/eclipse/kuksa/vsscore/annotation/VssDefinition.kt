@@ -24,7 +24,21 @@ package org.eclipse.kuksa.vsscore.annotation
  * Vehicle Signal Specification definition file. Only .yaml files are currently supported. The searched root folder
  * is the assets folder (example path: app/src/main/assets).
  *
- * Example: @VssDefinition("vss_rel_4.0.yaml")
+ * ## Example
+ *
+ * ```
+ * @VssDefinition("vss_rel_4.0.yaml")
+ * ```
+ *
+ * ## Important
+ *
+ * When using the KSP (Kotlin Symbol Processing) feature with this annotation in combination with android compose
+ * then the incremental compiler for KSP needs to be disabled explicitly in the gradle properties.
+ * ```
+ * <ksp.incremental=false>
+ *
+ * @param vssDefinitionPath the path to the definition file
+ * ```
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)

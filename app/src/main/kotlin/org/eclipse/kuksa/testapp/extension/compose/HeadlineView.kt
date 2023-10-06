@@ -37,7 +37,7 @@ fun Headline(name: String, modifier: Modifier = Modifier, color: Color = Color.B
         text = name,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 15.dp),
+            .padding(vertical = 15.dp),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.titleLarge,
         color = color,
