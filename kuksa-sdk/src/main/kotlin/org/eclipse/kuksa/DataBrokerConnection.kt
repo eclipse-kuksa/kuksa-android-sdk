@@ -28,6 +28,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -56,9 +57,8 @@ class DataBrokerConnection internal constructor(
             if (newState != ConnectivityState.SHUTDOWN) {
                 managedChannel.shutdownNow()
             }
-            val listeners = disconnectListeners.get()
 
-            listeners.forEach { listener ->
+            disconnectListeners.forEach { listener ->
                 listener.onDisconnect()
             }
         }
