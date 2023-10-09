@@ -4,14 +4,15 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("com.google.protobuf")
-
-    `maven-publish`
+    publish
 }
+
+group = "org.eclipse.kuksa"
+version = rootProject.extra["projectVersion"].toString()
 
 android {
     namespace = "org.eclipse.kuksa"
-    compileSdk = 34
-    version = "0.1.0-SNAPSHOT"
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 27
@@ -42,12 +43,7 @@ android {
             }
         }
     }
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-            withJavadocJar()
-        }
-    }
+
 }
 
 dependencies {
@@ -88,20 +84,6 @@ protobuf {
                         option("lite")
                     }
                 }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        register<MavenPublication>("release") {
-            groupId = "org.eclipse.kuksa"
-            artifactId = "kuksa-sdk"
-            version = "0.1.0-SNAPSHOT"
-
-            afterEvaluate {
-                from(components["release"])
             }
         }
     }

@@ -17,6 +17,8 @@
  *
  */
 
+package org.eclipse.kuksa.extension
+
 import org.gradle.api.Project
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalogsExtension
