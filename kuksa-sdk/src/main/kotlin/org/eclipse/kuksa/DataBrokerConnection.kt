@@ -20,6 +20,7 @@
 package org.eclipse.kuksa
 
 import android.util.Log
+import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
@@ -50,7 +51,13 @@ class DataBrokerConnection internal constructor(
     init {
         val state = managedChannel.getState(false)
         managedChannel.notifyWhenStateChanged(state) {
+            val newState = managedChannel.getState(false)
+            Log.d(TAG, "DataBrokerConnection state changed: $newState")
+            if (newState != ConnectivityState.SHUTDOWN) {
+                managedChannel.shutdownNow()
+            }
             val listeners = disconnectListeners.get()
+
             listeners.forEach { listener ->
                 listener.onDisconnect()
             }
@@ -176,7 +183,7 @@ class DataBrokerConnection internal constructor(
      */
     fun disconnect() {
         Log.d(TAG, "disconnect() called")
-        managedChannel.shutdown()
+        managedChannel.shutdownNow()
     }
 
     private companion object {
