@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.incremental.createDirectory
 plugins {
     base
     detekt
+    version
 }
 
 subprojects {
