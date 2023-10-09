@@ -74,6 +74,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
     private val onDisconnectListener = DisconnectListener {
         connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
+        outputViewModel.clear()
         outputViewModel.appendOutput("DataBroker disconnected")
     }
 

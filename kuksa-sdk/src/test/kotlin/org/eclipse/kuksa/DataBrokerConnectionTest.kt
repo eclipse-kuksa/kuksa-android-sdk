@@ -214,7 +214,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             dataBrokerConnection.disconnect()
 
             then("The Channel is shutDown") {
-                verify { managedChannel.shutdown() }
+                verify { managedChannel.shutdownNow() }
             }
         }
     }
