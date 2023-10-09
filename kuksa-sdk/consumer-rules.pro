@@ -1,6 +1,6 @@
 -keep class org.eclipse.kuksa.proto.v1.** { *; }
 -keep class com.google.protobuf.** { *; }
 
-# Generated classes
--keep class ** implements org.eclipse.kuksa.vsscore.model.VssProperty { *; }
--keep class ** implements org.eclipse.kuksa.vsscore.model.VssSpecification { *; }
+# Generated data classes have to keep their copy method for reflection methods
+-keepclassmembers class ** implements org.eclipse.kuksa.vsscore.model.VssNode { public *** copy(***); }
+-keepnames class ** implements org.eclipse.kuksa.vsscore.model.VssNode { public *** copy(***); }
