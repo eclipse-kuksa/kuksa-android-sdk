@@ -133,12 +133,6 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-
-        dataBrokerEngine.registerDisconnectListener(onDisconnectListener)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
 
@@ -151,14 +145,14 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         outputViewModel.appendOutput("Connecting to data broker - Please wait")
         connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTING)
 
+        dataBrokerEngine.registerDisconnectListener(onDisconnectListener)
         dataBrokerEngine.connect(connectionInfo, dataBrokerConnectionCallback)
     }
 
     private fun disconnect() {
         Log.d(TAG, "Disconnecting from DataBroker")
         dataBrokerEngine.disconnect()
-        outputViewModel.clear()
-        connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
+        dataBrokerEngine.unregisterDisconnectListener(onDisconnectListener)
     }
 
     private fun fetchProperty(property: Property) {
