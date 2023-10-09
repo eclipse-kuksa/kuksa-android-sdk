@@ -10,6 +10,8 @@ tasks.register("increaseMajorVersion") {
     group = "version"
     doLast {
         properties.major += 1
+        properties.minor = 0
+        properties.patch = 0
         properties.store()
     }
 }
@@ -18,6 +20,7 @@ tasks.register("increaseMinorVersion") {
     group = "version"
     doLast {
         properties.minor += 1
+        properties.patch += 0
         properties.store()
     }
 }
