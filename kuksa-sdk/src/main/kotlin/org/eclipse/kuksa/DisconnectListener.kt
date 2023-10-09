@@ -19,11 +19,13 @@
 
 package org.eclipse.kuksa
 
+import org.eclipse.kuksa.pattern.listener.Listener
+
 /**
  * The [DisconnectListener] can be registered to [DataBrokerConnection.disconnectListeners]
  * When registered it will notify about manual or unexpected connection disconnects from the DataBroker.
  */
-fun interface DisconnectListener {
+fun interface DisconnectListener : Listener {
     /**
      * Will be triggered, when the connection to the DataBroker was closed manually or unexpectedly.
      */

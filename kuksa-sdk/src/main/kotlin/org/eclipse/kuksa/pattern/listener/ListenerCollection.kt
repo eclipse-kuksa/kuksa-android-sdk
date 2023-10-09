@@ -17,34 +17,20 @@
  *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.pattern.listener
 
 /**
- * Generic Listener interface, to support multiple listeners.
- */
-class MultiListener<T> {
-    private var listeners: MutableSet<T> = mutableSetOf()
-
+ * The ListenerCollection interface provides methods to register and unregister multiple listeners with a generic type.
+ * The underlying collection decides if the same listener can be added only once or multiple times.
+*/
+interface ListenerCollection<T : Listener> : Iterable<T> {
     /**
      * Adds a new [listener] and returns true if the [listener] was successfully added, returns false otherwise.
-     * A [listener] can only be added once.
      */
-    fun register(listener: T): Boolean {
-        return listeners.add(listener)
-    }
+    fun register(listener: T): Boolean
 
     /**
      * Removes a [listener] and returns true if the [listener] was successfully removed, returns false otherwise.
      */
-    fun unregister(listener: T): Boolean {
-        return listeners.remove(listener)
-    }
-
-    /**
-     * Retrieves a defensive copy of the underlying list of listeners.
-     */
-    @JvmSynthetic
-    internal fun get(): List<T> {
-        return listeners.toList()
-    }
+    fun unregister(listener: T): Boolean
 }

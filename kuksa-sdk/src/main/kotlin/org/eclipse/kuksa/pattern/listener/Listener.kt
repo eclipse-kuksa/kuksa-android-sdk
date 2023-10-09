@@ -17,12 +17,9 @@
  *
  */
 
-package test.kotest
+package org.eclipse.kuksa.pattern.listener
 
-import io.kotest.core.NamedTag
-
-val Integration = NamedTag("Integration")
-val Unit = NamedTag("Unit")
-
-val Secure = NamedTag("Secure")
-val Insecure = NamedTag("Insecure")
+/**
+ * Marker Interface for generic listeners.
+ */
+interface Listener
