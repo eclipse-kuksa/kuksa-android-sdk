@@ -32,11 +32,14 @@ import org.eclipse.kuksa.vsscore.model.variableName
  * Creates a copy of the [VssSpecification] where the whole [VssSpecification.findHeritageLine] is replaced
  * with modified heirs.
  *
- * Example: VssVehicle->VssCabin->VssWindowChildLockEngaged
+ * ### Example:
+ * ```
+ * VssVehicle->VssCabin->VssWindowChildLockEngaged
+ * ```
+ *
  * A deep copy is necessary for a nested history tree with at least two generations. The VssWindowChildLockEngaged
  * is replaced inside VssCabin where this again is replaced inside VssVehicle.
  *
- * @param changedHeritageLine the line of heirs
  * @param generation the generation to start copying with starting from the [VssSpecification] to [deepCopy]
  * @return a copy where every heir in the given [changedHeritageLine] is replaced with a another copy
  */

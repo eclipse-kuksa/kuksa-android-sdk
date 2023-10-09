@@ -27,10 +27,7 @@ import org.eclipse.kuksa.vsscore.model.VssSpecification
  */
 fun interface PropertyObserver {
     /**
-     * Will be triggered when the underlying vssPath changed it's value.
-     *
-     * @param vssPath the underlying vssPath
-     * @param updatedValue the updated value
+     * Will be triggered with the [updatedValue] when the underlying [vssPath] changed it's value.
      */
     fun onPropertyChanged(vssPath: String, updatedValue: DataEntry)
 }
@@ -41,9 +38,8 @@ fun interface PropertyObserver {
  */
 fun interface VssSpecificationObserver<T : VssSpecification> {
     /**
-     * Will be triggered when the underlying vssPath changed it's value or to inform about the initial state.
-     *
-     * @param vssSpecification which is being observed
+     * Will be triggered with the [vssSpecification] when the underlying vssPath changed it's value or to inform about
+     * the initial state.
      */
     fun onSpecificationChanged(vssSpecification: T)
 }

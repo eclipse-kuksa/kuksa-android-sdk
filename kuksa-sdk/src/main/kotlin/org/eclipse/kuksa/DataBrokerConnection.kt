@@ -43,8 +43,6 @@ import org.eclipse.kuksa.vsscore.model.heritage
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
  * DataBroker.
- *
- * @param managedChannel the channel on which communication takes place.
  */
 class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
@@ -59,9 +57,6 @@ class DataBrokerConnection internal constructor(
     /**
      * Subscribes to the specified vssPath with the provided propertyObserver. Once subscribed the application will be
      * notified about any changes to the specified vssPath.
-     *
-     * @param properties the properties to subscribe to
-     * @param propertyObserver the observer to notify in case of changes
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
@@ -113,12 +108,9 @@ class DataBrokerConnection internal constructor(
      * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationObserver]. Only a [VssProperty]
      * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
      * [subscribe] method will find all [VssProperty] children and subscribes them instead. Once subscribed the
-     * application will be notified about any changes to every subscribed [VssProperty].
-     *
-     * @param specification the [VssSpecification] to subscribe to
-     * @param fields the [Types.Field] to subscribe to. The default value is a list with a
-     * single [Types.Field.FIELD_VALUE] entry.
-     * @param observer the observer to notify in case of changes
+     * application will be notified about any changes to every subscribed [VssProperty]. The [fields] can be used to
+     * subscribe to different information of the [specification]. The default for the [fields] parameter is a list with
+     * a single [Types.Field.FIELD_VALUE] entry.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
@@ -169,8 +161,6 @@ class DataBrokerConnection internal constructor(
     /**
      * Retrieves the underlying property of the specified vssPath and returns it to the corresponding Callback.
      *
-     * @param property the property to retrieve
-     *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     suspend fun fetch(property: Property): GetResponse {
@@ -196,9 +186,8 @@ class DataBrokerConnection internal constructor(
     /**
      * Retrieves the [VssSpecification] and returns it. The retrieved [VssSpecification]
      * is of the same type as the inputted one. All underlying heirs are changed to reflect the data broker state.
-     *
-     * @param specification to retrieve
-     * @param fields to retrieve. The default value is a list with a single [Types.Field.FIELD_VALUE] entry.
+     * The [fields] can be used to subscribe to different information of the [specification]. The default for the
+     * [fields] parameter is a list with a single [Types.Field.FIELD_VALUE] entry.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
@@ -237,9 +226,6 @@ class DataBrokerConnection internal constructor(
     /**
      * Updates the underlying property of the specified vssPath with the updatedProperty. Notifies the callback
      * about (un)successful operation.
-     *
-     * @param property the property to update
-     * @param updatedDatapoint the updated datapoint of the property
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */

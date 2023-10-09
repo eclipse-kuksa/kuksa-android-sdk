@@ -29,10 +29,8 @@ import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.extension.TAG
 
 /**
- * DataBrokerConnector is used to establish a successful connection to the DataBroker.
- *
- * @param managedChannel the channel on which communication takes place.
- * @param defaultDispatcher the defaultDispatcher to use for the coroutine scopes.
+ * The DataBrokerConnector is used to establish a successful connection to the DataBroker. The communication takes
+ * place inside the [managedChannel]. Use the [defaultDispatcher] for the coroutine scope.
  */
 class DataBrokerConnector @JvmOverloads constructor(
     private val managedChannel: ManagedChannel,
