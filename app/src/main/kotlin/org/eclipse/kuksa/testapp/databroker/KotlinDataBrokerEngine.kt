@@ -44,6 +44,7 @@ import org.eclipse.kuksa.testapp.extension.open
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import java.io.IOException
 
+@Suppress("complexity:TooManyFunctions")
 class KotlinDataBrokerEngine(
     private val lifecycleScope: LifecycleCoroutineScope,
     private val assetManager: AssetManager,

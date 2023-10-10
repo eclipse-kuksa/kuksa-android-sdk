@@ -52,6 +52,12 @@ class DataBrokerConnection internal constructor(
 ) {
     val disconnectListeners = MultiListener<DisconnectListener>()
 
+    @Suppress("unused")
+    val subscriptions: Set<Property>
+        get() = subscribedProperties.copy()
+
+    private val subscribedProperties = mutableSetOf<Property>()
+
     init {
         val state = managedChannel.getState(false)
         managedChannel.notifyWhenStateChanged(state) {
@@ -66,12 +72,6 @@ class DataBrokerConnection internal constructor(
             }
         }
     }
-
-    @Suppress("unused")
-    val subscriptions: Set<Property>
-        get() = subscribedProperties.copy()
-
-    private val subscribedProperties = mutableSetOf<Property>()
 
     /**
      * Subscribes to the specified vssPath with the provided propertyObserver. Once subscribed the application will be

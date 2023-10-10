@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa.extension
 
+import android.util.Log
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.memberFunctions
@@ -36,7 +37,12 @@ import kotlin.reflect.full.memberFunctions
 internal fun <T : Any> T.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
     val instanceClass = this::class
 
-    val copyFunction = instanceClass::memberFunctions.get().firstOrNull { it.name == "copy" } ?: return this
+    val copyFunction = instanceClass::memberFunctions.get().firstOrNull { it.name == "copy" }
+    if (copyFunction == null) {
+        Log.w(instanceClass.TAG, "No copy function found for class: $instanceClass")
+        return this
+    }
+
     val instanceParameter = copyFunction.instanceParameter ?: return this
 
     val valueArgs = copyFunction.parameters

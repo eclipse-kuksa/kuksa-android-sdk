@@ -96,14 +96,14 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
                     Int::class -> int32
                     Long::class -> int64
                     UInt::class -> uint32.toUInt()
-                    Array::class -> stringArray.valuesList.toList().toTypedArray()
+                    Array<String>::class -> stringArray.valuesList.toList().toTypedArray()
                     IntArray::class -> int32Array.valuesList.toIntArray()
                     Types.BoolArray::class -> boolArray.valuesList.toBooleanArray()
                     else -> throw NoSuchFieldException("Could not convert value: $value to type: ${value::class}")
                 }
             }
 
-            null -> throw NoSuchFieldException("Could not convert value: $value to type: ${value::class}")
+            null -> throw NoSuchFieldException("Could not convert available value: $value to type: ${value::class}")
         }
 
         val valueMap = mapOf("value" to value)
