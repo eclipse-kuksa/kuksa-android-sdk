@@ -21,6 +21,7 @@ package org.eclipse.kuksa.testapp.databroker
 
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
+import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.VssSpecificationObserver
 import org.eclipse.kuksa.model.Property
@@ -53,4 +54,8 @@ interface DataBrokerEngine {
     )
 
     fun disconnect()
+
+    fun registerDisconnectListener(listener: DisconnectListener)
+
+    fun unregisterDisconnectListener(listener: DisconnectListener)
 }

@@ -251,6 +251,22 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 }
             }
         }
+
+        // this test closes the connection, the connection can't be used afterward anymore
+        `when`("A DisconnectListener is registered successfully") {
+            val disconnectListener = mockk<DisconnectListener>()
+            val disconnectListeners = dataBrokerConnection.disconnectListeners
+            disconnectListeners.register(disconnectListener)
+
+            `when`("The Connection is closed manually") {
+                dataBrokerConnection.disconnect()
+
+                then("The DisconnectListener is triggered") {
+                    verify { disconnectListener.onDisconnect() }
+                }
+            }
+        }
+        // connection is closed at this point
     }
     given("A DataBrokerConnection with a mocked ManagedChannel") {
         val managedChannel = mockk<ManagedChannel>(relaxed = true)
@@ -260,7 +276,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             dataBrokerConnection.disconnect()
 
             then("The Channel is shutDown") {
-                verify { managedChannel.shutdown() }
+                verify { managedChannel.shutdownNow() }
             }
         }
     }

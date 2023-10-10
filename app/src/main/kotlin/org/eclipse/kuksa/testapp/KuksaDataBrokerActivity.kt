@@ -31,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
+import org.eclipse.kuksa.DisconnectListener
+import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
@@ -63,20 +65,27 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
     private val dataBrokerConnectionCallback = object : CoroutineCallback<DataBrokerConnection>() {
         override fun onSuccess(result: DataBrokerConnection?) {
-            outputViewModel.appendOutput("Connection to data broker was successful")
+            outputViewModel.appendOutput("Connection to DataBroker successful established")
             connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTED)
         }
 
         override fun onError(error: Throwable) {
-            outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
+            outputViewModel.appendOutput("Connection to DataBroker failed: ${error.message}")
             connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
         }
+    }
+
+    private val onDisconnectListener = DisconnectListener {
+        connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
+        outputViewModel.clear()
+        outputViewModel.appendOutput("DataBroker disconnected")
     }
 
     private lateinit var dataBrokerEngine: DataBrokerEngine
     private val kotlinDataBrokerEngine by lazy {
         KotlinDataBrokerEngine(lifecycleScope, assets)
     }
+
     private val javaDataBrokerEngine by lazy {
         JavaDataBrokerEngine(assets)
     }
@@ -142,20 +151,26 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        dataBrokerEngine.unregisterDisconnectListener(onDisconnectListener)
+    }
+
     private fun connect(connectionInfo: ConnectionInfo) {
         Log.d(TAG, "Connecting to DataBroker: $connectionInfo")
 
         outputViewModel.appendOutput("Connecting to data broker - Please wait")
         connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTING)
 
+        dataBrokerEngine.registerDisconnectListener(onDisconnectListener)
         dataBrokerEngine.connect(connectionInfo, dataBrokerConnectionCallback)
     }
 
     private fun disconnect() {
         Log.d(TAG, "Disconnecting from DataBroker")
         dataBrokerEngine.disconnect()
-        outputViewModel.clear()
-        connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
+        dataBrokerEngine.unregisterDisconnectListener(onDisconnectListener)
     }
 
     private fun fetchProperty(property: Property) {

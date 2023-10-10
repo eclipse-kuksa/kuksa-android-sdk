@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
+import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
@@ -36,6 +37,10 @@ import java.io.IOException
 
 @Suppress("UNUSED_VARIABLE", "SwallowedException", "UNUSED_ANONYMOUS_PARAMETER")
 class KotlinActivity : AppCompatActivity() {
+
+    private var disconnectListener = DisconnectListener {
+        // connection closed manually or unexpectedly
+    }
 
     private var dataBrokerConnection: DataBrokerConnection? = null
 
@@ -80,6 +85,9 @@ class KotlinActivity : AppCompatActivity() {
             val connector = DataBrokerConnector(managedChannel)
             try {
                 dataBrokerConnection = connector.connect()
+                    .apply {
+                        disconnectListeners.register(disconnectListener)
+                    }
                 // Connection to DataBroker successfully established
             } catch (e: DataBrokerException) {
                 // Connection to DataBroker failed
@@ -118,6 +126,8 @@ class KotlinActivity : AppCompatActivity() {
     }
 
     fun disconnect() {
+        dataBrokerConnection?.disconnectListeners?.unregister(disconnectListener)
         dataBrokerConnection?.disconnect()
+        dataBrokerConnection = null
     }
 }

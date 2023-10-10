@@ -20,6 +20,7 @@
 package org.eclipse.kuksa
 
 import android.util.Log
+import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
@@ -29,6 +30,7 @@ import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -48,6 +50,23 @@ class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
+    val disconnectListeners = MultiListener<DisconnectListener>()
+
+    init {
+        val state = managedChannel.getState(false)
+        managedChannel.notifyWhenStateChanged(state) {
+            val newState = managedChannel.getState(false)
+            Log.d(TAG, "DataBrokerConnection state changed: $newState")
+            if (newState != ConnectivityState.SHUTDOWN) {
+                managedChannel.shutdownNow()
+            }
+
+            disconnectListeners.forEach { listener ->
+                listener.onDisconnect()
+            }
+        }
+    }
+
     @Suppress("unused")
     val subscriptions: Set<Property>
         get() = subscribedProperties.copy()
@@ -261,6 +280,6 @@ class DataBrokerConnection internal constructor(
      */
     fun disconnect() {
         Log.d(TAG, "disconnect() called")
-        managedChannel.shutdown()
+        managedChannel.shutdownNow()
     }
 }
