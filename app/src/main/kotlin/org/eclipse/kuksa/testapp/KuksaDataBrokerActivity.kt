@@ -32,7 +32,6 @@ import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
