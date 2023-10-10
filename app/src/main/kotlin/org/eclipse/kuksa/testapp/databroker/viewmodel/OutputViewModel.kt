@@ -30,7 +30,7 @@ class OutputViewModel : ViewModel() {
 
     fun appendOutput(text: String) {
         val emptyLines = if (output.isEmpty()) "\n" else "\n\n"
-        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
         val date = LocalDateTime.now().format(dateFormatter)
         output += "$emptyLines- $date\n $text"
     }
