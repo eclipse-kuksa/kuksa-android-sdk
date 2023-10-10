@@ -23,11 +23,6 @@ style:
   ForbiddenComment:
     active: false
 
-exceptions:
-  # Sometimes you want to bundle multiple exceptions to be caught the same way
-  TooGenericExceptionCaught:
-    active: false
-
 naming:
   FunctionNaming:
     active: true

@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 import com.google.protobuf.gradle.id
 
 plugins {
@@ -43,7 +45,6 @@ android {
             }
         }
     }
-
 }
 
 dependencies {
@@ -62,6 +63,11 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotest)
     testImplementation(libs.mockk)
+}
+
+configure<Publish_gradle.PublishPluginExtension> {
+    mavenPublicationName = "release"
+    componentName = "release"
 }
 
 protobuf {

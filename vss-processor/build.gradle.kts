@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     `maven-publish`
+    publish
 }
 
 group = "org.eclipse.kuksa.vss-processor"
@@ -32,14 +33,7 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = "org.eclipse.kuksa.vss-processor"
-            artifactId = "vss-processor"
-            version = "0.1.0-SNAPSHOT"
-
-            from(components["java"])
-        }
-    }
+configure<Publish_gradle.PublishPluginExtension> {
+    mavenPublicationName = "maven"
+    componentName = "java"
 }
