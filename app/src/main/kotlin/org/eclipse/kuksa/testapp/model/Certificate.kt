@@ -19,19 +19,20 @@
 
 package org.eclipse.kuksa.testapp.model
 
+import android.net.Uri
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
 data class Certificate(
-    val name: String,
-    val extension: String,
+    val uriPath: String,
     val overrideAuthority: String = "",
 ) {
-    var fullName = "$name.$extension"
+    val uri: Uri
+        get() = Uri.parse(uriPath)
 
     companion object {
-        val DEFAULT = Certificate("CA", "pem")
+        val DEFAULT = Certificate("") // Uri.EMPTY
     }
 }

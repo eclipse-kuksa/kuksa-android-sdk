@@ -102,4 +102,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling.test.manifest)
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.constraintlayout.compose)
+}
 }

@@ -52,11 +52,16 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.extension.valueType
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
 class KuksaDataBrokerActivity : ComponentActivity() {
+    private lateinit var connectionInfoRepository: ConnectionInfoRepository
+
     private val topAppBarViewModel: TopAppBarViewModel by viewModels()
-    private val connectionViewModel: ConnectionViewModel by viewModels()
+    private val connectionViewModel: ConnectionViewModel by viewModels {
+        ConnectionViewModel.Factory(connectionInfoRepository)
+    }
     private val vssPropertiesViewModel: VSSPropertiesViewModel by viewModels()
     private val outputViewModel: OutputViewModel by viewModels()
 
@@ -80,11 +85,11 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
     private lateinit var dataBrokerEngine: DataBrokerEngine
     private val kotlinDataBrokerEngine by lazy {
-        KotlinDataBrokerEngine(lifecycleScope, assets)
+        KotlinDataBrokerEngine(lifecycleScope)
     }
 
     private val javaDataBrokerEngine by lazy {
-        JavaDataBrokerEngine(assets)
+        JavaDataBrokerEngine()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,6 +105,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 }
             }
         }
+
+        connectionInfoRepository = ConnectionInfoRepository(this)
 
         dataBrokerEngine = kotlinDataBrokerEngine
         topAppBarViewModel.onCompatibilityModeChanged = { isCompatibilityModeEnabled ->
@@ -146,7 +153,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTING)
 
         dataBrokerEngine.registerDisconnectListener(onDisconnectListener)
-        dataBrokerEngine.connect(connectionInfo, dataBrokerConnectionCallback)
+        dataBrokerEngine.connect(this, connectionInfo, dataBrokerConnectionCallback)
     }
 
     private fun disconnect() {
