@@ -23,21 +23,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import org.eclipse.kuksa.testapp.util.MaxElementSet
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+private const val MAX_NUMBER_LOG_ENTRIES = 100
+
 class OutputViewModel : ViewModel() {
-    var output: String by mutableStateOf("")
+    private val maxElementSet = MaxElementSet<String>(MAX_NUMBER_LOG_ENTRIES)
+
+    var output: List<String> by mutableStateOf(listOf())
         private set
 
     fun appendOutput(text: String) {
-        val emptyLines = if (output.isEmpty()) "\n" else "\n\n"
-        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val emptyLines = if (maxElementSet.isEmpty()) "\n" else "\n\n"
+        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
         val date = LocalDateTime.now().format(dateFormatter)
-        output += "$emptyLines- $date\n $text"
+        maxElementSet += "$emptyLines- $date\n $text"
+
+        output = maxElementSet.toList()
     }
 
     fun clear() {
-        output = ""
+        maxElementSet.clear()
+
+        output = maxElementSet.toList()
     }
 }
