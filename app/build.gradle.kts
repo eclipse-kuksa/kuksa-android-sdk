@@ -67,6 +67,18 @@ android {
     }
 }
 
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+
+    kotlin {
+        compilerOptions {
+            // https://youtrack.jetbrains.com/issue/KT-48678/Coroutine-debugger-disable-was-optimised-out-compiler-feature
+            // We don't want local variables to be optimized out while debugging into tests
+            freeCompilerArgs.add("-Xdebug")
+        }
+    }
+}
+
 plugins {
     id("com.android.application")
     kotlin("plugin.serialization") version "1.9.0"
@@ -103,5 +115,4 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.constraintlayout.compose)
-}
 }
