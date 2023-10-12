@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker
 
+import android.content.Context
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
@@ -32,8 +33,17 @@ import org.eclipse.kuksa.testapp.model.ConnectionInfo
 interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?
 
-    fun connect(connectionInfo: ConnectionInfo, callback: CoroutineCallback<DataBrokerConnection>)
-    fun fetchProperty(property: Property, callback: CoroutineCallback<GetResponse>)
+    fun connect(
+        context: Context,
+        connectionInfo: ConnectionInfo,
+        callback: CoroutineCallback<DataBrokerConnection>,
+    )
+
+    fun fetchProperty(
+        property: Property,
+        callback: CoroutineCallback<GetResponse>,
+    )
+
     fun updateProperty(
         property: Property,
         datapoint: Datapoint,

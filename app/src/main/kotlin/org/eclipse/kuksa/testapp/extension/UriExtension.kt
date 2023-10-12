@@ -19,12 +19,19 @@
 
 package org.eclipse.kuksa.testapp.extension
 
-import android.content.res.AssetManager
-import org.eclipse.kuksa.testapp.model.Certificate
-import java.io.IOException
-import java.io.InputStream
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 
-/**
- * @throws IOException
- */
-fun AssetManager.open(certificate: Certificate): InputStream = open(certificate.fullName)
+fun Uri.fetchFileName(context: Context): String? {
+    var fileName: String? = null
+    val cursor = context.contentResolver.query(this, null, null, null, null)
+    cursor?.use {
+        val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+
+        if (cursor.moveToFirst()) {
+            fileName = cursor.getString(nameIndex)
+        }
+    }
+    return fileName
+}

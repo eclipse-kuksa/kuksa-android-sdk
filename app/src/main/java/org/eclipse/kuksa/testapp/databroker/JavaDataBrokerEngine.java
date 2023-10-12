@@ -19,7 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker;
 
-import android.content.res.AssetManager;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -34,7 +34,6 @@ import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
-import org.eclipse.kuksa.testapp.extension.AssetManagerExtensionKt;
 import org.eclipse.kuksa.testapp.model.Certificate;
 import org.eclipse.kuksa.testapp.model.ConnectionInfo;
 import org.jetbrains.annotations.NotNull;
@@ -59,24 +58,18 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     private static final String TAG = JavaDataBrokerEngine.class.getSimpleName();
     private static final long TIMEOUT_CONNECTION = 5;
 
-    @NonNull
-    private final AssetManager assetManager;
-
     @Nullable
     private DataBrokerConnection dataBrokerConnection = null;
 
     private final Set<DisconnectListener> disconnectListeners = new HashSet<>();
 
-    public JavaDataBrokerEngine(@NonNull AssetManager assetManager) {
-        this.assetManager = assetManager;
-    }
-
     public void connect(
+        @NonNull Context context,
         @NonNull ConnectionInfo connectionInfo,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
         if (connectionInfo.isTlsEnabled()) {
-            connectSecure(connectionInfo, callback);
+            connectSecure(context, connectionInfo, callback);
         } else {
             connectInsecure(connectionInfo, callback);
         }
@@ -99,26 +92,27 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     private void connectSecure(
+        @NotNull Context context,
         @NotNull ConnectionInfo connectInfo,
         @NotNull CoroutineCallback<DataBrokerConnection> callback
     ) {
-        Certificate rootCert = connectInfo.getCertificate();
+        Certificate certificate = connectInfo.getCertificate();
 
         ChannelCredentials tlsCredentials = null;
         try {
-            InputStream rootCertFile = AssetManagerExtensionKt.open(assetManager, rootCert);
+            InputStream rootCertFile = context.getContentResolver().openInputStream(certificate.getUri());
             tlsCredentials = TlsChannelCredentials.newBuilder()
                 .trustManager(rootCertFile)
                 .build();
         } catch (IOException e) {
-            Log.w(TAG, "Could not find file for certificate: " + rootCert);
+            Log.w(TAG, "Could not find file for certificate: " + certificate);
         }
 
         try {
             ManagedChannelBuilder<?> channelBuilder = Grpc
                 .newChannelBuilderForAddress(connectInfo.getHost(), connectInfo.getPort(), tlsCredentials);
 
-            String overrideAuthority = rootCert.getOverrideAuthority().trim();
+            String overrideAuthority = certificate.getOverrideAuthority().trim();
             boolean hasOverrideAuthority = !overrideAuthority.isEmpty();
             if (hasOverrideAuthority) {
                 channelBuilder.overrideAuthority(overrideAuthority);

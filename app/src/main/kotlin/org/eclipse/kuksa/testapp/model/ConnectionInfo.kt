@@ -20,15 +20,8 @@
 package org.eclipse.kuksa.testapp.model
 
 import androidx.compose.runtime.Immutable
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.Serializer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
+import org.eclipse.kuksa.testapp.serialization.JsonSerializer
 
 @Serializable
 @Immutable
@@ -39,29 +32,7 @@ data class ConnectionInfo(
     val isTlsEnabled: Boolean = false,
 )
 
-object ConnectionInfoSerializer : Serializer<ConnectionInfo> {
+object ConnectionInfoSerializer : JsonSerializer<ConnectionInfo>(ConnectionInfo.serializer()) {
     override val defaultValue: ConnectionInfo
         get() = ConnectionInfo()
-
-    override suspend fun readFrom(input: InputStream): ConnectionInfo {
-        try {
-            return withContext(Dispatchers.IO) {
-                val deserializer = ConnectionInfo.serializer()
-                Json.decodeFromString(
-                    deserializer,
-                    input.readBytes().decodeToString(),
-                )
-            }
-        } catch (e: SerializationException) {
-            throw CorruptionException("Unable to read UserPrefs", e)
-        }
-    }
-
-    override suspend fun writeTo(t: ConnectionInfo, output: OutputStream) {
-        withContext(Dispatchers.IO) {
-            output.write(
-                Json.encodeToString(ConnectionInfo.serializer(), t).encodeToByteArray(),
-            )
-        }
-    }
 }

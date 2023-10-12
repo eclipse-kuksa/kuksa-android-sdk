@@ -19,13 +19,13 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
-class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
+class ConnectionViewModel(private val connectionInfoRepository: ConnectionInfoRepository) : ViewModel() {
 
     enum class ConnectionViewState {
         DISCONNECTED,
@@ -46,8 +46,6 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
 
     var connectionTimeoutMillis: Long by mutableLongStateOf(5_000)
         private set
-
-    private val connectionInfoRepository = ConnectionInfoRepository(application)
 
     var connectionInfoFlow = connectionInfoRepository.connectionInfoFlow
 
@@ -79,6 +77,13 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
     fun updateConnectionInfo(connectionInfo: ConnectionInfo) {
         viewModelScope.launch {
             connectionInfoRepository.updateConnectionInfo(connectionInfo)
+        }
+    }
+
+    class Factory(private val connectionInfoRepository: ConnectionInfoRepository) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return ConnectionViewModel(connectionInfoRepository) as T
         }
     }
 }

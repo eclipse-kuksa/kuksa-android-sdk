@@ -19,10 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker.view
 
-import android.app.Application
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
@@ -42,12 +39,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -76,20 +70,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -99,7 +88,7 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
 val DefaultEdgePadding = 25.dp
@@ -224,158 +213,6 @@ fun rememberCountdown(
     }
 
     return timeLeft
-}
-
-@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
-@Composable
-fun DataBrokerConnection(viewModel: ConnectionViewModel) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    val connectionInfoState = viewModel.connectionInfoFlow.collectAsStateWithLifecycle(initialValue = ConnectionInfo())
-
-    var connectionInfo by remember(connectionInfoState.value) {
-        mutableStateOf(connectionInfoState.value)
-    }
-
-    Headline("Connection")
-    Column {
-        AnimatedVisibility(visible = viewModel.isDisconnected) {
-            Column {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    TextField(
-                        value = connectionInfo.host,
-                        onValueChange = {
-                            val newConnectionInfo = connectionInfoState.value.copy(host = it)
-                            connectionInfo = newConnectionInfo
-                        },
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                viewModel.updateConnectionInfo(connectionInfo)
-                                keyboardController?.hide()
-                            },
-                        ),
-                        modifier = Modifier
-                            .weight(2f),
-                        singleLine = true,
-                        label = {
-                            Text(text = "Host")
-                        },
-                    )
-                    Text(
-                        text = ":",
-                        modifier = Modifier
-                            .padding(start = 5.dp, end = 5.dp)
-                            .align(Alignment.CenterVertically),
-                    )
-                    TextField(
-                        value = connectionInfo.port.toString(),
-                        onValueChange = { value ->
-                            try {
-                                val port = value.toInt()
-                                val newConnectionInfo = connectionInfo.copy(port = port)
-                                connectionInfo = newConnectionInfo
-                            } catch (e: NumberFormatException) {
-                                // ignore gracefully
-                            }
-                        },
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                viewModel.updateConnectionInfo(connectionInfo)
-                                keyboardController?.hide()
-                            },
-                        ),
-                        modifier = Modifier
-                            .weight(1f),
-                        singleLine = true,
-                        label = {
-                            Text(text = "Port")
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    )
-                }
-                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                ) {
-                    Text(text = "TLS:")
-                    Checkbox(checked = connectionInfo.isTlsEnabled, onCheckedChange = { isChecked ->
-                        val newConnectionInfo = connectionInfo.copy(isTlsEnabled = isChecked)
-                        viewModel.updateConnectionInfo(newConnectionInfo)
-                    })
-                    TextField(
-                        value = connectionInfo.certificate.overrideAuthority,
-                        onValueChange = {
-                            val certificate = connectionInfo.certificate.copy(overrideAuthority = it)
-                            val newConnectionInfo = connectionInfo.copy(certificate = certificate)
-                            connectionInfo = newConnectionInfo
-                        },
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                viewModel.updateConnectionInfo(connectionInfo)
-                                keyboardController?.hide()
-                            },
-                        ),
-                        modifier = Modifier.weight(2f),
-                        singleLine = true,
-                        enabled = connectionInfo.isTlsEnabled,
-                        label = {
-                            Text(text = "Authority override")
-                        },
-                    )
-                }
-                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-            }
-        }
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            AnimatedContent(
-                targetState = viewModel.connectionViewState,
-                label = "ConnectAnimation",
-            ) { connectionViewState ->
-                when (connectionViewState) {
-                    ConnectionViewState.DISCONNECTED ->
-                        Button(
-                            onClick = {
-                                viewModel.onConnect(connectionInfo)
-
-                                keyboardController?.hide()
-                            },
-                            modifier = Modifier.width(MinimumButtonWidth),
-                        ) {
-                            Text(text = "Connect", textAlign = TextAlign.Center)
-                        }
-
-                    ConnectionViewState.CONNECTING ->
-                        Button(
-                            onClick = { },
-                            modifier = Modifier.requiredWidth(MinimumButtonWidth),
-                        ) {
-                            val timeout by rememberCountdown(initialMillis = viewModel.connectionTimeoutMillis)
-
-                            @Suppress("MagicNumber") // To seconds
-                            val timeoutSeconds = timeout / 1000
-                            Text(text = "Connecting... ($timeoutSeconds)", textAlign = TextAlign.Center)
-                        }
-
-                    ConnectionViewState.CONNECTED ->
-                        Button(
-                            onClick = { viewModel.onDisconnect() },
-                            modifier = Modifier.requiredWidth(MinimumButtonWidth),
-                        ) {
-                            Text(text = "Disconnect")
-                        }
-                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -583,9 +420,10 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
 @Composable
 fun Preview() {
     KuksaAppAndroidTheme {
+        val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
         DataBrokerView(
             TopAppBarViewModel(),
-            ConnectionViewModel(LocalContext.current.applicationContext as Application),
+            ConnectionViewModel(connectionInfoRepository),
             VSSPropertiesViewModel(),
             OutputViewModel(),
         )
