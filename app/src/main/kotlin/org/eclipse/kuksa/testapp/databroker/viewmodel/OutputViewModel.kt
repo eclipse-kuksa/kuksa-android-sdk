@@ -30,23 +30,23 @@ import java.time.format.DateTimeFormatter
 private const val MAX_NUMBER_LOG_ENTRIES = 100
 
 class OutputViewModel : ViewModel() {
-    private val maxElementSet = MaxElementSet<String>(MAX_NUMBER_LOG_ENTRIES)
+    private val logEntries = MaxElementSet<String>(MAX_NUMBER_LOG_ENTRIES)
 
     var output: List<String> by mutableStateOf(listOf())
         private set
 
     fun appendOutput(text: String) {
-        val emptyLines = if (maxElementSet.isEmpty()) "\n" else "\n\n"
+        val emptyLines = if (logEntries.isEmpty()) "\n" else "\n\n"
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
         val date = LocalDateTime.now().format(dateFormatter)
-        maxElementSet += "$emptyLines- $date\n $text"
+        logEntries += "$emptyLines- $date\n $text"
 
-        output = maxElementSet.toList()
+        output = logEntries.toList()
     }
 
     fun clear() {
-        maxElementSet.clear()
+        logEntries.clear()
 
-        output = maxElementSet.toList()
+        output = logEntries.toList()
     }
 }
