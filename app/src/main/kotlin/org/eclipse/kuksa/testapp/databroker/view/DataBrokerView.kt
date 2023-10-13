@@ -79,6 +79,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -408,6 +409,7 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
                         .fillMaxWidth()
                         .padding(start = DefaultElementPadding, end = DefaultElementPadding),
                     text = outputElement,
+                    fontSize = 14.sp,
                     textAlign = TextAlign.Start,
                     onTextLayout = {
                         scope.launch {
