@@ -21,8 +21,11 @@ package org.eclipse.kuksa.testapp.collection
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import org.eclipse.kuksa.test.kotest.Unit
 
 class MaxElementSetTest : BehaviorSpec({
+    tags(Unit)
+
     given("An Instance of MaxElementSet with Type TestElement and maxNumberEntries of 100") {
         val classUnderTest = MaxElementSet<TestElement>(100)
 
