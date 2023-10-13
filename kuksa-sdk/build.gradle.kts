@@ -41,6 +41,8 @@ android {
 }
 
 dependencies {
+    testImplementation(project(":test"))
+
     // needs to be api as long as we expose ProtoBuf specific objects
     api(libs.grpc.protobuf)
 

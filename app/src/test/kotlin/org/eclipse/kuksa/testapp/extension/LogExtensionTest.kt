@@ -20,9 +20,12 @@
 package org.eclipse.kuksa.testapp.extension
 
 import io.kotest.core.spec.style.BehaviorSpec
+import org.eclipse.kuksa.test.kotest.Unit
 import org.junit.jupiter.api.Assertions
 
 class LogExtensionTest : BehaviorSpec({
+    tags(Unit)
+
     val expectedLogTag = AnyClass::class.simpleName
 
     given("Any class") {

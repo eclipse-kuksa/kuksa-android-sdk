@@ -87,6 +87,7 @@ plugins {
 
 dependencies {
     implementation(project(":kuksa-sdk"))
+    testImplementation(project(":test"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)

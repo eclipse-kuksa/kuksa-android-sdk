@@ -17,7 +17,7 @@
  *
  */
 
-package test.kotest
+package org.eclipse.kuksa.test.kotest
 
 import io.kotest.core.config.AbstractProjectConfig
 

@@ -18,3 +18,4 @@ dependencyResolutionManagement {
 include(":app")
 include(":kuksa-sdk")
 include(":samples")
+include(":test")

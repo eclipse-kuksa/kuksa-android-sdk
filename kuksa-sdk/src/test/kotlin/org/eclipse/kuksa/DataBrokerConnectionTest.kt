@@ -29,11 +29,11 @@ import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.test.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.test.kotest.Integration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import test.databroker.DataBrokerConnectorProvider
-import test.kotest.Integration
 import kotlin.random.Random
 
 class DataBrokerConnectionTest : BehaviorSpec({
