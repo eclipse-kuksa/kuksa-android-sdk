@@ -17,7 +17,7 @@
  *
  */
 
-package test.databroker
+package org.eclipse.kuksa.test.databroker
 
 import java.util.concurrent.TimeUnit
 

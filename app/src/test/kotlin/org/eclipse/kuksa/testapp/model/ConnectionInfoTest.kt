@@ -23,10 +23,13 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.test.kotest.Unit
 import java.io.File
 import java.io.FileWriter
 
 class ConnectionInfoTest : BehaviorSpec({
+    tags(Unit)
+
     given("A custom ConnectionInfo with a custom Certificate") {
         // Uri is an android specific class, which does not exist in plain JUnit. Methods like Uri.parse will simply
         // return null due to the addition of testOptions.unitTests.isReturnDefaultValues true

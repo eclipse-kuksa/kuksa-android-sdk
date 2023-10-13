@@ -20,10 +20,10 @@
 package org.eclipse.kuksa
 
 import io.kotest.core.spec.style.BehaviorSpec
+import org.eclipse.kuksa.test.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.test.kotest.Insecure
+import org.eclipse.kuksa.test.kotest.Integration
 import org.junit.jupiter.api.Assertions
-import test.databroker.DataBrokerConnectorProvider
-import test.kotest.Insecure
-import test.kotest.Integration
 
 class DataBrokerConnectorTest : BehaviorSpec({
     tags(Integration, Insecure)
