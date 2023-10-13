@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.util
+package org.eclipse.kuksa.testapp.collection
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe

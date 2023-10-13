@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.util
+package org.eclipse.kuksa.testapp.collection
 
 class MaxElementSet<T>(private val maxNumberEntries: Int = Int.MAX_VALUE) : MutableSet<T> {
 
