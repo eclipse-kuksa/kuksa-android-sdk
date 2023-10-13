@@ -51,13 +51,17 @@ class ConnectionInfoTest : BehaviorSpec({
 
             `when`("Trying to de-serialize it") {
                 tempFile.inputStream().use {
-                    val deserializedConnectionInfo = ConnectionInfoSerializer.readFrom(it)
+                    val deserialized = ConnectionInfoSerializer.readFrom(it)
 
-                    then("It should be deserialized correctly") {
-                        deserializedConnectionInfo.host shouldBe classUnderTest.host
-                        deserializedConnectionInfo.port shouldBe classUnderTest.port
-                        deserializedConnectionInfo.isTlsEnabled shouldBe classUnderTest.isTlsEnabled
-                        deserializedConnectionInfo.certificate shouldBe classUnderTest.certificate
+                    then("It should be de-serialized correctly") {
+                        deserialized shouldBe classUnderTest
+                        deserialized.host shouldBe classUnderTest.host
+                        deserialized.port shouldBe classUnderTest.port
+                        deserialized.isTlsEnabled shouldBe classUnderTest.isTlsEnabled
+
+                        deserialized.certificate shouldBe classUnderTest.certificate
+                        deserialized.certificate.uriPath shouldBe classUnderTest.certificate.uriPath
+                        deserialized.certificate.overrideAuthority shouldBe classUnderTest.certificate.overrideAuthority
                     }
                 }
             }
@@ -77,10 +81,10 @@ class ConnectionInfoTest : BehaviorSpec({
 
         `when`("Trying to de-serialize it") {
             var isExceptionThrown = false
-            var deserializedConnectionInfo: ConnectionInfo? = null
+            var deserialized: ConnectionInfo? = null
             tempFile.inputStream().use {
                 try {
-                    deserializedConnectionInfo = ConnectionInfoSerializer.readFrom(it)
+                    deserialized = ConnectionInfoSerializer.readFrom(it)
                 } catch (_: Exception) {
                     isExceptionThrown = true
                 }
@@ -90,8 +94,8 @@ class ConnectionInfoTest : BehaviorSpec({
                 isExceptionThrown shouldBe false
             }
 
-            then("We are falling back to the defaultValue") {
-                deserializedConnectionInfo shouldBe ConnectionInfoSerializer.defaultValue
+            then("It is falling back to the defaultValue") {
+                deserialized shouldBe ConnectionInfoSerializer.defaultValue
             }
         }
     }
