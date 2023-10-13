@@ -87,7 +87,7 @@ fun FileSelectorSettingView(
             )
             Image(
                 painter = painterResource(id = R.drawable.baseline_upload_file_24),
-                contentDescription = "Select Certifcate",
+                contentDescription = "Select Certificate",
                 modifier = Modifier.constrainAs(imageRef) {
                     end.linkTo(parent.end)
                     top.linkTo(parent.top)
