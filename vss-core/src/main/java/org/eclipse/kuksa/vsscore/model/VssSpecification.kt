@@ -106,21 +106,16 @@ val VssSpecification.parentKey: String
 /**
  * Iterates through all nested children which also may have children and aggregates them into one big collection.
  */
-val VssSpecification.heritage: List<VssSpecification>
+val VssSpecification.heritage: Collection<VssSpecification>
     get() = children.toList() + children.flatMap { it.heritage }
 
 /**
- * Creates an inheritance line to the given heir. Similar to [vssPathHeritageLine] but the other way around.
- *
- * @param heir where the inheritance line should stop
- * @return a [Collection] of the full heritage line in the form of [VssSpecification]
+ * Finds the latest generation in the form of [VssProperty] for the current [VssSpecification].
  */
-fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecification> {
-    val specificationKeys = heir.vssPathHeritageLine
-    return heritage.filter { child ->
-        specificationKeys.contains(child.vssPath)
-    }
-}
+val VssSpecification.latestGeneration: Collection<VssProperty<*>>
+    get() = heritage
+        .ifEmpty { setOf(this) }
+        .filterIsInstance<VssProperty<*>>()
 
 /**
  * Uses the [variablePrefix] to generate a unique variable name. The first character is at least lowercased.
@@ -160,3 +155,16 @@ private val VssSpecification.isVariableOccupied: Boolean
 
 private val classNamePrefix: String
     get() = "Vss"
+
+/**
+ * Creates an inheritance line to the given heir. Similar to [vssPathHeritageLine] but the other way around.
+ *
+ * @param heir where the inheritance line should stop
+ * @return a [Collection] of the full heritage line in the form of [VssSpecification]
+ */
+fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecification> {
+    val specificationKeys = heir.vssPathHeritageLine
+    return heritage.filter { child ->
+        specificationKeys.contains(child.vssPath)
+    }
+}

@@ -34,5 +34,5 @@ data class Property(
     /**
      * The corresponding field type of the Property. The default is [FIELD_VALUE].
      */
-    val fields: List<Field> = listOf(FIELD_VALUE),
+    val fields: Collection<Field> = listOf(FIELD_VALUE),
 )

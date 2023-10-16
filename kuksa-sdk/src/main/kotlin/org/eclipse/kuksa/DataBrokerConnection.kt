@@ -29,6 +29,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
+import org.eclipse.kuksa.extension.createProperties
+import org.eclipse.kuksa.extension.createPropertyDataPoints
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
@@ -80,7 +82,7 @@ class DataBrokerConnection internal constructor(
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     fun subscribe(
-        properties: List<Property>,
+        properties: Collection<Property>,
         propertyObserver: PropertyObserver,
     ) {
         val asyncStub = VALGrpc.newStub(managedChannel)
@@ -141,14 +143,7 @@ class DataBrokerConnection internal constructor(
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
         observer: VssSpecificationObserver<T>,
     ) {
-        val vssPathToVssProperty = specification.heritage
-            .ifEmpty { setOf(specification) }
-            .filterIsInstance<VssProperty<*>>() // Only final leafs with a value can be observed
-            .groupBy { it.vssPath }
-            .mapValues { it.value.first() } // Always one result because the vssPath is unique
-        val leafProperties = vssPathToVssProperty.values
-            .map { Property(it.vssPath, fields) }
-            .toList()
+        val leafProperties = specification.createProperties(fields)
 
         try {
             Log.d(TAG, "Subscribing to the following properties: $leafProperties")
@@ -251,8 +246,7 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Updates the underlying property of the specified vssPath with the updatedProperty. Notifies the callback
-     * about (un)successful operation.
+     * Updates the underlying property of the specified vssPath with the updated property.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
@@ -281,6 +275,26 @@ class DataBrokerConnection internal constructor(
                 throw DataBrokerException(e.message, e)
             }
         }
+    }
+
+    /**
+     * Only a [VssProperty] can be updated because they have an actual value. When provided with any parent
+     * [VssSpecification] then this [update] method will find all [VssProperty] children and updates them instead.
+     *  Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
+     *  because a [VssSpecification] may consists of multiple values which may need to be updated.
+     *
+     *  @throws DataBrokerException in case the connection to the DataBroker is no longer active
+     */
+    suspend fun update(vssSpecification: VssSpecification): List<SetResponse> {
+        val responses = mutableListOf<SetResponse>()
+
+        val propertyDataPointPairs = vssSpecification.createPropertyDataPoints()
+        propertyDataPointPairs.forEach { (property, dataPoint) ->
+            val response = update(property, dataPoint)
+            responses.add(response)
+        }
+
+        return responses
     }
 
     /**
