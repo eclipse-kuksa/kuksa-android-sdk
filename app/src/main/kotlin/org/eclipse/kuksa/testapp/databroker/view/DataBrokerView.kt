@@ -19,9 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker.view
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -73,12 +71,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
@@ -90,7 +84,6 @@ import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.LazyDropdownMenu
 import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
-import org.eclipse.kuksa.testapp.extension.compose.rememberCountdown
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
@@ -194,211 +187,6 @@ private fun TopBar(
             }
         },
     )
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-fun DataBrokerConnection(viewModel: ConnectionViewModel) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    val connectionInfoState by viewModel.connectionInfoFlow.collectAsStateWithLifecycle(initialValue = ConnectionInfo())
-
-    var connectionInfo by remember(connectionInfoState) {
-        mutableStateOf(connectionInfoState)
-    }
-
-    Headline("Connection")
-    Column {
-        AnimatedVisibility(visible = viewModel.isDisconnected) {
-            Column {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    TextField(
-                        value = connectionInfo.host,
-                        onValueChange = {
-                            val newConnectionInfo = connectionInfoState.copy(host = it)
-                            connectionInfo = newConnectionInfo
-                        },
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                viewModel.updateConnectionInfo(connectionInfo)
-                                keyboardController?.hide()
-                            },
-                        ),
-                        modifier = Modifier
-                            .weight(2f),
-                        singleLine = true,
-                        label = {
-                            Text(text = "Host")
-                        },
-                    )
-                    Text(
-                        text = ":",
-                        modifier = Modifier
-                            .padding(start = 5.dp, end = 5.dp)
-                            .align(Alignment.CenterVertically),
-                    )
-                    TextField(
-                        value = connectionInfo.port.toString(),
-                        onValueChange = { value ->
-                            try {
-                                val port = value.toInt()
-                                val newConnectionInfo = connectionInfo.copy(port = port)
-                                connectionInfo = newConnectionInfo
-                            } catch (e: NumberFormatException) {
-                                // ignore gracefully
-                            }
-                        },
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                viewModel.updateConnectionInfo(connectionInfo)
-                                keyboardController?.hide()
-                            },
-                        ),
-                        modifier = Modifier
-                            .weight(1f),
-                        singleLine = true,
-                        label = {
-                            Text(text = "Port")
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    )
-                }
-                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                ) {
-                    Text(text = "TLS:")
-                    Checkbox(checked = connectionInfo.isTlsEnabled, onCheckedChange = { isChecked ->
-                        val newConnectionInfo = connectionInfo.copy(isTlsEnabled = isChecked)
-                        viewModel.updateConnectionInfo(newConnectionInfo)
-                    })
-                    TextField(
-                        value = connectionInfo.certificate.overrideAuthority,
-                        onValueChange = {
-                            val certificate = connectionInfo.certificate.copy(overrideAuthority = it)
-                            val newConnectionInfo = connectionInfo.copy(certificate = certificate)
-                            connectionInfo = newConnectionInfo
-                        },
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                viewModel.updateConnectionInfo(connectionInfo)
-                                keyboardController?.hide()
-                            },
-                        ),
-                        modifier = Modifier.weight(2f),
-                        singleLine = true,
-                        enabled = connectionInfo.isTlsEnabled,
-                        label = {
-                            Text(text = "Authority override")
-                        },
-                    )
-                }
-                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-            }
-        }
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            AnimatedContent(
-                targetState = viewModel.connectionViewState,
-                label = "ConnectAnimation",
-            ) { connectionViewState ->
-                when (connectionViewState) {
-                    ConnectionViewState.DISCONNECTED ->
-                        Button(
-                            onClick = {
-                                viewModel.onConnect(connectionInfo)
-
-                                keyboardController?.hide()
-                            },
-                            modifier = Modifier.width(MinimumButtonWidth),
-                        ) {
-                            Text(text = "Connect", textAlign = TextAlign.Center)
-                        }
-
-                    ConnectionViewState.CONNECTING ->
-                        Button(
-                            onClick = { },
-                            modifier = Modifier.requiredWidth(MinimumButtonWidth),
-                        ) {
-                            val timeout by rememberCountdown(initialMillis = viewModel.connectionTimeoutMillis)
-
-                            @Suppress("MagicNumber") // To seconds
-                            val timeoutSeconds = timeout / 1000
-                            Text(text = "Connecting... ($timeoutSeconds)", textAlign = TextAlign.Center)
-                        }
-
-                    ConnectionViewState.CONNECTED ->
-                        Button(
-                            onClick = { viewModel.onDisconnect() },
-                            modifier = Modifier.requiredWidth(MinimumButtonWidth),
-                        ) {
-                            Text(text = "Disconnect")
-                        }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun OverflowMenu(content: @Composable () -> Unit) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    IconButton(onClick = {
-        showMenu = !showMenu
-    }) {
-        Icon(
-            imageVector = Icons.Outlined.MoreVert,
-            contentDescription = "Options",
-        )
-    }
-    DropdownMenu(
-        expanded = showMenu,
-        onDismissRequest = { showMenu = false },
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun Headline(name: String, modifier: Modifier = Modifier, color: Color = Color.Black) {
-    Text(
-        text = name,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 15.dp, bottom = 15.dp),
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.titleLarge,
-        color = color,
-    )
-}
-
-@Composable
-fun rememberCountdown(
-    initialMillis: Long,
-    step: Long = 1000,
-): MutableState<Long> {
-    val timeLeft = remember { mutableStateOf(initialMillis) }
-
-    LaunchedEffect(initialMillis, step) {
-        while (isActive && timeLeft.value > 0) {
-            val newTimeLeft = (timeLeft.value - step).coerceAtLeast(0)
-            timeLeft.value = newTimeLeft
-
-            val maximumDelay = step.coerceAtMost(newTimeLeft)
-            delay(maximumDelay)
-        }
-    }
-
-    return timeLeft
 }
 
 @Composable

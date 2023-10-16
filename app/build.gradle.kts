@@ -90,15 +90,9 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-plugins {
-    id("com.android.application")
-    kotlin("plugin.serialization") version "1.9.0"
-    kotlin("android")
-}
-
 dependencies {
     implementation(project(":kuksa-sdk"))
-	 ksp(project(":vss-processor"))
+    ksp(project(":vss-processor"))
     testImplementation(project(":test"))
 
     implementation(libs.androidx.appcompat)

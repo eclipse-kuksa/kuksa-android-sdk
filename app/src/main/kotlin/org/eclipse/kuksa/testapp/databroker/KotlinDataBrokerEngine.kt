@@ -40,9 +40,7 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.testapp.extension.open
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import java.io.IOException
 
 @Suppress("complexity:TooManyFunctions")

@@ -38,7 +38,6 @@ import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
 import org.eclipse.kuksa.testapp.databroker.model.Certificate;
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
-import org.eclipse.kuksa.testapp.extension.AssetManagerExtensionKt;
 import org.eclipse.kuksa.vsscore.model.VssSpecification;
 import org.jetbrains.annotations.NotNull;
 
@@ -103,14 +102,18 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     ) {
         Certificate certificate = connectInfo.getCertificate();
 
-        ChannelCredentials tlsCredentials = null;
+        ChannelCredentials tlsCredentials;
         try {
             InputStream rootCertFile = context.getContentResolver().openInputStream(certificate.getUri());
+            if (rootCertFile == null) return;
+
             tlsCredentials = TlsChannelCredentials.newBuilder()
                 .trustManager(rootCertFile)
                 .build();
         } catch (IOException e) {
             Log.w(TAG, "Could not find file for certificate: " + certificate);
+
+            return;
         }
 
         try {

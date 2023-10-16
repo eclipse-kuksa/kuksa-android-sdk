@@ -17,11 +17,7 @@
  *
  */
 
-<<<<<<<< HEAD:kuksa-sdk/src/test/kotlin/org/eclipse/kuksa/kotest/Tag.kt
-package org.eclipse.kuksa.kotest
-========
 package org.eclipse.kuksa.test.kotest
->>>>>>>> Eclipse/main:test/src/main/java/org/eclipse/kuksa/test/kotest/Tag.kt
 
 import io.kotest.core.NamedTag
 

@@ -19,16 +19,13 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
-import android.app.Application
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
@@ -76,6 +73,7 @@ class ConnectionViewModel(private val connectionInfoRepository: ConnectionInfoRe
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return ConnectionViewModel(connectionInfoRepository) as T
         }
+    }
 
     companion object {
         private const val TIMEOUT_DEFAULT = 5_000L

@@ -46,6 +46,8 @@ interface DataBrokerEngine {
         callback: CoroutineCallback<GetResponse>,
     )
 
+    fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>)
+
     fun update(
         property: Property,
         datapoint: Datapoint,
