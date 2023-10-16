@@ -25,9 +25,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.deepCopy
-import org.eclipse.kuksa.kotest.Unit
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.BoolArray
+import org.eclipse.kuksa.test.kotest.Unit
 
 class VssSpecificationCopyTest : BehaviorSpec({
     tags(Unit)

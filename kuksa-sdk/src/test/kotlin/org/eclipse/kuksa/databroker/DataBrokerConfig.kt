@@ -17,11 +17,7 @@
  *
  */
 
-<<<<<<<< HEAD:kuksa-sdk/src/test/kotlin/org/eclipse/kuksa/databroker/DataBrokerConfig.kt
 package org.eclipse.kuksa.databroker
-========
-package org.eclipse.kuksa.test.databroker
->>>>>>>> Eclipse/main:kuksa-sdk/src/test/kotlin/org/eclipse/kuksa/test/databroker/DataBrokerConfig.kt
 
 import java.util.concurrent.TimeUnit
 

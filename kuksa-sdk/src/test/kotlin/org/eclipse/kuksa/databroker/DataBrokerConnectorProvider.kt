@@ -19,11 +19,7 @@
  *
  */
 
-<<<<<<<< HEAD:kuksa-sdk/src/test/kotlin/org/eclipse/kuksa/databroker/DataBrokerConnectorProvider.kt
 package org.eclipse.kuksa.databroker
-========
-package org.eclipse.kuksa.test.databroker
->>>>>>>> Eclipse/main:kuksa-sdk/src/test/kotlin/org/eclipse/kuksa/test/databroker/DataBrokerConnectorProvider.kt
 
 import io.grpc.ChannelCredentials
 import io.grpc.Grpc

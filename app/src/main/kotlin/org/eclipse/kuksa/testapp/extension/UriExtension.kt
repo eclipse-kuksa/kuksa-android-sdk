@@ -22,10 +22,6 @@ package org.eclipse.kuksa.testapp.extension
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import android.content.res.AssetManager
-import org.eclipse.kuksa.testapp.databroker.model.Certificate
-import java.io.IOException
-import java.io.InputStream
 
 fun Uri.fetchFileName(context: Context): String? {
     var fileName: String? = null

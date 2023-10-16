@@ -28,13 +28,11 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
-import org.eclipse.kuksa.kotest.Integration
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.vssSpecification.VssDriver
-import org.eclipse.kuksa.test.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.test.kotest.Integration
+import org.eclipse.kuksa.vssSpecification.VssDriver
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
