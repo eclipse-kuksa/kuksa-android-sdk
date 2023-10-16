@@ -21,7 +21,7 @@ package org.eclipse.kuksa.pattern.listener
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import org.eclipse.kuksa.kotest.Unit
+import org.eclipse.kuksa.test.kotest.Unit
 
 class MultiListenerTest : BehaviorSpec({
     tags(Unit)

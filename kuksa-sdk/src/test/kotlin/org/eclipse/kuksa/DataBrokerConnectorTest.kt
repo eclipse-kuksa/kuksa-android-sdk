@@ -21,10 +21,10 @@ package org.eclipse.kuksa
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.shouldNotBe
-import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
-import org.eclipse.kuksa.kotest.Insecure
-import org.eclipse.kuksa.kotest.Integration
+import org.eclipse.kuksa.test.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.test.kotest.Insecure
+import org.eclipse.kuksa.test.kotest.Integration
+import org.junit.jupiter.api.Assertions
 
 class DataBrokerConnectorTest : BehaviorSpec({
     tags(Integration, Insecure)

@@ -19,7 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker
 
-import android.content.res.AssetManager
+import android.content.Context
 import androidx.lifecycle.LifecycleCoroutineScope
 import io.grpc.ChannelCredentials
 import io.grpc.Grpc
@@ -42,23 +42,24 @@ import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.extension.open
 import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import java.io.IOException
 
 @Suppress("complexity:TooManyFunctions")
 class KotlinDataBrokerEngine(
     private val lifecycleScope: LifecycleCoroutineScope,
-    private val assetManager: AssetManager,
 ) : DataBrokerEngine {
     override var dataBrokerConnection: DataBrokerConnection? = null
 
     private val disconnectListeners = mutableSetOf<DisconnectListener>()
 
     override fun connect(
+        context: Context,
         connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
         if (connectionInfo.isTlsEnabled) {
-            connectSecure(connectionInfo, callback)
+            connectSecure(context, connectionInfo, callback)
         } else {
             connectInsecure(connectionInfo, callback)
         }
@@ -81,14 +82,15 @@ class KotlinDataBrokerEngine(
     }
 
     private fun connectSecure(
+        context: Context,
         connectInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
-        val rootCert = connectInfo.certificate
+        val certificate = connectInfo.certificate
 
         val tlsCredentials: ChannelCredentials
         try {
-            val rootCertFile = assetManager.open(rootCert)
+            val rootCertFile = context.contentResolver.openInputStream(certificate.uri)
             tlsCredentials = TlsChannelCredentials.newBuilder()
                 .trustManager(rootCertFile)
                 .build()
@@ -103,7 +105,7 @@ class KotlinDataBrokerEngine(
             val channelBuilder = Grpc
                 .newChannelBuilderForAddress(host, port, tlsCredentials)
 
-            val overrideAuthority = rootCert.overrideAuthority.trim()
+            val overrideAuthority = certificate.overrideAuthority.trim()
             val hasOverrideAuthority = overrideAuthority.isNotEmpty()
             if (hasOverrideAuthority) {
                 channelBuilder.overrideAuthority(overrideAuthority)

@@ -19,9 +19,9 @@
 
 package org.eclipse.kuksa.testapp.databroker.view
 
-import android.app.Application
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,12 +38,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -67,19 +64,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
@@ -96,6 +91,7 @@ import org.eclipse.kuksa.testapp.extension.compose.LazyDropdownMenu
 import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.extension.compose.rememberCountdown
+import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
 val DefaultEdgePadding = 25.dp
@@ -353,6 +349,59 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
 }
 
 @Composable
+fun OverflowMenu(content: @Composable () -> Unit) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    IconButton(onClick = {
+        showMenu = !showMenu
+    }) {
+        Icon(
+            imageVector = Icons.Outlined.MoreVert,
+            contentDescription = "Options",
+        )
+    }
+    DropdownMenu(
+        expanded = showMenu,
+        onDismissRequest = { showMenu = false },
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun Headline(name: String, modifier: Modifier = Modifier, color: Color = Color.Black) {
+    Text(
+        text = name,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 15.dp, bottom = 15.dp),
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.titleLarge,
+        color = color,
+    )
+}
+
+@Composable
+fun rememberCountdown(
+    initialMillis: Long,
+    step: Long = 1000,
+): MutableState<Long> {
+    val timeLeft = remember { mutableStateOf(initialMillis) }
+
+    LaunchedEffect(initialMillis, step) {
+        while (isActive && timeLeft.value > 0) {
+            val newTimeLeft = (timeLeft.value - step).coerceAtLeast(0)
+            timeLeft.value = newTimeLeft
+
+            val maximumDelay = step.coerceAtMost(newTimeLeft)
+            delay(maximumDelay)
+        }
+    }
+
+    return timeLeft
+}
+
+@Composable
 fun DataBrokerSpecifications(viewModel: VssSpecificationsViewModel) {
     Column {
         Headline(name = "Specifications")
@@ -549,9 +598,10 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
 @Composable
 fun Preview() {
     KuksaAppAndroidTheme {
+        val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
         DataBrokerView(
             TopAppBarViewModel(),
-            ConnectionViewModel(LocalContext.current.applicationContext as Application),
+            ConnectionViewModel(connectionInfoRepository),
             VSSPropertiesViewModel(),
             VssSpecificationsViewModel(),
             OutputViewModel(),

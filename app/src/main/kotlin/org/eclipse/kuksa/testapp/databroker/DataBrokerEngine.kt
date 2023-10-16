@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker
 
+import android.content.Context
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
@@ -34,11 +35,16 @@ import org.eclipse.kuksa.vsscore.model.VssSpecification
 interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?
 
-    fun connect(connectionInfo: ConnectionInfo, callback: CoroutineCallback<DataBrokerConnection>)
+    fun connect(
+        context: Context,
+        connectionInfo: ConnectionInfo,
+        callback: CoroutineCallback<DataBrokerConnection>,
+    )
 
-    fun fetch(property: Property, callback: CoroutineCallback<GetResponse>)
-
-    fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>)
+    fun fetch(
+        property: Property,
+        callback: CoroutineCallback<GetResponse>,
+    )
 
     fun update(
         property: Property,

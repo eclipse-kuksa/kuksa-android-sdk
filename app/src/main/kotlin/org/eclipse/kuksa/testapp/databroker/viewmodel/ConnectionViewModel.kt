@@ -25,13 +25,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
-class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
+class ConnectionViewModel(private val connectionInfoRepository: ConnectionInfoRepository) : ViewModel() {
+
     enum class ConnectionViewState {
         DISCONNECTED,
         CONNECTING,
@@ -43,8 +47,6 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
 
     var connectionTimeoutMillis: Long by mutableLongStateOf(TIMEOUT_DEFAULT)
         private set
-
-    private val connectionInfoRepository = ConnectionInfoRepository(application)
 
     var connectionInfoFlow = connectionInfoRepository.connectionInfoFlow
 
@@ -68,6 +70,12 @@ class ConnectionViewModel(application: Application) : AndroidViewModel(applicati
             connectionInfoRepository.updateConnectionInfo(connectionInfo)
         }
     }
+
+    class Factory(private val connectionInfoRepository: ConnectionInfoRepository) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return ConnectionViewModel(connectionInfoRepository) as T
+        }
 
     companion object {
         private const val TIMEOUT_DEFAULT = 5_000L

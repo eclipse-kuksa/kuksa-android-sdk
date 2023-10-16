@@ -24,5 +24,6 @@ dependencyResolutionManagement {
 include(":app")
 include(":kuksa-sdk")
 include(":samples")
+include(":test")
 include(":vss-processor")
 include(":vss-core")

@@ -17,22 +17,25 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.databroker.model
+package org.eclipse.kuksa.testapp.extension
 
-import androidx.compose.runtime.Immutable
-import kotlinx.serialization.Serializable
-import org.eclipse.kuksa.testapp.serialization.JsonSerializer
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import android.content.res.AssetManager
+import org.eclipse.kuksa.testapp.databroker.model.Certificate
+import java.io.IOException
+import java.io.InputStream
 
-@Serializable
-@Immutable
-data class ConnectionInfo(
-    val host: String = "localhost",
-    val port: Int = 55556,
-    val certificate: Certificate = Certificate.DEFAULT,
-    val isTlsEnabled: Boolean = false,
-)
+fun Uri.fetchFileName(context: Context): String? {
+    var fileName: String? = null
+    val cursor = context.contentResolver.query(this, null, null, null, null)
+    cursor?.use {
+        val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
 
-object ConnectionInfoSerializer : JsonSerializer<ConnectionInfo>(ConnectionInfo.serializer()) {
-    override val defaultValue: ConnectionInfo
-        get() = ConnectionInfo()
+        if (cursor.moveToFirst()) {
+            fileName = cursor.getString(nameIndex)
+        }
+    }
+    return fileName
 }

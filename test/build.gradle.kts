@@ -17,14 +17,30 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.extension
+@Suppress("DSL_SCOPE_VIOLATION") // Remove once KTIJ-19369 is fixed
+plugins {
+    id("com.android.library")
+    kotlin("android")
+}
 
-import android.content.res.AssetManager
-import org.eclipse.kuksa.testapp.databroker.model.Certificate
-import java.io.IOException
-import java.io.InputStream
+android {
+    namespace = "org.eclipse.kuksa.test"
+    compileSdk = 33
 
-/**
- * @throws IOException
- */
-fun AssetManager.open(certificate: Certificate): InputStream = open(certificate.fullName)
+    defaultConfig {
+        minSdk = 24
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+dependencies {
+    implementation(libs.kotest)
+}

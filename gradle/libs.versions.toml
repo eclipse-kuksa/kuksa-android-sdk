@@ -2,6 +2,7 @@
 activityKtx = "1.7.2"
 androidGradlePlugin = "8.1.2" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
 datastore = "1.0.0"
+constraintlayoutCompose = "1.0.1"
 datastorePreferences = "1.0.0"
 kotlin = "1.9.0"
 kotlinpoet = "1.14.2"
@@ -26,6 +27,7 @@ jvmTarget = "17"
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityKtx" }
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
+androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
