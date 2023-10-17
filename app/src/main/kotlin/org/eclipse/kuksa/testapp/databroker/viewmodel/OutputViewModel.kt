@@ -19,6 +19,11 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
+import android.os.Handler
+import android.os.Looper
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.eclipse.kuksa.testapp.collection.MaxElementSet
 import java.time.LocalDateTime
@@ -27,18 +32,23 @@ import java.time.format.DateTimeFormatter
 private const val MAX_NUMBER_LOG_ENTRIES = 100
 
 class OutputViewModel : ViewModel() {
+    private val handler = Handler(Looper.getMainLooper())
+
     private val logEntries = MaxElementSet<String>(MAX_NUMBER_LOG_ENTRIES)
 
     var output: List<String> by mutableStateOf(listOf())
         private set
 
     fun appendOutput(text: String) {
-        val emptyLines = if (logEntries.isEmpty()) "\n" else "\n\n"
-        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
-        val date = LocalDateTime.now().format(dateFormatter)
-        logEntries += "$emptyLines- $date\n $text"
+        // if not run on main thread it makes issues when being subscribed to multiple properties
+        handler.post {
+            val emptyLines = if (logEntries.isEmpty()) "\n" else "\n\n"
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
+            val date = LocalDateTime.now().format(dateFormatter)
+            logEntries += "$emptyLines- $date\n $text"
 
-        output = logEntries.toList()
+            output = logEntries.toList()
+        }
     }
 
     fun clear() {
