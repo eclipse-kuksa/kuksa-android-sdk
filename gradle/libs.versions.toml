@@ -1,5 +1,5 @@
 [versions]
-activityKtx = "1.7.2"
+activityKtx = "1.8.0"
 androidGradlePlugin = "8.1.2" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
 datastore = "1.0.0"
 constraintlayoutCompose = "1.0.1"
@@ -7,7 +7,7 @@ datastorePreferences = "1.0.0"
 kotlin = "1.9.0"
 kotlinpoet = "1.14.2"
 kotlinxSerializationJson = "1.6.0"
-runtimeLivedata = "1.5.2"
+runtimeLivedata = "1.5.3"
 symbolProcessingApi = "1.9.10-1.0.13"
 tomcatAnnotations = "6.0.53"
 detekt = "1.23.1"
@@ -21,7 +21,7 @@ mockk = "1.13.7"
 androidxLifecycle = "2.6.2"
 kotlinxCoroutines = "1.7.3"
 kotlinCompilerExtension = "1.5.1"
-composeBom = "2023.09.02"
+composeBom = "2023.10.00"
 jvmTarget = "17"
 
 [libraries]
