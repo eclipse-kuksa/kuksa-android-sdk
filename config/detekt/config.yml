@@ -7,7 +7,7 @@ build:
 
 style:
   MagicNumber:
-    # rule is to sensitive (e.g. you can't define a for loop without using const for from, to and stepSize)
+    # Rule is to sensitive (e.g. you can't define a for loop without using const for from, to and stepSize)
     ignoreRanges: true
     ignoreEnums: true
     ignorePropertyDeclaration: true # Compose
@@ -18,6 +18,10 @@ style:
     active: false
   ReturnCount:
     excludeGuardClauses: true
+    max: 3 # Some elvis returns which are not recognized as guard clauses are still readable and clean
+    # It is fine to have TO-DO statements
+  ForbiddenComment:
+    active: false
 
 naming:
   FunctionNaming:

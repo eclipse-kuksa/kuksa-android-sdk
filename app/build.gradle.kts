@@ -1,3 +1,10 @@
+plugins {
+    id("com.android.application")
+    id("com.google.devtools.ksp")
+    kotlin("plugin.serialization")
+    kotlin("android")
+}
+
 android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -6,6 +13,7 @@ android {
     kotlinOptions {
         jvmTarget = libs.versions.jvmTarget.get()
     }
+
     buildFeatures {
         compose = true
     }
@@ -42,7 +50,10 @@ android {
                 isDebuggable = true
 
                 isMinifyEnabled = true
-                proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro",
+                )
             }
         }
     }
@@ -79,14 +90,9 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-plugins {
-    id("com.android.application")
-    kotlin("plugin.serialization") version "1.9.0"
-    kotlin("android")
-}
-
 dependencies {
     implementation(project(":kuksa-sdk"))
+    ksp(project(":vss-processor"))
     testImplementation(project(":test"))
 
     implementation(libs.androidx.appcompat)

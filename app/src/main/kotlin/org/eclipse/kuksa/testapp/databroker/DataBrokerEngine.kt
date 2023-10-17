@@ -24,11 +24,13 @@ import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyObserver
+import org.eclipse.kuksa.VssSpecificationObserver
 import org.eclipse.kuksa.model.Property
-import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
+import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?
@@ -39,18 +41,26 @@ interface DataBrokerEngine {
         callback: CoroutineCallback<DataBrokerConnection>,
     )
 
-    fun fetchProperty(
+    fun fetch(
         property: Property,
         callback: CoroutineCallback<GetResponse>,
     )
 
-    fun updateProperty(
+    fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>)
+
+    fun update(
         property: Property,
         datapoint: Datapoint,
-        callback: CoroutineCallback<KuksaValV1.SetResponse>,
+        callback: CoroutineCallback<SetResponse>,
     )
 
     fun subscribe(property: Property, propertyObserver: PropertyObserver)
+
+    fun <T : VssSpecification> subscribe(
+        specification: T,
+        propertyObserver: VssSpecificationObserver<T>,
+    )
+
     fun disconnect()
 
     fun registerDisconnectListener(listener: DisconnectListener)

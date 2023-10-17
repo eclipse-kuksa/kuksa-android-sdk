@@ -20,7 +20,7 @@
 package org.eclipse.kuksa
 
 import io.kotest.core.spec.style.BehaviorSpec
-import org.eclipse.kuksa.test.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.Secure
 import org.junit.jupiter.api.Assertions

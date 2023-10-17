@@ -32,11 +32,10 @@ import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.model.Property
-import org.eclipse.kuksa.proto.v1.Types.DataEntry
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import java.io.IOException
 
-@Suppress("UNUSED_VARIABLE", "SwallowedException")
+@Suppress("UNUSED_VARIABLE", "SwallowedException", "UNUSED_ANONYMOUS_PARAMETER")
 class KotlinActivity : AppCompatActivity() {
 
     private var disconnectListener = DisconnectListener {
@@ -99,7 +98,7 @@ class KotlinActivity : AppCompatActivity() {
     fun fetchProperty(property: Property) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.fetchProperty(property) ?: return@launch
+                val response = dataBrokerConnection?.fetch(property) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle errors
@@ -110,7 +109,7 @@ class KotlinActivity : AppCompatActivity() {
     fun updateProperty(property: Property, datapoint: Datapoint) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.updateProperty(property, datapoint) ?: return@launch
+                val response = dataBrokerConnection?.update(property, datapoint) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle errors
@@ -119,10 +118,8 @@ class KotlinActivity : AppCompatActivity() {
     }
 
     fun subscribeProperty(property: Property) {
-        val propertyObserver = object : PropertyObserver {
-            override fun onPropertyChanged(vssPath: String, updatedValue: DataEntry) {
-                // handle property change
-            }
+        val propertyObserver = PropertyObserver { vssPath, updatedValue ->
+            // handle property change
         }
         val properties = listOf(property)
         dataBrokerConnection?.subscribe(properties, propertyObserver)

@@ -21,14 +21,21 @@ plugins {
     `maven-publish`
 }
 
+interface PublishPluginExtension {
+    val mavenPublicationName: Property<String>
+    val componentName: Property<String>
+}
+
+val extension = project.extensions.create<PublishPluginExtension>("publish")
+
 afterEvaluate {
     publishing {
         repositories {
             // to be defined
         }
         publications {
-            register<MavenPublication>("release") {
-                from(components["release"])
+            register<MavenPublication>("${extension.mavenPublicationName.get()}") {
+                from(components["${extension.componentName.get()}"])
             }
         }
     }

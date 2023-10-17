@@ -32,29 +32,30 @@ import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.extension.metadata
+import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
-import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.JavaDataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.KotlinDataBrokerEngine
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.view.DataBrokerView
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
-import org.eclipse.kuksa.testapp.extension.valueType
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
+import org.eclipse.kuksa.vsscore.annotation.VssDefinition
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 
+@VssDefinition("vss_rel_4.0.yaml")
 class KuksaDataBrokerActivity : ComponentActivity() {
     private lateinit var connectionInfoRepository: ConnectionInfoRepository
 
@@ -63,6 +64,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         ConnectionViewModel.Factory(connectionInfoRepository)
     }
     private val vssPropertiesViewModel: VSSPropertiesViewModel by viewModels()
+    private val vssSpecificationsViewModel: VssSpecificationsViewModel by viewModels()
     private val outputViewModel: OutputViewModel by viewModels()
 
     private val dataBrokerConnectionCallback = object : CoroutineCallback<DataBrokerConnection>() {
@@ -101,7 +103,13 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             KuksaAppAndroidTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    DataBrokerView(topAppBarViewModel, connectionViewModel, vssPropertiesViewModel, outputViewModel)
+                    DataBrokerView(
+                        topAppBarViewModel,
+                        connectionViewModel,
+                        vssPropertiesViewModel,
+                        vssSpecificationsViewModel,
+                        outputViewModel,
+                    )
                 }
             }
         }
@@ -109,6 +117,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         connectionInfoRepository = ConnectionInfoRepository(this)
 
         dataBrokerEngine = kotlinDataBrokerEngine
+
         topAppBarViewModel.onCompatibilityModeChanged = { isCompatibilityModeEnabled ->
             dataBrokerEngine = if (isCompatibilityModeEnabled) {
                 javaDataBrokerEngine
@@ -138,6 +147,14 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         vssPropertiesViewModel.onSubscribeProperty = { property: Property ->
             subscribeProperty(property)
         }
+
+        vssSpecificationsViewModel.onSubscribeSpecification = { specification ->
+            subscribeSpecification(specification)
+        }
+
+        vssSpecificationsViewModel.onGetSpecification = { specification ->
+            fetchSpecification(specification)
+        }
     }
 
     override fun onDestroy() {
@@ -165,16 +182,17 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     private fun fetchProperty(property: Property) {
         Log.d(TAG, "Fetch property: $property")
 
-        dataBrokerEngine.fetchProperty(
+        dataBrokerEngine.fetch(
             property,
             object : CoroutineCallback<GetResponse>() {
                 override fun onSuccess(result: GetResponse?) {
-                    val automaticValueType = result?.metadata?.valueType ?: ValueCase.VALUE_NOT_SET
+                    val automaticValueType = result?.metadata?.valueType ?: Datapoint.ValueCase.VALUE_NOT_SET
                     Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
 
                     val errorsList = result?.errorsList
                     errorsList?.forEach {
                         outputViewModel.appendOutput(it.toString())
+
                         return
                     }
 
@@ -194,11 +212,12 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
     private fun updateProperty(property: Property, datapoint: Datapoint) {
         Log.d(TAG, "Update property: $property dataPoint: $datapoint, type: ${datapoint.valueCase}")
-        dataBrokerEngine.updateProperty(
+
+        dataBrokerEngine.update(
             property,
             datapoint,
-            object : CoroutineCallback<SetResponse>() {
-                override fun onSuccess(result: SetResponse?) {
+            object : CoroutineCallback<KuksaValV1.SetResponse>() {
+                override fun onSuccess(result: KuksaValV1.SetResponse?) {
                     val errorsList = result?.errorsList
                     errorsList?.forEach {
                         outputViewModel.appendOutput(it.toString())
@@ -216,14 +235,32 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     }
 
     private fun subscribeProperty(property: Property) {
-        dataBrokerEngine.subscribe(
-            property,
-            object : PropertyObserver {
-                override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
-                    Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
-                    outputViewModel.appendOutput(updatedValue.toString())
+        Log.d(TAG, "Subscribing to property: $property")
+        dataBrokerEngine.subscribe(property) { vssPath, updatedValue ->
+            Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
+            outputViewModel.appendOutput("Updated value: $updatedValue")
+        }
+    }
+
+    private fun fetchSpecification(specification: VssSpecification) {
+        dataBrokerEngine.fetch(
+            specification,
+            object : CoroutineCallback<VssSpecification>() {
+                override fun onSuccess(result: VssSpecification?) {
+                    Log.d(TAG, "Fetched specification: $result")
+                    outputViewModel.appendOutput("Fetched specification: $result")
+                }
+
+                override fun onError(error: Throwable) {
+                    outputViewModel.appendOutput("Could not fetch specification: ${error.message}")
                 }
             },
         )
+    }
+
+    private fun subscribeSpecification(specification: VssSpecification) {
+        dataBrokerEngine.subscribe(specification) { updatedSpecification ->
+            outputViewModel.appendOutput("Updated specification: $updatedSpecification")
+        }
     }
 }

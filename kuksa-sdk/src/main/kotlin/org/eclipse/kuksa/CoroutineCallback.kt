@@ -31,16 +31,12 @@ abstract class CoroutineCallback<T> : Continuation<T> {
     override val context: CoroutineContext = EmptyCoroutineContext
 
     /**
-     * Will be called when the coroutine finished.
-     *
-     * @param result the result of the coroutine
+     * Will be called with the [result] when the coroutine finished.
      */
     abstract fun onSuccess(result: T?)
 
     /**
-     * Will be called when an exception is thrown during the execution of the coroutine.
-     *
-     * @param error the thrown exception
+     * Will be called with the [error] when an exception is thrown during the execution of the coroutine.
      */
     abstract fun onError(error: Throwable)
 

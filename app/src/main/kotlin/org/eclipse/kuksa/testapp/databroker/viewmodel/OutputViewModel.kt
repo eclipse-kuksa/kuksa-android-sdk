@@ -19,25 +19,23 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class OutputViewModel : ViewModel() {
-    var output: String by mutableStateOf("")
+    var output = mutableStateListOf<String>()
         private set
 
     fun appendOutput(text: String) {
         val emptyLines = if (output.isEmpty()) "\n" else "\n\n"
-        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
         val date = LocalDateTime.now().format(dateFormatter)
         output += "$emptyLines- $date\n $text"
     }
 
     fun clear() {
-        output = ""
+        output.clear()
     }
 }

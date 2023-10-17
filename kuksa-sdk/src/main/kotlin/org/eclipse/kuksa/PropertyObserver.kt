@@ -19,17 +19,27 @@
 
 package org.eclipse.kuksa
 
-import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.proto.v1.Types.DataEntry
+import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 /**
- * The Observer used to notify about changes to subscribed properties.
+ * The Observer is used to notify about changes to subscribed properties.
  */
-interface PropertyObserver {
+fun interface PropertyObserver {
     /**
-     * Will be triggered when the underlying vssPath changed it's value.
-     *
-     * @param vssPath the underlying vssPath
-     * @param updatedValue the updated value
+     * Will be triggered with the [updatedValue] when the underlying [vssPath] changed it's value.
      */
-    fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry)
+    fun onPropertyChanged(vssPath: String, updatedValue: DataEntry)
+}
+
+/**
+ * The Observer is used to notify about subscribed [VssSpecification]. If a [VssSpecification] has children
+ * then [onSpecificationChanged] will be called on every value change for every children.
+ */
+fun interface VssSpecificationObserver<T : VssSpecification> {
+    /**
+     * Will be triggered with the [vssSpecification] when the underlying vssPath changed it's value or to inform about
+     * the initial state.
+     */
+    fun onSpecificationChanged(vssSpecification: T)
 }

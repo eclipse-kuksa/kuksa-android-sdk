@@ -19,11 +19,12 @@
 
 package org.eclipse.kuksa
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
-import org.eclipse.kuksa.test.databroker.DataBrokerConnectorProvider
+import io.kotest.matchers.shouldNotBe
+import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
-import org.junit.jupiter.api.Assertions
 
 class DataBrokerConnectorTest : BehaviorSpec({
     tags(Integration, Insecure)
@@ -38,7 +39,7 @@ class DataBrokerConnectorTest : BehaviorSpec({
                 val connection = dataBrokerConnector.connect()
 
                 then("It should return a valid connection") {
-                    Assertions.assertNotNull(connection)
+                    connection shouldNotBe null
                 }
             }
         }
@@ -49,15 +50,12 @@ class DataBrokerConnectorTest : BehaviorSpec({
             val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(invalidHost, invalidPort)
 
             `when`("Trying to establish a connection") {
-                var isExceptionCaught = false
-                try {
+                val exception = shouldThrow<DataBrokerException> {
                     dataBrokerConnector.connect()
-                } catch (ignored: DataBrokerException) {
-                    isExceptionCaught = true
                 }
 
                 then("It should throw an exception") {
-                    Assertions.assertTrue(isExceptionCaught)
+                    exception shouldNotBe null
                 }
             }
         }

@@ -42,6 +42,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.TlsChannelCredentials;
 
+/** @noinspection unused*/
 public class JavaActivity extends AppCompatActivity {
 
     private final DisconnectListener disconnectListener = () -> {
@@ -115,7 +116,7 @@ public class JavaActivity extends AppCompatActivity {
             return;
         }
 
-        dataBrokerConnection.fetchProperty(property, new CoroutineCallback<GetResponse>() {
+        dataBrokerConnection.fetch(property, new CoroutineCallback<GetResponse>() {
             @Override
             public void onSuccess(GetResponse result) {
                 // handle result
@@ -133,7 +134,7 @@ public class JavaActivity extends AppCompatActivity {
             return;
         }
 
-        dataBrokerConnection.updateProperty(property, datapoint, new CoroutineCallback<KuksaValV1.SetResponse>() {
+        dataBrokerConnection.update(property, datapoint, new CoroutineCallback<KuksaValV1.SetResponse>() {
             @Override
             public void onSuccess(KuksaValV1.SetResponse result) {
                 // handle result
