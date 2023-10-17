@@ -27,13 +27,25 @@ class VssSpecificationTest : BehaviorSpec({
         `when`("finding the whole heritage") {
             val heritage = vssVehicle.heritage
             then("it should return all possible heirs") {
-                heritage shouldBe listOf(vssVehicle.driver, vssVehicle.body, vssVehicle.driver.heartRate)
+                heritage shouldBe listOf(
+                    vssVehicle.driver,
+                    vssVehicle.passenger,
+                    vssVehicle.body,
+                    vssVehicle.driver.heartRate,
+                    vssVehicle.passenger.heartRate,
+                )
             }
         }
         `when`("finding a heritage line") {
-            val heritageLine = vssVehicle.findHeritageLine(VssHeartRate())
+            val heritageLine = vssVehicle.findHeritageLine(VssDriver.VssHeartRate())
             then("it should return the correct line") {
                 heritageLine shouldBe listOf(vssVehicle.driver, vssVehicle.driver.heartRate)
+            }
+        }
+        `when`("finding specific properties") {
+            val properties = vssVehicle.findProperties(VssDriver.VssHeartRate::class)
+            then("it should return all VssProperties which fit the class") {
+                properties.size shouldBe 2
             }
         }
         `when`("getting the variable name") {
