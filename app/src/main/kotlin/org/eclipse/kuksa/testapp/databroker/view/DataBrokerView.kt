@@ -19,9 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker.view
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,14 +43,11 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,8 +58,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,15 +73,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
+import org.eclipse.kuksa.testapp.extension.compose.Headline
+import org.eclipse.kuksa.testapp.extension.compose.LazyDropdownMenu
+import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
+import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
@@ -102,6 +99,7 @@ fun DataBrokerView(
     topAppBarViewModel: TopAppBarViewModel,
     connectionViewModel: ConnectionViewModel,
     vssPropertiesViewModel: VSSPropertiesViewModel,
+    vssSpecificationsViewModel: VssSpecificationsViewModel,
     outputViewModel: OutputViewModel,
 ) {
     Scaffold(
@@ -117,8 +115,19 @@ fun DataBrokerView(
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
+                val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 DataBrokerConnection(connectionViewModel)
-                DataBrokerProperties(vssPropertiesViewModel, connectionViewModel.isConnected)
+                if (connectionViewModel.isConnected) {
+                    AnimatedContent(
+                        targetState = dataBrokerMode,
+                        label = "DataBrokerModeAnimation",
+                    ) { mode ->
+                        when (mode) {
+                            DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
+                            DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssSpecificationsViewModel)
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
             }
             Column {
@@ -146,242 +155,197 @@ private fun TopBar(
                         .clickable(
                             enabled = connectionViewModel.isDisconnected,
                         ) {
-                            val newValue = !topAppBarViewModel.isCompatibilityModeEnabled.value
-                            topAppBarViewModel.isCompatibilityModeEnabled.value = newValue
+                            val newValue = !topAppBarViewModel.isCompatibilityModeEnabled
+                            topAppBarViewModel.isCompatibilityModeEnabled = newValue
                         }
                         .padding(horizontal = 16.dp),
                 ) {
                     Checkbox(
-                        checked = topAppBarViewModel.isCompatibilityModeEnabled.value,
+                        checked = topAppBarViewModel.isCompatibilityModeEnabled,
                         onCheckedChange = null,
                         enabled = connectionViewModel.isDisconnected,
                     )
                     Text(text = "Java Compatibility Mode", modifier = Modifier.padding(start = 16.dp))
                 }
+                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
+                Row(
+                    modifier = Modifier
+                        .clickable {
+                            val newMode = if (!topAppBarViewModel.isSpecificationModeEnabled) {
+                                DataBrokerMode.SPECIFICATION
+                            } else {
+                                DataBrokerMode.VSS_PATH
+                            }
+                            topAppBarViewModel.updateDataBrokerMode(newMode)
+                        }
+                        .padding(horizontal = 16.dp),
+                ) {
+                    Checkbox(
+                        checked = topAppBarViewModel.isSpecificationModeEnabled,
+                        onCheckedChange = null,
+                    )
+                    Text(text = "Specification Mode", modifier = Modifier.padding(start = 16.dp))
+                }
             }
         },
     )
 }
 
 @Composable
-fun OverflowMenu(content: @Composable () -> Unit) {
-    var showMenu by remember { mutableStateOf(false) }
+fun DataBrokerSpecifications(viewModel: VssSpecificationsViewModel) {
+    Column {
+        Headline(name = "Specifications")
 
-    IconButton(onClick = {
-        showMenu = !showMenu
-    }) {
-        Icon(
-            imageVector = Icons.Outlined.MoreVert,
-            contentDescription = "Options",
+        var selectedIndex by remember { mutableStateOf(0) }
+        LazyDropdownMenu(
+            modifier = Modifier
+                .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
+            items = viewModel.specifications,
+            selectedIndex = selectedIndex,
+            itemToString = { it.vssPath.substringAfter(".") },
+            onItemSelected = { index, item ->
+                selectedIndex = index
+                viewModel.updateSpecification(item)
+            },
         )
-    }
-    DropdownMenu(
-        expanded = showMenu,
-        onDismissRequest = { showMenu = false },
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun Headline(name: String, modifier: Modifier = Modifier, color: Color = Color.Black) {
-    Text(
-        text = name,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 15.dp, bottom = 15.dp),
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.titleLarge,
-        color = color,
-    )
-}
-
-@Composable
-fun rememberCountdown(
-    initialMillis: Long,
-    step: Long = 1000,
-): MutableState<Long> {
-    val timeLeft = remember { mutableStateOf(initialMillis) }
-
-    LaunchedEffect(initialMillis, step) {
-        while (isActive && timeLeft.value > 0) {
-            val newTimeLeft = (timeLeft.value - step).coerceAtLeast(0)
-            timeLeft.value = newTimeLeft
-
-            val maximumDelay = step.coerceAtMost(newTimeLeft)
-            delay(maximumDelay)
+        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            Button(
+                onClick = {
+                    viewModel.onGetSpecification(viewModel.specification)
+                },
+                modifier = Modifier.requiredWidth(80.dp),
+            ) {
+                Text(text = "Get")
+            }
+            Button(onClick = {
+                viewModel.onSubscribeSpecification(viewModel.specification)
+            }) {
+                Text(text = "Subscribe")
+            }
         }
     }
-
-    return timeLeft
 }
 
 @Composable
-fun DataBrokerProperties(viewModel: VSSPropertiesViewModel, isVisible: Boolean = true) {
+fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
     val vssProperties = viewModel.vssProperties
     var expanded by remember { mutableStateOf(false) }
 
-    AnimatedVisibility(visible = isVisible, enter = fadeIn(), exit = fadeOut()) {
-        Column {
-            Headline(name = "Properties")
-            TextField(
-                value = viewModel.vssProperties.vssPath,
-                onValueChange = {
-                    val newVssProperties = viewModel.vssProperties.copy(
-                        vssPath = it,
-                        valueType = ValueCase.VALUE_NOT_SET,
+    Column {
+        Headline(name = "Properties")
+        TextField(
+            value = viewModel.vssProperties.vssPath,
+            onValueChange = {
+                val newVssProperties = viewModel.vssProperties.copy(
+                    vssPath = it,
+                    valueType = ValueCase.VALUE_NOT_SET,
+                )
+                viewModel.updateVssProperties(newVssProperties)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
+            singleLine = true,
+            label = {
+                Text(text = "VSS Path")
+            },
+            suffix = {
+                Row(modifier = Modifier.offset(x = 15.dp)) {
+                    ClickableText(
+                        text = AnnotatedString(": ${viewModel.vssProperties.valueType}"),
+                        onClick = { expanded = !expanded },
+                        style = TextStyle(fontStyle = FontStyle.Italic),
                     )
-                    viewModel.updateVssProperties(newVssProperties)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                singleLine = true,
-                label = {
-                    Text(text = "VSS Path")
-                },
-                suffix = {
-                    Row(modifier = Modifier.offset(x = 15.dp)) {
-                        ClickableText(
-                            text = AnnotatedString(": ${viewModel.vssProperties.valueType}"),
-                            onClick = { expanded = !expanded },
-                            style = TextStyle(fontStyle = FontStyle.Italic),
-                        )
-                        Box(modifier = Modifier.requiredHeight(23.dp)) {
-                            IconButton(onClick = { expanded = !expanded }) {
-                                Icon(
-                                    modifier = Modifier.size(23.dp),
-                                    imageVector = Icons.Default.ArrowDropDown,
-                                    contentDescription = "More",
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                                modifier = Modifier.height(400.dp),
-                            ) {
-                                viewModel.valueTypes.forEach {
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(it.toString())
-                                        },
-                                        onClick = {
-                                            expanded = false
+                    Box(modifier = Modifier.requiredHeight(23.dp)) {
+                        IconButton(onClick = { expanded = !expanded }) {
+                            Icon(
+                                modifier = Modifier.size(23.dp),
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "More",
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.height(400.dp),
+                        ) {
+                            viewModel.valueTypes.forEach {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(it.toString())
+                                    },
+                                    onClick = {
+                                        expanded = false
 
-                                            val newVssProperties = viewModel.vssProperties.copy(valueType = it)
-                                            viewModel.updateVssProperties(newVssProperties)
-                                        },
-                                    )
-                                }
+                                        val newVssProperties = viewModel.vssProperties.copy(valueType = it)
+                                        viewModel.updateVssProperties(newVssProperties)
+                                    },
+                                )
                             }
                         }
                     }
-                },
-            )
-            Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-            Row {
-                TextField(
-                    value = vssProperties.value,
-                    onValueChange = {
-                        val newVssProperties = viewModel.vssProperties.copy(value = it)
-                        viewModel.updateVssProperties(newVssProperties)
-                    },
-                    modifier = Modifier
-                        .padding(start = DefaultEdgePadding)
-                        .weight(1f),
-                    singleLine = true,
-                    label = {
-                        Text(text = "Value")
-                    },
-                )
-                Spacer(modifier = Modifier.padding(start = DefaultElementPadding, end = DefaultElementPadding))
-                SimpleExposedDropdownMenuBox(
-                    Modifier
-                        .weight(2f)
-                        .padding(end = DefaultEdgePadding),
-                    label = "Field Type",
-                    list = viewModel.fieldTypes,
-                    onValueChange = {
-                        val newVssProperties = viewModel.vssProperties.copy(fieldType = it)
-                        viewModel.updateVssProperties(newVssProperties)
-                    },
-                )
-            }
-            Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.onGetProperty(viewModel.property)
-                    },
-                    modifier = Modifier.requiredWidth(80.dp),
-                ) {
-                    Text(text = "Get")
                 }
-                Button(
-                    enabled = viewModel.vssProperties.valueType != ValueCase.VALUE_NOT_SET,
-                    onClick = {
-                        viewModel.onSetProperty(viewModel.property, viewModel.datapoint)
-                    },
-                    modifier = Modifier.requiredWidth(80.dp),
-                ) {
-                    Text(text = "Set")
-                }
-                Button(onClick = {
-                    viewModel.onSubscribeProperty(viewModel.property)
-                }) {
-                    Text(text = "Subscribe")
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun <T : Enum<T>> SimpleExposedDropdownMenuBox(
-    modifier: Modifier = Modifier,
-    label: String = "",
-    list: List<T> = emptyList(),
-    onValueChange: (T) -> Unit = {},
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val firstElement = list.firstOrNull() ?: "No element"
-    var selectedText by remember { mutableStateOf(firstElement) }
-
-    ExposedDropdownMenuBox(
-        expanded = false,
-        onExpandedChange = {
-            expanded = !expanded
-        },
-        modifier,
-    ) {
-        TextField(
-            value = selectedText.toString(),
-            onValueChange = {},
-            readOnly = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(),
-            label = {
-                Text(text = label)
             },
         )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { }) {
-            list.forEach {
-                DropdownMenuItem(
-                    text = {
-                        Text(text = it.name)
-                    },
-                    onClick = {
-                        expanded = false
-                        selectedText = it
-                        onValueChange(it)
-                    },
-                )
+        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
+        Row {
+            TextField(
+                value = vssProperties.value,
+                onValueChange = {
+                    val newVssProperties = viewModel.vssProperties.copy(value = it)
+                    viewModel.updateVssProperties(newVssProperties)
+                },
+                modifier = Modifier
+                    .padding(start = DefaultEdgePadding)
+                    .weight(1f),
+                singleLine = true,
+                label = {
+                    Text(text = "Value")
+                },
+            )
+            Spacer(modifier = Modifier.padding(start = DefaultElementPadding, end = DefaultElementPadding))
+            SimpleExposedDropdownMenuBox(
+                Modifier
+                    .weight(2f)
+                    .padding(end = DefaultEdgePadding),
+                label = "Field Type",
+                list = viewModel.fieldTypes,
+                onValueChange = {
+                    val newVssProperties = viewModel.vssProperties.copy(fieldType = it)
+                    viewModel.updateVssProperties(newVssProperties)
+                },
+            )
+        }
+        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            Button(
+                onClick = {
+                    viewModel.onGetProperty(viewModel.property)
+                },
+                modifier = Modifier.requiredWidth(80.dp),
+            ) {
+                Text(text = "Get")
+            }
+            Button(
+                enabled = viewModel.vssProperties.valueType != ValueCase.VALUE_NOT_SET,
+                onClick = {
+                    viewModel.onSetProperty(viewModel.property, viewModel.datapoint)
+                },
+                modifier = Modifier.requiredWidth(80.dp),
+            ) {
+                Text(text = "Set")
+            }
+            Button(onClick = {
+                viewModel.onSubscribeProperty(viewModel.property)
+            }) {
+                Text(text = "Subscribe")
             }
         }
     }
@@ -431,6 +395,7 @@ fun Preview() {
             TopAppBarViewModel(),
             ConnectionViewModel(connectionInfoRepository),
             VSSPropertiesViewModel(),
+            VssSpecificationsViewModel(),
             OutputViewModel(),
         )
     }

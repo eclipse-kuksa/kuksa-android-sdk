@@ -25,7 +25,7 @@ import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 /**
  * Returns the converted VSS data types -> Protobuf data types
  */
-val Types.DataType.dataPointValueCase: Types.Datapoint.ValueCase
+val Types.DataType.dataPointValueCase: ValueCase
     get() {
         return when (this) {
             Types.DataType.DATA_TYPE_UNSPECIFIED,
@@ -40,7 +40,7 @@ val Types.DataType.dataPointValueCase: Types.Datapoint.ValueCase
             Types.DataType.DATA_TYPE_INT32,
             -> ValueCase.INT32
 
-            Types.DataType.DATA_TYPE_INT64 -> Types.Datapoint.ValueCase.INT64
+            Types.DataType.DATA_TYPE_INT64 -> ValueCase.INT64
             Types.DataType.DATA_TYPE_UINT8,
             Types.DataType.DATA_TYPE_UINT16,
             Types.DataType.DATA_TYPE_UINT32,

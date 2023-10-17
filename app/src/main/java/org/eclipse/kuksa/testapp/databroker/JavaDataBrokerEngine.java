@@ -30,16 +30,20 @@ import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.PropertyObserver;
 import org.eclipse.kuksa.TimeoutConfig;
+import org.eclipse.kuksa.VssSpecificationObserver;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
+import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
-import org.eclipse.kuksa.testapp.model.Certificate;
-import org.eclipse.kuksa.testapp.model.ConnectionInfo;
+import org.eclipse.kuksa.testapp.databroker.model.Certificate;
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
+import org.eclipse.kuksa.vsscore.model.VssSpecification;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -98,14 +102,18 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     ) {
         Certificate certificate = connectInfo.getCertificate();
 
-        ChannelCredentials tlsCredentials = null;
+        ChannelCredentials tlsCredentials;
         try {
             InputStream rootCertFile = context.getContentResolver().openInputStream(certificate.getUri());
+            if (rootCertFile == null) return;
+
             tlsCredentials = TlsChannelCredentials.newBuilder()
                 .trustManager(rootCertFile)
                 .build();
         } catch (IOException e) {
             Log.w(TAG, "Could not find file for certificate: " + certificate);
+
+            return;
         }
 
         try {
@@ -151,18 +159,29 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         });
     }
 
-    public void fetchProperty(
-        @NonNull Property property,
-        @NonNull CoroutineCallback<GetResponse> callback
+    @Override
+    public void fetch(@NonNull Property property, @NonNull CoroutineCallback<GetResponse> callback) {
+        if (dataBrokerConnection == null) {
+            return;
+        }
+
+        dataBrokerConnection.fetch(property, callback);
+    }
+
+    @Override
+    public <T extends VssSpecification> void fetch(
+        @NonNull T specification,
+        @NonNull CoroutineCallback<T> callback
     ) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.fetchProperty(property, callback);
+        dataBrokerConnection.fetch(specification, callback);
     }
 
-    public void updateProperty(
+    @Override
+    public void update(
         @NonNull Property property,
         @NonNull Datapoint datapoint,
         @NonNull CoroutineCallback<SetResponse> callback
@@ -171,7 +190,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             return;
         }
 
-        dataBrokerConnection.updateProperty(property, datapoint, callback);
+        dataBrokerConnection.update(property, datapoint, callback);
     }
 
     @Override
@@ -182,6 +201,25 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
         List<Property> properties = Collections.singletonList(property);
         dataBrokerConnection.subscribe(properties, propertyObserver);
+    }
+
+    @Override
+    public <T extends VssSpecification> void subscribe(
+        @NonNull T specification,
+        @NonNull VssSpecificationObserver<T> propertyObserver
+    ) {
+        if (dataBrokerConnection == null) {
+            return;
+        }
+
+        ArrayList<Types.Field> fields = new ArrayList<>() {
+            {
+                add(Types.Field.FIELD_VALUE);
+                add(Types.Field.FIELD_METADATA);
+            }
+        };
+
+        dataBrokerConnection.subscribe(specification, fields, propertyObserver);
     }
 
     public void disconnect() {

@@ -50,10 +50,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
+import org.eclipse.kuksa.testapp.extension.compose.Headline
+import org.eclipse.kuksa.testapp.extension.compose.rememberCountdown
 import org.eclipse.kuksa.testapp.extension.fetchFileName
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
 @OptIn(ExperimentalComposeUiApi::class)

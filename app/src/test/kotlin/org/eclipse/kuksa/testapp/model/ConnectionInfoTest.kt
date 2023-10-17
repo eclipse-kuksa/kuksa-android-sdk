@@ -24,6 +24,9 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.test.kotest.Unit
+import org.eclipse.kuksa.testapp.databroker.model.Certificate
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfoSerializer
 import java.io.File
 import java.io.FileWriter
 

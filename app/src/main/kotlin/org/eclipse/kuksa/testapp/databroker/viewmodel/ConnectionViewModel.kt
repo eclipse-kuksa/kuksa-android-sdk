@@ -19,18 +19,16 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.eclipse.kuksa.testapp.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
 class ConnectionViewModel(private val connectionInfoRepository: ConnectionInfoRepository) : ViewModel() {
@@ -44,7 +42,7 @@ class ConnectionViewModel(private val connectionInfoRepository: ConnectionInfoRe
     var onConnect: (connectionInfo: ConnectionInfo) -> Unit = { }
     var onDisconnect: () -> Unit = { }
 
-    var connectionTimeoutMillis: Long by mutableLongStateOf(5_000)
+    var connectionTimeoutMillis: Long by mutableLongStateOf(TIMEOUT_DEFAULT)
         private set
 
     var connectionInfoFlow = connectionInfoRepository.connectionInfoFlow
@@ -52,19 +50,9 @@ class ConnectionViewModel(private val connectionInfoRepository: ConnectionInfoRe
     var connectionViewState: ConnectionViewState by mutableStateOf(ConnectionViewState.DISCONNECTED)
         private set
 
-    var isConnected by mutableStateOf(false)
-    var isConnecting by mutableStateOf(false)
-    var isDisconnected by mutableStateOf(true)
-
-    init {
-        snapshotFlow { connectionViewState }
-            .onEach {
-                isConnected = it == ConnectionViewState.CONNECTED
-                isConnecting = it == ConnectionViewState.CONNECTING
-                isDisconnected = it == ConnectionViewState.DISCONNECTED
-            }
-            .launchIn(viewModelScope)
-    }
+    val isConnected by derivedStateOf { connectionViewState == ConnectionViewState.CONNECTED }
+    val isConnecting by derivedStateOf { connectionViewState == ConnectionViewState.CONNECTING }
+    val isDisconnected by derivedStateOf { connectionViewState == ConnectionViewState.DISCONNECTED }
 
     fun updateTimeout(timeoutMillis: Long) {
         connectionTimeoutMillis = timeoutMillis
@@ -85,5 +73,9 @@ class ConnectionViewModel(private val connectionInfoRepository: ConnectionInfoRe
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return ConnectionViewModel(connectionInfoRepository) as T
         }
+    }
+
+    companion object {
+        private const val TIMEOUT_DEFAULT = 5_000L
     }
 }

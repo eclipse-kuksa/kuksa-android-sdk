@@ -21,16 +21,18 @@ package org.eclipse.kuksa
 
 import io.grpc.ManagedChannel
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.test.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.test.kotest.Integration
+import org.eclipse.kuksa.vssSpecification.VssDriver
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -62,7 +64,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     val random = Random(System.currentTimeMillis())
                     val newValue = random.nextFloat()
                     val datapoint = Datapoint.newBuilder().setFloat(newValue).build()
-                    dataBrokerConnection.updateProperty(property, datapoint)
+                    dataBrokerConnection.update(property, datapoint)
 
                     then("The #onPropertyChanged callback is triggered with the new value") {
                         val capturingSlot = slot<Types.DataEntry>()
@@ -79,7 +81,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     `when`("The same value is set again") {
                         clearMocks(propertyObserver)
 
-                        dataBrokerConnection.updateProperty(property, datapoint)
+                        dataBrokerConnection.update(property, datapoint)
 
                         then("The #onPropertyChangedCallback should NOT be triggered again") {
                             verify(exactly = 0) { propertyObserver.onPropertyChanged(any(), any()) }
@@ -91,14 +93,14 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val validDatapoint = createRandomFloatDatapoint()
             `when`("Updating the Property with a valid Datapoint") {
                 // make sure that the value is set and known to us
-                val response = dataBrokerConnection.updateProperty(property, validDatapoint)
+                val response = dataBrokerConnection.update(property, validDatapoint)
 
                 then("No error should appear") {
                     assertFalse(response.hasError())
                 }
 
                 and("When fetching it afterwards") {
-                    val response1 = dataBrokerConnection.fetchProperty(property)
+                    val response1 = dataBrokerConnection.fetch(property)
 
                     then("The response contains the correctly set value") {
                         val entriesList = response1.entriesList
@@ -111,18 +113,19 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
             `when`("Updating the Property with a Datapoint of a wrong/different type") {
                 val datapoint = createRandomIntDatapoint()
-                val response = dataBrokerConnection.updateProperty(property, datapoint)
+                val response = dataBrokerConnection.update(property, datapoint)
 
                 then("It should fail with an errorCode 400 (type mismatch)") {
                     val errorsList = response.errorsList
                     assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
-                    assertEquals(400, error.code)
+
+                    error.code shouldBe 400
                 }
 
                 and("Fetching it afterwards") {
-                    val getResponse = dataBrokerConnection.fetchProperty(property)
+                    val getResponse = dataBrokerConnection.fetch(property)
 
                     then("The response contains the correctly set value") {
                         val entriesList = getResponse.entriesList
@@ -133,6 +136,74 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 }
             }
         }
+
+        and("A Specification") {
+            val specification = VssDriver()
+            val property = Property(specification.heartRate.vssPath)
+
+            `when`("Fetching the specification") {
+
+                and("The initial value is different from the default for a child") {
+                    val newHeartRateValue = 60
+                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+
+                    dataBrokerConnection.update(property, datapoint)
+
+                    then("Every child property has been updated with the correct value") {
+                        val updatedDriver = dataBrokerConnection.fetch(specification)
+                        val heartRate = updatedDriver.heartRate
+
+                        heartRate.value shouldBe newHeartRateValue
+                    }
+                }
+            }
+
+            `when`("Subscribing to the specification") {
+                val propertyObserver = mockk<VssSpecificationObserver<VssDriver>>(relaxed = true)
+                dataBrokerConnection.subscribe(specification, observer = propertyObserver)
+
+                then("The #onSpecificationChanged method is triggered") {
+                    verify { propertyObserver.onSpecificationChanged(any()) }
+                }
+
+                and("The initial value is different from the default for a child") {
+                    val newHeartRateValue = 70
+                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+
+                    dataBrokerConnection.update(property, datapoint)
+
+                    then("Every child property has been updated with the correct value") {
+                        val capturingSlots = mutableListOf<VssDriver>()
+
+                        verify(exactly = 2) { propertyObserver.onSpecificationChanged(capture(capturingSlots)) }
+
+                        val updatedDriver = capturingSlots[1]
+                        val heartRate = updatedDriver.heartRate
+
+                        heartRate.value shouldBe newHeartRateValue
+                    }
+                }
+
+                and("Any subscribed Property was changed") {
+                    val newHeartRateValue = 50
+                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+
+                    dataBrokerConnection.update(property, datapoint)
+
+                    then("The subscribed Specification should be updated") {
+                        val capturingSlots = mutableListOf<VssDriver>()
+
+                        verify(exactly = 3) { propertyObserver.onSpecificationChanged(capture(capturingSlots)) }
+
+                        val updatedDriver = capturingSlots[2]
+                        val heartRate = updatedDriver.heartRate
+
+                        heartRate.value shouldBe newHeartRateValue
+                    }
+                }
+            }
+        }
+
         and("A Property with an INVALID VSS Path") {
             val fields = listOf(Types.Field.FIELD_VALUE)
             val property = Property("Vehicle.Some.Unknown.Path", fields)
@@ -151,19 +222,20 @@ class DataBrokerConnectionTest : BehaviorSpec({
             `when`("Trying to update the INVALID property") {
                 // make sure that the value is set and known to us
                 val datapoint = createRandomFloatDatapoint()
-                val response = dataBrokerConnection.updateProperty(property, datapoint)
+                val response = dataBrokerConnection.update(property, datapoint)
 
                 then("It should fail with an errorCode 404 (path not found)") {
                     val errorsList = response.errorsList
                     assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
-                    assertEquals(404, error.code)
+
+                    error.code shouldBe 404
                 }
             }
 
             `when`("Trying to fetch the INVALID property") {
-                val response = dataBrokerConnection.fetchProperty(property)
+                val response = dataBrokerConnection.fetch(property)
 
                 then("The response should not contain any entries") {
                     assertEquals(0, response.entriesList.size)
@@ -174,7 +246,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
-                    assertEquals(404, error.code)
+
+                    error.code shouldBe 404
                 }
             }
         }

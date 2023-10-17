@@ -19,9 +19,6 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.eclipse.kuksa.testapp.collection.MaxElementSet
 import java.time.LocalDateTime

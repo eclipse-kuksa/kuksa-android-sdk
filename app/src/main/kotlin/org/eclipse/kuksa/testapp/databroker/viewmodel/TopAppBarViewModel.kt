@@ -19,7 +19,9 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,13 +29,41 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class TopAppBarViewModel : ViewModel() {
-    var isCompatibilityModeEnabled = mutableStateOf(false)
+    enum class DataBrokerMode {
+        VSS_PATH,
+        SPECIFICATION,
+    }
+
+    var isCompatibilityModeEnabled by mutableStateOf(false)
+    var isSpecificationModeEnabled by mutableStateOf(false)
+        private set
 
     var onCompatibilityModeChanged: ((Boolean) -> Unit)? = null
+    var onDataBrokerModeChanged: ((DataBrokerMode) -> Unit)? = null
+
+    var dataBrokerMode by mutableStateOf(DataBrokerMode.VSS_PATH)
+        private set
 
     init {
-        snapshotFlow { isCompatibilityModeEnabled.value }
+        snapshotFlow { isCompatibilityModeEnabled }
             .onEach { onCompatibilityModeChanged?.invoke(it) }
             .launchIn(viewModelScope)
+
+        snapshotFlow { isSpecificationModeEnabled }
+            .onEach {
+                val mode = if (isSpecificationModeEnabled) DataBrokerMode.SPECIFICATION else DataBrokerMode.VSS_PATH
+                onDataBrokerModeChanged?.invoke(mode)
+            }
+            .launchIn(viewModelScope)
+
+        snapshotFlow { dataBrokerMode }
+            .onEach {
+                isSpecificationModeEnabled = it == DataBrokerMode.SPECIFICATION
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun updateDataBrokerMode(dataBrokerMode: DataBrokerMode) {
+        this.dataBrokerMode = dataBrokerMode
     }
 }

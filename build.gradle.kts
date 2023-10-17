@@ -23,6 +23,7 @@ plugins {
     base
     detekt
     version
+    kotlin("jvm")
 }
 
 subprojects {

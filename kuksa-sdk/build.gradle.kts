@@ -1,9 +1,10 @@
+@file:Suppress("UnstableApiUsage")
+
 import com.google.protobuf.gradle.id
 
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-
     id("com.google.protobuf")
     publish
 }
@@ -22,7 +23,6 @@ android {
 
         consumerProguardFiles("consumer-rules.pro")
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -37,14 +37,25 @@ android {
                 it.useJUnitPlatform()
             }
         }
+        kotlin {
+            compilerOptions {
+                // https://youtrack.jetbrains.com/issue/KT-48678/Coroutine-debugger-disable-was-optimised-out-compiler-feature
+                // We don't want local variables to be optimized out while debugging into tests
+                freeCompilerArgs.add("-Xdebug")
+            }
+        }
     }
 }
 
 dependencies {
+    api(project(":vss-core")) // Models are exposed
+
     testImplementation(project(":test"))
 
     // needs to be api as long as we expose ProtoBuf specific objects
     api(libs.grpc.protobuf)
+
+    implementation(kotlin("reflect"))
 
     implementation(libs.grpc.okhttp)
     implementation(libs.grpc.stub)
@@ -54,6 +65,11 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotest)
     testImplementation(libs.mockk)
+}
+
+configure<Publish_gradle.PublishPluginExtension> {
+    mavenPublicationName = "release"
+    componentName = "release"
 }
 
 protobuf {
