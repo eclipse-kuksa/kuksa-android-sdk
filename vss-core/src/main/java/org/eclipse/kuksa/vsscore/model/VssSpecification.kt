@@ -157,14 +157,32 @@ private val classNamePrefix: String
     get() = "Vss"
 
 /**
- * Creates an inheritance line to the given heir. Similar to [vssPathHeritageLine] but the other way around.
- *
- * @param heir where the inheritance line should stop
- * @return a [Collection] of the full heritage line in the form of [VssSpecification]
+ * Creates an inheritance line to the given [heir]. Similar to [vssPathHeritageLine] but the other way around. It
+ * returns a [Collection] of the full heritage line in the form of [VssSpecification].
  */
-fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecification> {
+fun VssSpecification.findHeritageLine(heir: VssSpecification): Collection<VssSpecification> {
     val specificationKeys = heir.vssPathHeritageLine
     return heritage.filter { child ->
         specificationKeys.contains(child.vssPath)
     }
+}
+
+/**
+ * Finds the given [property] inside the current [VssSpecification].
+ */
+fun <T : VssProperty<V>, V : Any> VssSpecification.findProperty(property: VssProperty<V>): VssProperty<V> {
+    return heritage
+        .filterIsInstance<VssProperty<V>>()
+        .first { it.uuid == property.uuid }
+}
+
+/**
+ * Finds all [VssProperty] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
+ * with the same Name exists but are pretty much the same besides the [VssSpecification.vssPath] etc.
+ */
+fun <T : VssProperty<V>, V : Any> VssSpecification.findProperties(type: KClass<T>): Map<String, VssProperty<V>> {
+    return heritage
+        .filterIsInstance<VssProperty<V>>()
+        .filter { it::class.simpleName == type.simpleName }
+        .associateBy { it.vssPath }
 }
