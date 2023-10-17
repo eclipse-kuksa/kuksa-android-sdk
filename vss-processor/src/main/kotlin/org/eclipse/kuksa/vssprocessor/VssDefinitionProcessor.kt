@@ -35,6 +35,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssNode
@@ -63,8 +64,8 @@ class VssDefinitionProcessor(
 
         symbols.forEach { it.accept(visitor, Unit) }
 
-        logger.info("Deferred symbols: ${deferredSymbols.count()}")
-        return deferredSymbols.toList()
+        logger.info("Deferred symbols: $deferredSymbols")
+        return emptyList()
     }
 
     private inner class VssDefinitionVisitor : KSVisitorVoid() {
@@ -75,7 +76,7 @@ class VssDefinitionProcessor(
             codeGenerator.createNewFile(
                 Dependencies(false, containingFile),
                 PACKAGE_NAME,
-                DEFAULT_FILE_NAME,
+                classDeclaration.toClassName().simpleName + FILE_NAME_PROCESSOR_POSTFIX,
             )
 
             val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).first()
@@ -135,7 +136,7 @@ class VssDefinitionProcessor(
 
     companion object {
         private const val PACKAGE_NAME = "org.eclipse.kuksa.vss"
-        private const val DEFAULT_FILE_NAME = "VssProcessor"
+        private const val FILE_NAME_PROCESSOR_POSTFIX = "Processor"
         private const val ASSETS_BUILD_DIRECTORY = "intermediates/assets/"
         private const val BUILD_FOLDER_NAME = "build/"
     }
