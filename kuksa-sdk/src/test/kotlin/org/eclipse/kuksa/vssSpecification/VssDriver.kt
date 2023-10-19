@@ -25,8 +25,34 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import kotlin.reflect.KClass
 
+data class VssVehicle(
+    val driver: VssDriver = VssDriver(),
+    val passenger: VssPassenger = VssPassenger(),
+    val body: VssBody = VssBody(),
+    override val uuid: String = "Vehicle",
+    override val vssPath: String = "Vehicle",
+    override val description: String = "High-level vehicle data.",
+    override val type: String = "branch",
+    override val comment: String = "",
+) : VssSpecification {
+    override val children: Set<VssSpecification>
+        get() = setOf(driver, passenger, body)
+}
+
+data class VssBody(
+    override val uuid: String = "Body",
+    override val vssPath: String = "Vehicle.Body",
+    override val description: String = "All body components.",
+    override val type: String = "branch",
+    override val comment: String = "",
+) : VssSpecification {
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+}
+
 data class VssDriver(
     val heartRate: VssHeartRate = VssHeartRate(),
+    val isEyesOnRoad: VssIsEyesOnRoad = VssIsEyesOnRoad(),
     override val uuid: String = "Driver",
     override val vssPath: String = "Vehicle.Driver",
     override val description: String = "Driver data.",
@@ -34,17 +60,57 @@ data class VssDriver(
     override val comment: String = "",
 ) : VssSpecification {
     override val children: Set<VssSpecification>
-        get() = setOf(heartRate)
+        get() = setOf(heartRate, isEyesOnRoad)
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+
+    data class VssHeartRate(
+        override val uuid: String = "Driver HeartRate",
+        override val vssPath: String = "Vehicle.Driver.HeartRate",
+        override val description: String = "Heart rate of the driver.",
+        override val type: String = "sensor",
+        override val comment: String = "",
+        override val value: Int = 100,
+    ) : VssProperty<Int> {
+        override val parentClass: KClass<*>
+            get() = VssDriver::class
+    }
+
+    data class VssIsEyesOnRoad(
+        override val uuid: String = "Driver IsEyesOnRoad",
+        override val vssPath: String = "Vehicle.Driver.IsEyesOnRoad",
+        override val description: String = "Has driver the eyes on road or not?",
+        override val type: String = "sensor",
+        override val comment: String = "",
+        override val value: Boolean = true,
+    ) : VssProperty<Boolean> {
+        override val parentClass: KClass<*>
+            get() = VssDriver::class
+    }
 }
 
-data class VssHeartRate(
-    override val uuid: String = "HeartRate",
-    override val vssPath: String = "Vehicle.Driver.HeartRate",
-    override val description: String = "Heart rate of the driver.",
-    override val type: String = "sensor",
+data class VssPassenger(
+    val heartRate: VssHeartRate = VssHeartRate(),
+    override val uuid: String = "Passenger",
+    override val vssPath: String = "Vehicle.Passenger",
+    override val description: String = "Passenger data",
+    override val type: String = "branch",
     override val comment: String = "",
-    override val value: Int = 100,
-) : VssProperty<Int> {
-    override val parentClass: KClass<*>?
-        get() = VssDriver::class
+) : VssSpecification {
+    override val children: Set<VssSpecification>
+        get() = setOf(heartRate)
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+
+    data class VssHeartRate(
+        override val uuid: String = "Passenger HeartRate",
+        override val vssPath: String = "Vehicle.Passenger.HeartRate",
+        override val description: String = "Heart rate of the Passenger.",
+        override val type: String = "sensor",
+        override val comment: String = "",
+        override val value: Int = 80,
+    ) : VssProperty<Int> {
+        override val parentClass: KClass<*>
+            get() = VssPassenger::class
+    }
 }

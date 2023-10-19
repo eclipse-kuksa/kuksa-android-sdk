@@ -28,7 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 @Composable
-fun rememberCountdown(
+fun RememberCountdown(
     initialMillis: Long,
     step: Long = 1000,
 ): MutableState<Long> {

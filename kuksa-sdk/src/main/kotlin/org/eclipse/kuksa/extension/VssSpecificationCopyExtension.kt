@@ -38,18 +38,26 @@ import org.eclipse.kuksa.vsscore.model.variableName
  * ```
  *
  * A deep copy is necessary for a nested history tree with at least two generations. The VssWindowChildLockEngaged
- * is replaced inside VssCabin where this again is replaced inside VssVehicle.
- *
- * @param generation the generation to start copying with starting from the [VssSpecification] to [deepCopy]
- * @return a copy where every heir in the given [changedHeritageLine] is replaced with a another copy
+ * is replaced inside VssCabin where this again is replaced inside VssVehicle. Use the [generation] to start copying
+ * from the [VssSpecification] to the [deepCopy]. Returns a copy where every heir in the given [changedHeritage] is
+ * replaced with a another copy
  */
-fun <T : VssSpecification> T.deepCopy(changedHeritageLine: List<VssSpecification>, generation: Int = 0): T {
-    if (generation == changedHeritageLine.size) { // Reached the end, use the changed VssProperty
+@Suppress("performance:SpreadOperator")
+fun <T : VssSpecification> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssSpecification): T {
+    if (generation == changedHeritage.size) { // Reached the end, use the changed VssProperty
         return this
     }
 
-    val childSpecification = changedHeritageLine[generation]
-    val childCopy = childSpecification.deepCopy(changedHeritageLine, generation + 1)
+    // Create the missing link between this (VssSpecification) and the given property (VssSpecifications inbetween)
+    var heritageLine = changedHeritage
+    if (changedHeritage.size == 1) {
+        heritageLine = findHeritageLine(changedHeritage.first(), true)
+            .toTypedArray()
+            .ifEmpty { changedHeritage }
+    }
+
+    val childSpecification = heritageLine[generation]
+    val childCopy = childSpecification.deepCopy(generation + 1, *heritageLine)
     val parameterNameToChild = mapOf(childSpecification.variableName to childCopy)
 
     return copy(parameterNameToChild)
@@ -58,12 +66,10 @@ fun <T : VssSpecification> T.deepCopy(changedHeritageLine: List<VssSpecification
 /**
  * Creates a copy of a [VssProperty] where the [VssProperty.value] is changed to the given [Datapoint].
  *
- * @param datapoint the [Datapoint.value_] is converted to the correct datatype depending on the [VssProperty.value]
- * @return a copy of the [VssProperty] with the updated [VssProperty.value]
- *
  * @throws [NoSuchElementException] if the class has no "copy" method
  * @throws [IllegalArgumentException] if the copied types do not match
  */
+@Suppress("UNCHECKED_CAST")
 fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
     with(datapoint) {
         val value: Any = when (valueCase) {
@@ -106,21 +112,26 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
             null -> throw NoSuchFieldException("Could not convert available value: $value to type: ${value::class}")
         }
 
-        val valueMap = mapOf("value" to value)
-        return this@copy.copy(valueMap)
+        // Value must be T
+        return this@copy.copy(value as T)
     }
+}
+
+/**
+ * Calls the generated copy method of the data class for the [VssProperty] and returns a new copy with the new [value].
+ */
+fun <T : Any> VssProperty<T>.copy(value: T): VssProperty<T> {
+    val valueMap = mapOf("value" to value)
+    return this@copy.copy(valueMap)
 }
 
 /**
  * Creates a copy of the [VssSpecification] where the heir with a matching [vssPath] is replaced with the
  * [updatedValue].
  *
- * @param vssPath which is used to find the correct heir in the [VssSpecification]
- * @param updatedValue which will be updated inside the matching [VssProperty]
  * @param consideredHeritage the heritage of the [VssSpecification] which is considered for searching. The default
  * will always generate the up to date heritage of the current [VssSpecification]. For performance reason it may make
  * sense to cache the input and reuse the [Collection] here.
- * @return a copy where the heir with the matching [vssPath] is replaced with a another copy
  *
  * @throws [NoSuchElementException] if the class has no "copy" method
  * @throws [IllegalArgumentException] if the copied types do not match
@@ -137,17 +148,38 @@ fun <T : VssSpecification> T.copy(
         .find { it.vssPath == vssPath } ?: return this
 
     val updatedVssProperty = vssProperty.copy(updatedValue)
-    val relevantChildren = findHeritageLine(vssProperty).toMutableList()
 
-    // Replace the last specification (Property) with the changed one
-    val updatedVssSpecification: T = if (relevantChildren.isNotEmpty()) {
-        relevantChildren.removeLast()
-        relevantChildren.add(updatedVssProperty)
+    // Same property with no heirs, no deep copy is needed
+    if (this.vssPath == updatedVssProperty.vssPath) return updatedVssProperty as T
 
-        this.deepCopy(relevantChildren)
-    } else {
-        updatedVssProperty as T // The property must be T since no children are available
-    }
+    return deepCopy(0, updatedVssProperty)
+}
 
-    return updatedVssSpecification
+/**
+ * Convenience operator for [copy] with a value [T].
+ */
+operator fun <T : Any> VssProperty<T>.plusAssign(value: T) {
+    copy(value)
+}
+
+/**
+ * Convenience operator for [copy] with a value [T].
+ */
+operator fun <T : Any> VssProperty<T>.plus(value: T): VssProperty<T> {
+    return copy(value)
+}
+
+/**
+ * Convenience operator for [copy] with a [Boolean] value which will be inverted.
+ */
+operator fun VssProperty<Boolean>.not(): VssProperty<Boolean> {
+    return copy(!value)
+}
+
+/**
+ * Convenience operator for [deepCopy] with a [VssProperty]. It will return the [VssSpecification] with the updated
+ * [VssProperty].
+ */
+operator fun <T : VssSpecification, V : Any> T.plus(property: VssProperty<V>): T {
+    return deepCopy(0, property)
 }

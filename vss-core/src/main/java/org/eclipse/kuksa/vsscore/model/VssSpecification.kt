@@ -159,12 +159,26 @@ private val classNamePrefix: String
 /**
  * Creates an inheritance line to the given [heir]. Similar to [vssPathHeritageLine] but the other way around. It
  * returns a [Collection] of the full heritage line in the form of [VssSpecification].
+ *
+ * ### Hint
+ * The given heir is only used to find the heir inside the [VssSpecification]. It may differ from the one which is
+ * returned. If you want the heritage replaced by the given [heir] parameter then use the [isReplacingHeir] parameter.
  */
-fun VssSpecification.findHeritageLine(heir: VssSpecification): Collection<VssSpecification> {
+fun VssSpecification.findHeritageLine(
+    heir: VssSpecification,
+    isReplacingHeir: Boolean = false,
+): Collection<VssSpecification> {
     val specificationKeys = heir.vssPathHeritageLine
-    return heritage.filter { child ->
+    val heritageLine = heritage.filter { child ->
         specificationKeys.contains(child.vssPath)
+    }.toMutableList()
+
+    if (isReplacingHeir && heritageLine.isNotEmpty()) {
+        heritageLine.removeLast()
+        heritageLine.add(heir)
     }
+
+    return heritageLine
 }
 
 /**

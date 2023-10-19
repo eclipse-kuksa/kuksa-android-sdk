@@ -165,7 +165,7 @@ class DataBrokerConnection internal constructor(
                     initialSubscriptionUpdates[vssPath] = true
                     val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
                     if (isInitialSubscriptionComplete) {
-                        Log.d(TAG, "Initial update for subscribed property complete: $vssPath - $updatedValue")
+                        Log.d(TAG, "Update for subscribed property complete: $vssPath - $updatedValue")
                         observer.onSpecificationChanged(updatedVssSpecification)
                     }
                 }
@@ -252,14 +252,14 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun update(
         property: Property,
-        updatedDatapoint: Datapoint,
+        datapoint: Datapoint,
     ): SetResponse {
-        Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
+        Log.d(TAG, "updateProperty() called with: updatedProperty = $property, datapoint: $datapoint")
         return withContext(dispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
             val dataEntry = Types.DataEntry.newBuilder()
                 .setPath(property.vssPath)
-                .setValue(updatedDatapoint)
+                .setValue(datapoint)
                 .build()
             val entryUpdate = KuksaValV1.EntryUpdate.newBuilder()
                 .setEntry(dataEntry)
@@ -280,8 +280,8 @@ class DataBrokerConnection internal constructor(
     /**
      * Only a [VssProperty] can be updated because they have an actual value. When provided with any parent
      * [VssSpecification] then this [update] method will find all [VssProperty] children and updates them instead.
-     *  Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
-     *  because a [VssSpecification] may consists of multiple values which may need to be updated.
+     * Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
+     * because a [VssSpecification] may consists of multiple values which may need to be updated.
      *
      *  @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */

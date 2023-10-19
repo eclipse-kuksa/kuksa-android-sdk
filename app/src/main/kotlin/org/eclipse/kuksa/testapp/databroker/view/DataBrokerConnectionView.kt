@@ -54,7 +54,7 @@ import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
 import org.eclipse.kuksa.testapp.extension.compose.Headline
-import org.eclipse.kuksa.testapp.extension.compose.rememberCountdown
+import org.eclipse.kuksa.testapp.extension.compose.RememberCountdown
 import org.eclipse.kuksa.testapp.extension.fetchFileName
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
@@ -216,7 +216,7 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                             onClick = { },
                             modifier = Modifier.requiredWidth(MinimumButtonWidth),
                         ) {
-                            val timeout by rememberCountdown(initialMillis = viewModel.connectionTimeoutMillis)
+                            val timeout by RememberCountdown(initialMillis = viewModel.connectionTimeoutMillis)
 
                             @Suppress("MagicNumber") // To seconds
                             val timeoutSeconds = timeout / 1000

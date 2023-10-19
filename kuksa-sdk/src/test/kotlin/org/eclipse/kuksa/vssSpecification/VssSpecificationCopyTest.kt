@@ -25,27 +25,72 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.deepCopy
+import org.eclipse.kuksa.extension.not
+import org.eclipse.kuksa.extension.plus
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.test.kotest.Unit
+import org.eclipse.kuksa.vsscore.model.VssProperty
 
 class VssSpecificationCopyTest : BehaviorSpec({
     tags(Unit)
 
     given("A specification") {
-        val driver = VssDriver()
-        val heartRate = driver.heartRate
+        val vehicle = VssVehicle()
+        var driverHeartRate: VssProperty<Int> = vehicle.driver.heartRate
 
         and("a changed heritage line") {
             val newValue = 70
-            val updatedHeartRate = VssHeartRate(value = newValue)
-            val changedHeritageLine = listOf(updatedHeartRate)
+            val updatedHeartRate = VssDriver.VssHeartRate(value = newValue)
 
             `when`("a deep copy is done with a changed heritage line") {
-                val deepCopiedSpecification = driver.deepCopy(changedHeritageLine)
+                val deepCopiedSpecification = vehicle.deepCopy(0, updatedHeartRate)
 
                 then("it should return the new children as a copy") {
-                    val heartRateValue = deepCopiedSpecification.heartRate.value
+                    val heartRateValue = deepCopiedSpecification.driver.heartRate.value
+
+                    heartRateValue shouldBe newValue
+                }
+            }
+        }
+
+        `when`("a value copy is done via the not operator") {
+            val invertedSpecification = !vehicle.driver.isEyesOnRoad
+
+            then("it should return a copy with the inverted value") {
+                invertedSpecification.value shouldBe false
+            }
+        }
+
+        and("a changed value") {
+            val newValue = 40
+
+            `when`("a deep copy is done via the plus operator") {
+                val newHeartRate = driverHeartRate + newValue
+                val copiedSpecification = vehicle + newHeartRate
+
+                then("it should return a copy with the updated value") {
+                    val heartRateValue = copiedSpecification.driver.heartRate.value
+
+                    heartRateValue shouldBe newValue
+                }
+            }
+
+            `when`("a value copy is done") {
+                val copiedSpecification = driverHeartRate + newValue
+
+                then("it should return a copy with the updated value") {
+                    val heartRateValue = copiedSpecification.value
+
+                    heartRateValue shouldBe newValue
+                }
+            }
+
+            `when`("a value copy is done via assign") {
+                driverHeartRate += newValue
+
+                then("it should return a copy with the updated value") {
+                    val heartRateValue = driverHeartRate.value
 
                     heartRateValue shouldBe newValue
                 }
@@ -57,7 +102,7 @@ class VssSpecificationCopyTest : BehaviorSpec({
             val datapoint = Types.Datapoint.newBuilder().setInt32(newValue).build()
 
             `when`("a copy is done") {
-                val copiedSpecification = heartRate.copy(datapoint)
+                val copiedSpecification = driverHeartRate.copy(datapoint)
 
                 then("it should return a copy with the updated value") {
                     val heartRateValue = copiedSpecification.value
@@ -67,10 +112,10 @@ class VssSpecificationCopyTest : BehaviorSpec({
             }
 
             and("a vssPath") {
-                val vssPath = heartRate.vssPath
+                val vssPath = driverHeartRate.vssPath
 
                 `when`("a copy is done") {
-                    val copiedSpecification = heartRate.copy(vssPath, datapoint)
+                    val copiedSpecification = driverHeartRate.copy(vssPath, datapoint)
 
                     then("it should return a copy with the updated value") {
                         val heartRateValue = copiedSpecification.value
@@ -87,7 +132,7 @@ class VssSpecificationCopyTest : BehaviorSpec({
 
             `when`("a copy is done") {
                 val exception = shouldThrow<IllegalArgumentException> {
-                    heartRate.copy(datapoint)
+                    driverHeartRate.copy(datapoint)
                 }
 
                 then("it should throw an IllegalArgumentException") {
