@@ -22,10 +22,12 @@ package org.eclipse.kuksa
 import io.grpc.ManagedChannel
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.model.Property
@@ -162,6 +164,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val propertyObserver = mockk<VssSpecificationObserver<VssDriver>>(relaxed = true)
                 dataBrokerConnection.subscribe(specification, observer = propertyObserver)
 
+                delay(100)
+
                 then("The #onSpecificationChanged method is triggered") {
                     verify { propertyObserver.onSpecificationChanged(any()) }
                 }
@@ -214,8 +218,13 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val propertyObserver = mockk<PropertyObserver>(relaxed = true)
                 dataBrokerConnection.subscribe(properties, propertyObserver)
 
-                then("No crash should happen") {
-                    // ignored
+                delay(100)
+
+                then("The PropertyObserver#onError method should be triggered with 'NOT_FOUND' (Path not found)") {
+                    val capturingSlot = slot<Throwable>()
+                    verify { propertyObserver.onError(capture(capturingSlot)) }
+                    val capturedThrowable = capturingSlot.captured
+                    capturedThrowable.message shouldContain "NOT_FOUND"
                 }
             }
 
