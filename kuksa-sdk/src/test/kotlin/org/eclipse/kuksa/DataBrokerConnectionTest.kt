@@ -27,7 +27,6 @@ import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.model.Property
@@ -55,7 +54,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 dataBrokerConnection.subscribe(property, propertyObserver)
 
                 then("The #onPropertyChanged method is triggered") {
-                    verify { propertyObserver.onPropertyChanged(any(), any(), any()) }
+                    verify(timeout = 100L) { propertyObserver.onPropertyChanged(any(), any(), any()) }
                 }
 
                 `when`("The observed Property changes") {
@@ -162,10 +161,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val propertyObserver = mockk<VssSpecificationObserver<VssDriver>>(relaxed = true)
                 dataBrokerConnection.subscribe(specification, observer = propertyObserver)
 
-                delay(100)
-
                 then("The #onSpecificationChanged method is triggered") {
-                    verify { propertyObserver.onSpecificationChanged(any()) }
+                    verify(timeout = 100L) { propertyObserver.onSpecificationChanged(any()) }
                 }
 
                 and("The initial value is different from the default for a child") {
@@ -214,11 +211,9 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val propertyObserver = mockk<PropertyObserver>(relaxed = true)
                 dataBrokerConnection.subscribe(property, propertyObserver)
 
-                delay(100)
-
                 then("The PropertyObserver#onError method should be triggered with 'NOT_FOUND' (Path not found)") {
                     val capturingSlot = slot<Throwable>()
-                    verify { propertyObserver.onError(capture(capturingSlot)) }
+                    verify(timeout = 100L) { propertyObserver.onError(capture(capturingSlot)) }
                     val capturedThrowable = capturingSlot.captured
                     capturedThrowable.message shouldContain "NOT_FOUND"
                 }
