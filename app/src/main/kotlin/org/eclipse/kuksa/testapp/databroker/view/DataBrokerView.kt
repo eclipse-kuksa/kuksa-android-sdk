@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -71,6 +72,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
@@ -367,9 +369,11 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
             output.forEach { outputElement ->
                 Text(
                     modifier = Modifier
+                        .fillMaxHeight()
                         .fillMaxWidth()
                         .padding(start = DefaultElementPadding, end = DefaultElementPadding),
                     text = outputElement,
+                    fontSize = 14.sp,
                     textAlign = TextAlign.Start,
                     onTextLayout = {
                         scope.launch {

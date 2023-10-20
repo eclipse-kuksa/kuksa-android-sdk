@@ -32,11 +32,14 @@ import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
+import org.eclipse.kuksa.PropertyObserver
+import org.eclipse.kuksa.VssSpecificationObserver
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
+import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.JavaDataBrokerEngine
@@ -83,6 +86,27 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
         outputViewModel.clear()
         outputViewModel.appendOutput("DataBroker disconnected")
+    }
+
+    private val propertyObserver = object : PropertyObserver {
+        override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
+            Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
+            outputViewModel.appendOutput("Updated value: $updatedValue")
+        }
+
+        override fun onError(throwable: Throwable) {
+            outputViewModel.appendOutput("${throwable.message}")
+        }
+    }
+
+    private val specificationObserver = object : VssSpecificationObserver<VssSpecification> {
+        override fun onSpecificationChanged(vssSpecification: VssSpecification) {
+            outputViewModel.appendOutput("Updated specification: $vssSpecification")
+        }
+
+        override fun onError(throwable: Throwable) {
+            outputViewModel.appendOutput("Updated specification: ${throwable.message}")
+        }
     }
 
     private lateinit var dataBrokerEngine: DataBrokerEngine
@@ -236,10 +260,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
     private fun subscribeProperty(property: Property) {
         Log.d(TAG, "Subscribing to property: $property")
-        dataBrokerEngine.subscribe(property) { vssPath, updatedValue ->
-            Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
-            outputViewModel.appendOutput("Updated value: $updatedValue")
-        }
+
+        dataBrokerEngine.subscribe(property, propertyObserver)
     }
 
     private fun fetchSpecification(specification: VssSpecification) {
@@ -259,8 +281,6 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     }
 
     private fun subscribeSpecification(specification: VssSpecification) {
-        dataBrokerEngine.subscribe(specification) { updatedSpecification ->
-            outputViewModel.appendOutput("Updated specification: $updatedSpecification")
-        }
+        dataBrokerEngine.subscribe(specification, specificationObserver)
     }
 }

@@ -107,6 +107,7 @@ class DataBrokerConnection internal constructor(
 
             override fun onError(t: Throwable?) {
                 Log.e(TAG, "onError() called with: t = $t, cause: ${t?.cause}")
+                t?.let { propertyObserver.onError(t) }
             }
 
             override fun onCompleted() {
@@ -160,18 +161,25 @@ class DataBrokerConnection internal constructor(
             // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we
             // would override the last heir value with every new response.
             var updatedVssSpecification = specification
-            subscribe(leafProperties) { vssPath, updatedValue ->
-                Log.v(TAG, "Update from subscribed property: $vssPath - $updatedValue")
+            val propertyObserver = object : PropertyObserver {
+                override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
+                    Log.v(TAG, "Update from subscribed property: $vssPath - $updatedValue")
 
-                updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
+                    updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
 
-                initialSubscriptionUpdates[vssPath] = true
-                val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
-                if (isInitialSubscriptionComplete) {
-                    Log.d(TAG, "Initial update for subscribed property complete: $vssPath - $updatedValue")
-                    observer.onSpecificationChanged(updatedVssSpecification)
+                    initialSubscriptionUpdates[vssPath] = true
+                    val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
+                    if (isInitialSubscriptionComplete) {
+                        Log.d(TAG, "Initial update for subscribed property complete: $vssPath - $updatedValue")
+                        observer.onSpecificationChanged(updatedVssSpecification)
+                    }
+                }
+
+                override fun onError(throwable: Throwable) {
+                    observer.onError(throwable)
                 }
             }
+            subscribe(leafProperties, propertyObserver)
         } catch (e: Exception) {
             throw DataBrokerException(e.message, e)
         }

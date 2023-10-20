@@ -32,6 +32,7 @@ import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyObserver
 import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import java.io.IOException
 
@@ -118,9 +119,16 @@ class KotlinActivity : AppCompatActivity() {
     }
 
     fun subscribeProperty(property: Property) {
-        val propertyObserver = PropertyObserver { vssPath, updatedValue ->
-            // handle property change
+        val propertyObserver = object : PropertyObserver {
+            override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
+                // handle property change
+            }
+
+            override fun onError(throwable: Throwable) {
+                // handle error
+            }
         }
+
         val properties = listOf(property)
         dataBrokerConnection?.subscribe(properties, propertyObserver)
     }

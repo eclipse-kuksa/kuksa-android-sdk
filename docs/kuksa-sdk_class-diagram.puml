@@ -49,6 +49,7 @@ package kuksa {
     
     interface PropertyObserver {
         + onPropertyChanged(vssPath: String, Types.DataEntry)
+        + onError(Throwable)
     }
 
     class Property {
