@@ -19,17 +19,19 @@
 
 package org.eclipse.kuksa
 
+import org.eclipse.kuksa.pattern.listener.Listener
 import org.eclipse.kuksa.proto.v1.Types.DataEntry
+import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 /**
  * The Observer is used to notify about changes to subscribed properties.
  */
-interface PropertyObserver {
+interface PropertyObserver : Listener {
     /**
-     * Will be triggered with the [updatedValue] when the underlying [vssPath] changed it's value.
+     * Will be triggered with the [updatedValue] when the underlying [field] of the [vssPath] changed it's value.
      */
-    fun onPropertyChanged(vssPath: String, updatedValue: DataEntry)
+    fun onPropertyChanged(vssPath: String, field: Field, updatedValue: DataEntry)
 
     /**
      * Will be triggered when an error happens during subscription and forwards the [throwable].

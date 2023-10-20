@@ -51,13 +51,11 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val property = Property("Vehicle.Acceleration.Lateral", fields)
 
             `when`("Subscribing to the Property") {
-                val properties = listOf(property)
-
                 val propertyObserver = mockk<PropertyObserver>(relaxed = true)
-                dataBrokerConnection.subscribe(properties, propertyObserver)
+                dataBrokerConnection.subscribe(property, propertyObserver)
 
                 then("The #onPropertyChanged method is triggered") {
-                    verify { propertyObserver.onPropertyChanged(any(), any()) }
+                    verify { propertyObserver.onPropertyChanged(any(), any(), any()) }
                 }
 
                 `when`("The observed Property changes") {
@@ -71,7 +69,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     then("The #onPropertyChanged callback is triggered with the new value") {
                         val capturingSlot = slot<Types.DataEntry>()
 
-                        verify { propertyObserver.onPropertyChanged(any(), capture(capturingSlot)) }
+                        verify { propertyObserver.onPropertyChanged(any(), any(), capture(capturingSlot)) }
 
                         val dataEntry = capturingSlot.captured
                         val capturedDatapoint = dataEntry.value
@@ -86,7 +84,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         dataBrokerConnection.update(property, datapoint)
 
                         then("The #onPropertyChangedCallback should NOT be triggered again") {
-                            verify(exactly = 0) { propertyObserver.onPropertyChanged(any(), any()) }
+                            verify(exactly = 0) { propertyObserver.onPropertyChanged(any(), any(), any()) }
                         }
                     }
                 }
@@ -213,10 +211,8 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val property = Property("Vehicle.Some.Unknown.Path", fields)
 
             `when`("Trying to subscribe to the INVALID Property") {
-                val properties = listOf(property)
-
                 val propertyObserver = mockk<PropertyObserver>(relaxed = true)
-                dataBrokerConnection.subscribe(properties, propertyObserver)
+                dataBrokerConnection.subscribe(property, propertyObserver)
 
                 delay(100)
 

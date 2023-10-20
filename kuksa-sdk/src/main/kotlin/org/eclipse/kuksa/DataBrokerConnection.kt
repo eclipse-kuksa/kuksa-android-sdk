@@ -22,8 +22,6 @@ package org.eclipse.kuksa
 import android.util.Log
 import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
-import io.grpc.StatusRuntimeException
-import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -31,13 +29,11 @@ import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.pattern.listener.MultiListener
-import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.proto.v1.VALGrpc
+import org.eclipse.kuksa.subscription.SubscriptionManager
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.heritage
@@ -51,6 +47,9 @@ class DataBrokerConnection internal constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
     val disconnectListeners = MultiListener<DisconnectListener>()
+
+    private val dataBrokerApiInteraction = DataBrokerApiInteraction(managedChannel, dispatcher)
+    private val subscriptionManager = SubscriptionManager(dataBrokerApiInteraction)
 
     @Suppress("unused")
     val subscriptions: Set<Property>
@@ -74,53 +73,30 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified vssPath with the provided propertyObserver. Once subscribed the application will be
-     * notified about any changes to the specified vssPath.
+     * Subscribes to the specified [property] and notifies the provided [propertyObserver] about updates.
      *
-     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
+     * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
      */
     fun subscribe(
-        properties: List<Property>,
+        property: Property,
         propertyObserver: PropertyObserver,
     ) {
-        val asyncStub = VALGrpc.newStub(managedChannel)
-
-        val subscribeEntries = properties.map { property ->
-            KuksaValV1.SubscribeEntry.newBuilder()
-                .addAllFields(property.fields)
-                .setPath(property.vssPath)
-                .build()
+        val vssPath = property.vssPath
+        property.fields.forEach { field ->
+            subscriptionManager.subscribe(vssPath, field, propertyObserver)
         }
-        val request = KuksaValV1.SubscribeRequest.newBuilder()
-            .addAllEntries(subscribeEntries)
-            .build()
+    }
 
-        val callback = object : StreamObserver<SubscribeResponse> {
-            override fun onNext(value: SubscribeResponse) {
-                Log.v(TAG, "onNext() called with: value = $value")
-
-                for (entryUpdate in value.updatesList) {
-                    val entry = entryUpdate.entry
-                    propertyObserver.onPropertyChanged(entry.path, entry)
-                }
-            }
-
-            override fun onError(t: Throwable?) {
-                Log.e(TAG, "onError() called with: t = $t, cause: ${t?.cause}")
-                t?.let { propertyObserver.onError(t) }
-            }
-
-            override fun onCompleted() {
-                Log.d(TAG, "onCompleted() called")
-            }
-        }
-
-        try {
-            asyncStub.subscribe(request, callback)
-
-            subscribedProperties.addAll(properties)
-        } catch (e: StatusRuntimeException) {
-            throw DataBrokerException(e.message, e)
+    /**
+     * Unsubscribes the [propertyObserver] from updates of the specified [property].
+     */
+    fun unsubscribe(
+        property: Property,
+        propertyObserver: PropertyObserver,
+    ) {
+        val vssPath = property.vssPath
+        property.fields.forEach { field ->
+            subscriptionManager.unsubscribe(vssPath, field, propertyObserver)
         }
     }
 
@@ -134,54 +110,27 @@ class DataBrokerConnection internal constructor(
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    @Suppress("exceptions:TooGenericExceptionCaught") // Handling is bundled together
     @JvmOverloads
     fun <T : VssSpecification> subscribe(
         specification: T,
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
         observer: VssSpecificationObserver<T>,
     ) {
-        val vssPathToVssProperty = specification.heritage
-            .ifEmpty { setOf(specification) }
-            .filterIsInstance<VssProperty<*>>() // Only final leafs with a value can be observed
-            .groupBy { it.vssPath }
-            .mapValues { it.value.first() } // Always one result because the vssPath is unique
-        val leafProperties = vssPathToVssProperty.values
-            .map { Property(it.vssPath, fields) }
-            .toList()
+        fields.forEach { field ->
+            subscriptionManager.subscribe(specification, field, observer)
+        }
+    }
 
-        try {
-            Log.d(TAG, "Subscribing to the following properties: $leafProperties")
-
-            // TODO: Remove as soon as the server supports subscribing to vssPaths which are not VssProperties
-            // Reduces the load on the observer for big VssSpecifications. We wait for the initial update
-            // of all VssProperties before notifying the observer about the first batch
-            val initialSubscriptionUpdates = leafProperties.associate { it.vssPath to false }.toMutableMap()
-
-            // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we
-            // would override the last heir value with every new response.
-            var updatedVssSpecification = specification
-            val propertyObserver = object : PropertyObserver {
-                override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
-                    Log.v(TAG, "Update from subscribed property: $vssPath - $updatedValue")
-
-                    updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
-
-                    initialSubscriptionUpdates[vssPath] = true
-                    val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
-                    if (isInitialSubscriptionComplete) {
-                        Log.d(TAG, "Initial update for subscribed property complete: $vssPath - $updatedValue")
-                        observer.onSpecificationChanged(updatedVssSpecification)
-                    }
-                }
-
-                override fun onError(throwable: Throwable) {
-                    observer.onError(throwable)
-                }
-            }
-            subscribe(leafProperties, propertyObserver)
-        } catch (e: Exception) {
-            throw DataBrokerException(e.message, e)
+    /**
+     * Unsubscribes the [observer] from updates of the specified [fields] and [specification].
+     */
+    fun <T : VssSpecification> unsubscribe(
+        specification: T,
+        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
+        observer: VssSpecificationObserver<T>,
+    ) {
+        fields.forEach { field ->
+            subscriptionManager.unsubscribe(specification, field, observer)
         }
     }
 
@@ -192,22 +141,7 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun fetch(property: Property): GetResponse {
         Log.d(TAG, "fetchProperty() called with: property: $property")
-        return withContext(dispatcher) {
-            val blockingStub = VALGrpc.newBlockingStub(managedChannel)
-            val entryRequest = KuksaValV1.EntryRequest.newBuilder()
-                .setPath(property.vssPath)
-                .addAllFields(property.fields)
-                .build()
-            val request = KuksaValV1.GetRequest.newBuilder()
-                .addEntries(entryRequest)
-                .build()
-
-            return@withContext try {
-                blockingStub.get(request)
-            } catch (e: StatusRuntimeException) {
-                throw DataBrokerException(e.message, e)
-            }
-        }
+        return dataBrokerApiInteraction.fetchProperty(property.vssPath, property.fields)
     }
 
     /**
@@ -261,26 +195,7 @@ class DataBrokerConnection internal constructor(
         updatedDatapoint: Datapoint,
     ): SetResponse {
         Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
-        return withContext(dispatcher) {
-            val blockingStub = VALGrpc.newBlockingStub(managedChannel)
-            val dataEntry = Types.DataEntry.newBuilder()
-                .setPath(property.vssPath)
-                .setValue(updatedDatapoint)
-                .build()
-            val entryUpdate = KuksaValV1.EntryUpdate.newBuilder()
-                .setEntry(dataEntry)
-                .addAllFields(property.fields)
-                .build()
-            val request = KuksaValV1.SetRequest.newBuilder()
-                .addUpdates(entryUpdate)
-                .build()
-
-            return@withContext try {
-                blockingStub.set(request)
-            } catch (e: StatusRuntimeException) {
-                throw DataBrokerException(e.message, e)
-            }
-        }
+        return dataBrokerApiInteraction.updateProperty(property.vssPath, property.fields, updatedDatapoint)
     }
 
     /**

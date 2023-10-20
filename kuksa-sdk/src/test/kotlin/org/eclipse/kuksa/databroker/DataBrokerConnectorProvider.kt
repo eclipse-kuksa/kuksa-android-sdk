@@ -23,6 +23,7 @@ package org.eclipse.kuksa.databroker
 
 import io.grpc.ChannelCredentials
 import io.grpc.Grpc
+import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import org.eclipse.kuksa.DataBrokerConnector
@@ -31,11 +32,12 @@ import java.io.IOException
 import java.io.InputStream
 
 class DataBrokerConnectorProvider {
+    lateinit var managedChannel: ManagedChannel
     fun createInsecure(
         host: String = DataBrokerConfig.HOST,
         port: Int = DataBrokerConfig.PORT,
     ): DataBrokerConnector {
-        val managedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
+        managedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
 
         return DataBrokerConnector(managedChannel).apply {
             timeoutConfig = TimeoutConfig(DataBrokerConfig.TIMEOUT_SECONDS, DataBrokerConfig.TIMEOUT_UNIT)
@@ -66,7 +68,7 @@ class DataBrokerConnectorProvider {
             channelBuilder.overrideAuthority(overrideAuthority)
         }
 
-        val managedChannel = channelBuilder.build()
+        managedChannel = channelBuilder.build()
         return DataBrokerConnector(managedChannel).apply {
             timeoutConfig = TimeoutConfig(DataBrokerConfig.TIMEOUT_SECONDS, DataBrokerConfig.TIMEOUT_UNIT)
         }
