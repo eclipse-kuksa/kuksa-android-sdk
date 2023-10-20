@@ -120,7 +120,7 @@ class KotlinActivity : AppCompatActivity() {
 
     fun subscribeProperty(property: Property) {
         val propertyObserver = object : PropertyObserver {
-            override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
+            override fun onPropertyChanged(vssPath: String, field: Types.Field, updatedValue: Types.DataEntry) {
                 // handle property change
             }
 
@@ -129,8 +129,7 @@ class KotlinActivity : AppCompatActivity() {
             }
         }
 
-        val properties = listOf(property)
-        dataBrokerConnection?.subscribe(properties, propertyObserver)
+        dataBrokerConnection?.subscribe(property, propertyObserver)
     }
 
     fun disconnect() {
