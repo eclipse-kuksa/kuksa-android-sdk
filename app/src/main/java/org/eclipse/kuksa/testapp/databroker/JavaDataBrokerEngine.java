@@ -44,9 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -199,8 +197,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             return;
         }
 
-        List<Property> properties = Collections.singletonList(property);
-        dataBrokerConnection.subscribe(properties, propertyObserver);
+        dataBrokerConnection.subscribe(property, propertyObserver);
     }
 
     @Override
@@ -215,11 +212,28 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         ArrayList<Types.Field> fields = new ArrayList<>() {
             {
                 add(Types.Field.FIELD_VALUE);
-                add(Types.Field.FIELD_METADATA);
             }
         };
 
         dataBrokerConnection.subscribe(specification, fields, propertyObserver);
+    }
+
+    @Override
+    public <T extends VssSpecification> void unsubscribe(
+        @NonNull T specification,
+        @NonNull VssSpecificationObserver<T> propertyObserver
+    ) {
+        if (dataBrokerConnection == null) {
+            return;
+        }
+
+        ArrayList<Types.Field> fields = new ArrayList<>() {
+            {
+                add(Types.Field.FIELD_VALUE);
+            }
+        };
+
+        dataBrokerConnection.unsubscribe(specification, fields, propertyObserver);
     }
 
     public void disconnect() {
@@ -255,6 +269,13 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         disconnectListeners.remove(listener);
         if (dataBrokerConnection != null) {
             dataBrokerConnection.getDisconnectListeners().unregister(listener);
+        }
+    }
+
+    @Override
+    public void unsubscribe(@NonNull Property property, @NonNull PropertyObserver propertyObserver) {
+        if (dataBrokerConnection != null) {
+            dataBrokerConnection.unsubscribe(property, propertyObserver);
         }
     }
 }

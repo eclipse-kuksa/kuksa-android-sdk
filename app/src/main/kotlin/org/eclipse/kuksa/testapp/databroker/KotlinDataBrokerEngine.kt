@@ -169,8 +169,11 @@ class KotlinDataBrokerEngine(
     }
 
     override fun subscribe(property: Property, propertyObserver: PropertyObserver) {
-        val properties = listOf(property)
-        dataBrokerConnection?.subscribe(properties, propertyObserver)
+        dataBrokerConnection?.subscribe(property, propertyObserver)
+    }
+
+    override fun unsubscribe(property: Property, propertyObserver: PropertyObserver) {
+        dataBrokerConnection?.unsubscribe(property, propertyObserver)
     }
 
     override fun <T : VssSpecification> subscribe(
@@ -180,6 +183,10 @@ class KotlinDataBrokerEngine(
         lifecycleScope.launch {
             dataBrokerConnection?.subscribe(specification, observer = propertyObserver)
         }
+    }
+
+    override fun <T : VssSpecification> unsubscribe(specification: T, propertyObserver: VssSpecificationObserver<T>) {
+        dataBrokerConnection?.unsubscribe(specification, observer = propertyObserver)
     }
 
     override fun disconnect() {

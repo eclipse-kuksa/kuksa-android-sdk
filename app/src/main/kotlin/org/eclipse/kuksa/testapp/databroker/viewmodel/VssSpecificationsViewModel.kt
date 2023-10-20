@@ -19,7 +19,9 @@
 
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -30,6 +32,13 @@ import org.eclipse.kuksa.vsscore.model.heritage
 class VssSpecificationsViewModel : ViewModel() {
     var onGetSpecification: (specification: VssSpecification) -> Unit = { }
     var onSubscribeSpecification: (specification: VssSpecification) -> Unit = { }
+    var onUnsubscribeSpecification: (specification: VssSpecification) -> Unit = { }
+
+    var subscribedSpecifications = mutableStateListOf<VssSpecification>()
+
+    val isSubscribed by derivedStateOf {
+        subscribedSpecifications.contains(specification)
+    }
 
     private val vssVehicle = VssVehicle()
     val specifications = listOf(vssVehicle) + vssVehicle.heritage

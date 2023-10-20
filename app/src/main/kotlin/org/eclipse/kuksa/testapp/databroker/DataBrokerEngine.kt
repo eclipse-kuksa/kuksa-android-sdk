@@ -32,6 +32,7 @@ import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
+@Suppress("complexity:TooManyFunctions") // required to test the api
 interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?
 
@@ -56,7 +57,14 @@ interface DataBrokerEngine {
 
     fun subscribe(property: Property, propertyObserver: PropertyObserver)
 
+    fun unsubscribe(property: Property, propertyObserver: PropertyObserver)
+
     fun <T : VssSpecification> subscribe(
+        specification: T,
+        propertyObserver: VssSpecificationObserver<T>,
+    )
+
+    fun <T : VssSpecification> unsubscribe(
         specification: T,
         propertyObserver: VssSpecificationObserver<T>,
     )
