@@ -31,7 +31,7 @@ internal suspend fun DataBrokerApiInteraction.updateRandomFloatValue(vssPath: St
     val updatedDatapoint = Types.Datapoint.newBuilder().setFloat(randomFloat).build()
 
     try {
-        updateProperty(vssPath, listOf(Types.Field.FIELD_VALUE), updatedDatapoint)
+        update(vssPath, listOf(Types.Field.FIELD_VALUE), updatedDatapoint)
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomFloat failed: $e")
     }
@@ -45,7 +45,7 @@ internal suspend fun DataBrokerApiInteraction.updateRandomUint32Value(vssPath: S
     val updatedDatapoint = Types.Datapoint.newBuilder().setUint32(randomValue).build()
 
     try {
-        updateProperty(vssPath, listOf(Types.Field.FIELD_VALUE), updatedDatapoint)
+        update(vssPath, listOf(Types.Field.FIELD_VALUE), updatedDatapoint)
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomValue failed: $e")
     }

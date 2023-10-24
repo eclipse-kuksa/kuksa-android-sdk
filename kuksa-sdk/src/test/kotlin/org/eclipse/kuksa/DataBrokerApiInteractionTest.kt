@@ -56,7 +56,7 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                 `when`("Updating the $fields of $vssPath to $valueToSet km/h") {
                     val updatedDatapoint = Datapoint.newBuilder().setFloat(valueToSet).build()
                     val result = kotlin.runCatching {
-                        classUnderTest.updateProperty(vssPath, fields, updatedDatapoint)
+                        classUnderTest.update(vssPath, fields, updatedDatapoint)
                     }
 
                     then("No Exception should be thrown") {
@@ -71,7 +71,7 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                 }
 
                 `when`("Fetching the Value of Vehicle.ADAS.CruiseControl.SpeedSet") {
-                    val property = classUnderTest.fetchProperty(vssPath, fields)
+                    val property = classUnderTest.fetch(vssPath, fields)
 
                     then("It should return the correct value") {
                         val dataEntry = property.getEntries(0)
@@ -84,7 +84,7 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                     val invalidVssPath = "Vehicle.This.Path.Is.Invalid"
 
                     val result = kotlin.runCatching {
-                        classUnderTest.fetchProperty(invalidVssPath, fields)
+                        classUnderTest.fetch(invalidVssPath, fields)
                     }
 
                     then("No Exception should be thrown") {

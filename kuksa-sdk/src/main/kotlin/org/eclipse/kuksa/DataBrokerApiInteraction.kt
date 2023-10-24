@@ -54,7 +54,7 @@ internal class DataBrokerApiInteraction(
      *
      * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
      */
-    suspend fun fetchProperty(
+    suspend fun fetch(
         vssPath: String,
         fields: List<Field>,
     ): KuksaValV1.GetResponse {
@@ -82,7 +82,7 @@ internal class DataBrokerApiInteraction(
      *
      * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
      */
-    suspend fun updateProperty(
+    suspend fun update(
         vssPath: String,
         fields: List<Field>,
         updatedDatapoint: Types.Datapoint,

@@ -143,7 +143,7 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun fetch(property: Property): GetResponse {
         Log.d(TAG, "fetchProperty() called with: property: $property")
-        return dataBrokerApiInteraction.fetchProperty(property.vssPath, property.fields)
+        return dataBrokerApiInteraction.fetch(property.vssPath, property.fields)
     }
 
     /**
@@ -197,7 +197,7 @@ class DataBrokerConnection internal constructor(
         updatedDatapoint: Datapoint,
     ): SetResponse {
         Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
-        return dataBrokerApiInteraction.updateProperty(property.vssPath, property.fields, updatedDatapoint)
+        return dataBrokerApiInteraction.update(property.vssPath, property.fields, updatedDatapoint)
     }
 
     /**
