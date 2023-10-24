@@ -33,7 +33,7 @@ import org.eclipse.kuksa.proto.v1.Types.Field
  * [cancellableContext] is used to cancel the subscription. When the Subscription is canceled the communication channel
  * to the DataBroker is closed, no more updates will be received from that point on.
  *
- * Subscriptions are managed by the [SubscriptionManager] it will automatically create new Subscription if none is
+ * Subscriptions are managed by the [DataBrokerSubscriber] it will automatically create new Subscription if none is
  * existing, resp. add the observer to the corresponding Subscription. If all Observers are unregistered the
  * Subscription will be automatically canceled.
  */

@@ -31,15 +31,14 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.heritage
 
-// TODO find better name
 /**
  * Creates [Subscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
- * If no [Subscription] for a given vssPath and field does exist the SubscriptionManager will create a new one. If it
+ * If no [Subscription] for a given vssPath and field does exist the DataBrokerSubscriber will create a new one. If it
  * was already requested before, the same [Subscription] will be re-used.
- * When the last [PropertyObserver] of a [Subscription] unsubscribes the Subscription will be automatically canceled and
- * removed from the active [Subscription]s.
+ * When the last [PropertyObserver] of a [Subscription] unsubscribes the [Subscription] will be automatically canceled
+ * and removed from the active [Subscription]s.
  */
-internal class SubscriptionManager(private val dataBrokerApiInteraction: DataBrokerApiInteraction) {
+internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBrokerApiInteraction) {
     private val subscriptions = mutableMapOf<String, Subscription>() // String(Subscription#identifier) -> Subscription
 
     /**

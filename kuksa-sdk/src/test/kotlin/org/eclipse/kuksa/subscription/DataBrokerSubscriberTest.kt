@@ -35,20 +35,21 @@ import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.DataEntry
+import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.vssSpecification.VssHeartRate
 
-class SubscriptionManagerTest : BehaviorSpec({
-    tags(Integration)
+class DataBrokerSubscriberTest : BehaviorSpec({
+    tags(Integration, Insecure)
 
     given("An active Connection to the DataBroker") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
         val connector = dataBrokerConnectorProvider.createInsecure()
         connector.connect()
 
-        and("An Instance of SubscriptionManager") {
+        and("An Instance of DataBrokerSubscriber") {
             val databrokerApiInteraction = DataBrokerApiInteraction(dataBrokerConnectorProvider.managedChannel)
-            val classUnderTest = SubscriptionManager(databrokerApiInteraction)
+            val classUnderTest = DataBrokerSubscriber(databrokerApiInteraction)
 
             `when`("Subscribing using VSS_PATH to Vehicle.Speed with FIELD_VALUE") {
                 val vssPath = "Vehicle.Speed"
@@ -191,13 +192,13 @@ class SubscriptionManagerTest : BehaviorSpec({
         }
     }
 
-    given("An Instance of SubscriptionManager with a mocked DataBrokerApiInteraction") {
+    given("An Instance of DataBrokerSubscriber with a mocked DataBrokerApiInteraction") {
         val subscriptionMock = mockk<Subscription>(relaxed = true)
         val dataBrokerApiInteractionMock = mockk<DataBrokerApiInteraction>(relaxed = true)
         val multiListener = MultiListener<PropertyObserver>()
         every { dataBrokerApiInteractionMock.subscribe(any(), any()) } returns subscriptionMock
         every { subscriptionMock.observers } returns multiListener
-        val classUnderTest = SubscriptionManager(dataBrokerApiInteractionMock)
+        val classUnderTest = DataBrokerSubscriber(dataBrokerApiInteractionMock)
 
         `when`("Subscribing for the first time to a vssPath and field") {
             val vssPath = "Vehicle.Speed"

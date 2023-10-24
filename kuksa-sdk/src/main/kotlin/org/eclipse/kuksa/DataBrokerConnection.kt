@@ -33,7 +33,7 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.subscription.SubscriptionManager
+import org.eclipse.kuksa.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.heritage
@@ -49,7 +49,7 @@ class DataBrokerConnection internal constructor(
     val disconnectListeners = MultiListener<DisconnectListener>()
 
     private val dataBrokerApiInteraction = DataBrokerApiInteraction(managedChannel, dispatcher)
-    private val subscriptionManager = SubscriptionManager(dataBrokerApiInteraction)
+    private val dataBrokerSubscriber = DataBrokerSubscriber(dataBrokerApiInteraction)
 
     @Suppress("unused")
     val subscriptions: Set<Property>
@@ -83,7 +83,7 @@ class DataBrokerConnection internal constructor(
     ) {
         val vssPath = property.vssPath
         property.fields.forEach { field ->
-            subscriptionManager.subscribe(vssPath, field, propertyObserver)
+            dataBrokerSubscriber.subscribe(vssPath, field, propertyObserver)
         }
     }
 
@@ -96,7 +96,7 @@ class DataBrokerConnection internal constructor(
     ) {
         val vssPath = property.vssPath
         property.fields.forEach { field ->
-            subscriptionManager.unsubscribe(vssPath, field, propertyObserver)
+            dataBrokerSubscriber.unsubscribe(vssPath, field, propertyObserver)
         }
     }
 
@@ -117,7 +117,7 @@ class DataBrokerConnection internal constructor(
         observer: VssSpecificationObserver<T>,
     ) {
         fields.forEach { field ->
-            subscriptionManager.subscribe(specification, field, observer)
+            dataBrokerSubscriber.subscribe(specification, field, observer)
         }
     }
 
@@ -130,7 +130,7 @@ class DataBrokerConnection internal constructor(
         observer: VssSpecificationObserver<T>,
     ) {
         fields.forEach { field ->
-            subscriptionManager.unsubscribe(specification, field, observer)
+            dataBrokerSubscriber.unsubscribe(specification, field, observer)
         }
     }
 
