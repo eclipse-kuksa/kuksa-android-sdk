@@ -19,11 +19,13 @@
 
 package org.eclipse.kuksa
 
+import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.clearMocks
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -270,6 +272,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
     }
     given("A DataBrokerConnection with a mocked ManagedChannel") {
         val managedChannel = mockk<ManagedChannel>(relaxed = true)
+        every { managedChannel.getState(any()) }.returns(ConnectivityState.READY)
         val dataBrokerConnection = DataBrokerConnection(managedChannel)
 
         `when`("Disconnect is called") {

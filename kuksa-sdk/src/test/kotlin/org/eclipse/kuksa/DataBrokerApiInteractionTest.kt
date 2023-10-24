@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa
 
+import io.grpc.ManagedChannelBuilder
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -128,6 +129,22 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                         }
                     }
                 }
+            }
+        }
+    }
+
+    given("An inactive Connection to the DataBroker") {
+        val inactiveManagedChannel = ManagedChannelBuilder.forAddress("someHost", 12345).build()
+
+        `when`("Trying to instantiate the DataBrokerApiInteraction ") {
+            val result = kotlin.runCatching {
+                DataBrokerApiInteraction(inactiveManagedChannel)
+            }
+
+            then("An IllegalStateException is thrown") {
+                val exceptionOrNull = result.exceptionOrNull()
+                exceptionOrNull shouldNotBe null
+                exceptionOrNull shouldBe instanceOf(IllegalStateException::class)
             }
         }
     }

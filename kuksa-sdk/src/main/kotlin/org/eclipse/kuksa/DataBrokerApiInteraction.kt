@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa
 
+import io.grpc.ConnectivityState
 import io.grpc.Context
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
@@ -32,12 +33,22 @@ import org.eclipse.kuksa.proto.v1.VALGrpc
 import org.eclipse.kuksa.subscription.Subscription
 
 /**
- * Encapsulates the interactions with the DataBroker using gRPC.
+ * Encapsulates the Protobuf-specific interactions with the DataBroker using gRPC. The DataBrokerApiInteraction requires
+ * a [managedChannel] which is already connected to the corresponding DataBroker.
+ *
+ * @throws IllegalStateException in case the state of the [managedChannel] is not [ConnectivityState.READY]
  */
 internal class DataBrokerApiInteraction(
     private val managedChannel: ManagedChannel,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
+    init {
+        val state = managedChannel.getState(false)
+        check(state == ConnectivityState.READY) {
+            "ManagedChannel needs to be connected to the target"
+        }
+    }
+
     /**
      * Sends a request to the DataBroker to respond with the specified [vssPath] and [fields] values.
      *
