@@ -45,11 +45,13 @@ import org.eclipse.kuksa.vsscore.model.heritage
 class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dataBrokerApiInteraction: DataBrokerApiInteraction = DataBrokerApiInteraction(
+        managedChannel,
+        dispatcher,
+    ),
+    private val dataBrokerSubscriber: DataBrokerSubscriber = DataBrokerSubscriber(dataBrokerApiInteraction),
 ) {
     val disconnectListeners = MultiListener<DisconnectListener>()
-
-    private val dataBrokerApiInteraction = DataBrokerApiInteraction(managedChannel, dispatcher)
-    private val dataBrokerSubscriber = DataBrokerSubscriber(dataBrokerApiInteraction)
 
     @Suppress("unused")
     val subscriptions: Set<Property>
