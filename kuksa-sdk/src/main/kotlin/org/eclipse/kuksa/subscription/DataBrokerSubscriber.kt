@@ -52,7 +52,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
         if (subscription == null) {
             subscription = dataBrokerTransporter.subscribe(vssPath, field)
             subscriptions[identifier] = subscription
-            Log.d(TAG, "Created $subscription")
+            Log.v(TAG, "Created $subscription")
         }
 
         subscription.listeners.register(propertyListener)
@@ -70,7 +70,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
         subscription.listeners.unregister(propertyListener)
 
         if (subscription.listeners.isEmpty()) {
-            Log.d(TAG, "Removing $subscription: no more listeners")
+            Log.v(TAG, "Removing $subscription: no more listeners")
             subscription.cancel()
             subscriptions.remove(identifier)
         }
