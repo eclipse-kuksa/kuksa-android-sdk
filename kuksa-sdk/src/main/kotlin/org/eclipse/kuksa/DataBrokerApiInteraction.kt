@@ -19,14 +19,17 @@
 
 package org.eclipse.kuksa
 
+import android.util.Log
 import io.grpc.ConnectivityState
 import io.grpc.Context
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
+import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.proto.v1.KuksaValV1
+import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.proto.v1.VALGrpc
@@ -135,9 +138,34 @@ internal class DataBrokerApiInteraction(
         val cancellableContext = currentContext.withCancellation()
 
         val subscription = Subscription(vssPath, field, cancellableContext)
+        val streamObserver = object : StreamObserver<SubscribeResponse> {
+            override fun onNext(value: SubscribeResponse) {
+                for (entryUpdate in value.updatesList) {
+                    val entry = entryUpdate.entry
+
+                    subscription.observers.forEach { observer ->
+                        observer.onPropertyChanged(vssPath, field, entry)
+                    }
+                }
+
+                subscription.lastSubscribeResponse = value
+            }
+
+            override fun onError(throwable: Throwable?) {
+                subscription.observers.forEach { observer ->
+                    throwable?.let { observer.onError(it) }
+                }
+
+                subscription.lastThrowable = throwable
+            }
+
+            override fun onCompleted() {
+                Log.d("TAG", "onCompleted() called")
+            }
+        }
+
         cancellableContext.run {
             try {
-                val streamObserver = subscription.SubscriptionStreamObserver()
                 asyncStub.subscribe(request, streamObserver)
             } catch (e: StatusRuntimeException) {
                 throw DataBrokerException(e.message, e)

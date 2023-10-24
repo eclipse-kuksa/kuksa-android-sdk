@@ -19,9 +19,7 @@
 
 package org.eclipse.kuksa.subscription
 
-import android.util.Log
 import io.grpc.Context
-import io.grpc.stub.StreamObserver
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
@@ -58,8 +56,8 @@ internal class Subscription(
         },
     )
 
-    private var lastSubscribeResponse: SubscribeResponse? = null
-    private var lastThrowable: Throwable? = null
+    internal var lastSubscribeResponse: SubscribeResponse? = null
+    internal var lastThrowable: Throwable? = null
 
     /**
      * Cancels the Subscription to the DataBroker, after canceling no more updates will be received from that point on.
@@ -76,32 +74,6 @@ internal class Subscription(
     companion object {
         fun toIdentifier(vssPath: String, field: Field): String {
             return "$vssPath#${field.name}"
-        }
-    }
-
-    inner class SubscriptionStreamObserver : StreamObserver<SubscribeResponse> {
-        override fun onNext(value: SubscribeResponse) {
-            for (entryUpdate in value.updatesList) {
-                val entry = entryUpdate.entry
-
-                observers.forEach { observer ->
-                    observer.onPropertyChanged(vssPath, field, entry)
-                }
-            }
-
-            lastSubscribeResponse = value
-        }
-
-        override fun onError(throwable: Throwable?) {
-            observers.forEach { observer ->
-                throwable?.let { observer.onError(it) }
-            }
-
-            lastThrowable = throwable
-        }
-
-        override fun onCompleted() {
-            Log.d("TAG", "onCompleted() called")
         }
     }
 }
