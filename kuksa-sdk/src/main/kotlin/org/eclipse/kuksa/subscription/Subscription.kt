@@ -27,12 +27,12 @@ import org.eclipse.kuksa.proto.v1.Types.Field
 
 /**
  * Denotes a Subscription to the DataBroker. Will be notified about changes w.r.t. the specified [vssPath] and [field].
- * To get informed about these changes it is required to register an [PropertyListener] using [observers].
+ * To get informed about these changes it is required to register an [PropertyListener] using [listeners].
  * [cancellableContext] is used to cancel the subscription. When the Subscription is canceled the communication channel
  * to the DataBroker is closed, no more updates will be received from that point on.
  *
  * Subscriptions are managed by the [DataBrokerSubscriber] it will automatically create new Subscription if none is
- * existing, resp. add the observer to the corresponding Subscription. If all Observers are unregistered the
+ * existing, resp. add the observer to the corresponding Subscription. If all Listeners are unregistered the
  * Subscription will be automatically canceled.
  */
 internal class Subscription(
@@ -40,7 +40,7 @@ internal class Subscription(
     val field: Field,
     private val cancellableContext: Context.CancellableContext,
 ) {
-    val observers: MultiListener<PropertyListener> = MultiListener(
+    val listeners: MultiListener<PropertyListener> = MultiListener(
         onRegistered = { observer ->
             // initial update on registration
             if (lastThrowable != null) {

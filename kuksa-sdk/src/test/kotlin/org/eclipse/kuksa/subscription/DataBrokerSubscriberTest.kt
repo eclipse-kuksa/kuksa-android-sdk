@@ -197,7 +197,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
         val dataBrokerApiInteractionMock = mockk<DataBrokerApiInteraction>(relaxed = true)
         val multiListener = MultiListener<PropertyListener>()
         every { dataBrokerApiInteractionMock.subscribe(any(), any()) } returns subscriptionMock
-        every { subscriptionMock.observers } returns multiListener
+        every { subscriptionMock.listeners } returns multiListener
         val classUnderTest = DataBrokerSubscriber(dataBrokerApiInteractionMock)
 
         `when`("Subscribing for the first time to a vssPath and field") {
@@ -207,19 +207,19 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             val propertyListenerMock2 = mockk<PropertyListener>()
             classUnderTest.subscribe(vssPath, field, propertyListenerMock1)
 
-            then("A new Subscription is created and the PropertyListener is added to the list of Observers") {
+            then("A new Subscription is created and the PropertyListener is added to the list of Listeners") {
                 verify {
                     dataBrokerApiInteractionMock.subscribe(vssPath, field)
                 }
                 multiListener.count() shouldBe 1
             }
 
-            `when`("Another PropertyLisetner subscribes to the same vssPath and field") {
+            `when`("Another PropertyListener subscribes to the same vssPath and field") {
                 clearMocks(dataBrokerApiInteractionMock)
 
                 classUnderTest.subscribe(vssPath, field, propertyListenerMock2)
 
-                then("No new Subscription is created and the PropertyListener is added to the list of Observers") {
+                then("No new Subscription is created and the PropertyListener is added to the list of Listeners") {
                     verify(exactly = 0) {
                         dataBrokerApiInteractionMock.subscribe(vssPath, field)
                     }

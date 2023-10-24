@@ -104,7 +104,7 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                     val subscription = classUnderTest.subscribe(vssPath, Types.Field.FIELD_VALUE)
 
                     val propertyListener = mockk<PropertyListener>(relaxed = true)
-                    subscription.observers.register(propertyListener)
+                    subscription.listeners.register(propertyListener)
 
                     and("The value of the vssPath is updated") {
                         classUnderTest.updateRandomFloatValue(vssPath)
@@ -121,7 +121,7 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                     val subscription = classUnderTest.subscribe("Vehicle.Some.Invalid.Path", Types.Field.FIELD_VALUE)
 
                     val propertyListener = mockk<PropertyListener>(relaxed = true)
-                    subscription.observers.register(propertyListener)
+                    subscription.listeners.register(propertyListener)
 
                     then("An Error should be triggered") {
                         verify(timeout = 100L) {

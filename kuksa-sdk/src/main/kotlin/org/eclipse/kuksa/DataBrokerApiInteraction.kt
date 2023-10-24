@@ -143,7 +143,7 @@ internal class DataBrokerApiInteraction(
                 for (entryUpdate in value.updatesList) {
                     val entry = entryUpdate.entry
 
-                    subscription.observers.forEach { observer ->
+                    subscription.listeners.forEach { observer ->
                         observer.onPropertyChanged(vssPath, field, entry)
                     }
                 }
@@ -152,7 +152,7 @@ internal class DataBrokerApiInteraction(
             }
 
             override fun onError(throwable: Throwable?) {
-                subscription.observers.forEach { observer ->
+                subscription.listeners.forEach { observer ->
                     throwable?.let { observer.onError(it) }
                 }
 
