@@ -67,13 +67,6 @@ internal class Subscription(
     }
 
     override fun toString(): String {
-        val identifier = toIdentifier(vssPath, field)
-        return "Subscription($identifier)"
-    }
-
-    companion object {
-        fun toIdentifier(vssPath: String, field: Field): String {
-            return "$vssPath#${field.name}"
-        }
+        return "Subscription(vssPath='$vssPath', field=$field)"
     }
 }

@@ -47,7 +47,7 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
      * Subscription is made and the [propertyListener] is added to it.
      */
     fun subscribe(vssPath: String, field: Field, propertyListener: PropertyListener) {
-        val identifier = Subscription.toIdentifier(vssPath, field)
+        val identifier = createIdentifier(vssPath, field)
         var subscription = subscriptions[identifier]
         if (subscription == null) {
             subscription = dataBrokerApiInteraction.subscribe(vssPath, field)
@@ -65,7 +65,7 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
      * property is provided.
      */
     fun unsubscribe(vssPath: String, field: Field, propertyListener: PropertyListener) {
-        val identifier = Subscription.toIdentifier(vssPath, field)
+        val identifier = createIdentifier(vssPath, field)
         val subscription = subscriptions[identifier] ?: return
         subscription.observers.unregister(propertyListener)
 
@@ -125,6 +125,12 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
         val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, observer)
         vssPaths.forEach { vssPath ->
             unsubscribe(vssPath, field, specificationPropertyListener)
+        }
+    }
+
+    private companion object {
+        private fun createIdentifier(vssPath: String, field: Field): String {
+            return "$vssPath#${field.name}"
         }
     }
 }
