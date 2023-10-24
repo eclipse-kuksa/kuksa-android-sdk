@@ -114,3 +114,48 @@ data class VssPassenger(
             get() = VssPassenger::class
     }
 }
+
+data class VssValueInt(
+    override val uuid: String = "Value",
+    override val vssPath: String = "Value",
+    override val description: String = "",
+    override val type: String = "sensor",
+    override val comment: String = "",
+    override val value: Int = 0,
+) : VssProperty<Int>
+
+data class VssValueFloat(
+    override val uuid: String = "Value",
+    override val vssPath: String = "Value",
+    override val description: String = "",
+    override val type: String = "sensor",
+    override val comment: String = "",
+    override val value: Float = 0f,
+) : VssProperty<Float>
+
+data class VssValueDouble(
+    override val uuid: String = "Value",
+    override val vssPath: String = "Value",
+    override val description: String = "",
+    override val type: String = "sensor",
+    override val comment: String = "",
+    override val value: Double = 0.0,
+) : VssProperty<Double>
+
+data class VssValueLong(
+    override val uuid: String = "Value",
+    override val vssPath: String = "Value",
+    override val description: String = "",
+    override val type: String = "sensor",
+    override val comment: String = "",
+    override val value: Long = 0L,
+) : VssProperty<Long>
+
+data class VssInvalid(
+    override val uuid: String = "Invalid",
+    override val vssPath: String = "Invalid",
+    override val description: String = "",
+    override val type: String = "",
+    override val comment: String = "",
+    override val value: Exception = Exception(),
+) : VssProperty<Exception>

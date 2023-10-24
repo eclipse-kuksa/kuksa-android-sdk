@@ -25,10 +25,13 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.deepCopy
-import org.eclipse.kuksa.extension.not
-import org.eclipse.kuksa.extension.plus
+import org.eclipse.kuksa.extension.invoke
+import org.eclipse.kuksa.extension.vssProperty.div
+import org.eclipse.kuksa.extension.vssProperty.minus
+import org.eclipse.kuksa.extension.vssProperty.not
+import org.eclipse.kuksa.extension.vssProperty.plus
+import org.eclipse.kuksa.extension.vssProperty.times
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.test.kotest.Unit
 import org.eclipse.kuksa.vsscore.model.VssProperty
 
@@ -37,7 +40,7 @@ class VssSpecificationCopyTest : BehaviorSpec({
 
     given("A specification") {
         val vehicle = VssVehicle()
-        var driverHeartRate: VssProperty<Int> = vehicle.driver.heartRate
+        val driverHeartRate: VssProperty<Int> = vehicle.driver.heartRate
 
         and("a changed heritage line") {
             val newValue = 70
@@ -62,35 +65,59 @@ class VssSpecificationCopyTest : BehaviorSpec({
             }
         }
 
+        and("values for arithmetic operations") {
+            val values = listOf<Number>(5, 5L, 5f, 5.0)
+
+            `when`("a plus operation is done") {
+                val newValues = values.map { driverHeartRate + it }
+
+                then("it should correctly add the values") {
+                    newValues.forEach {
+                        it.value shouldBe 105
+                    }
+                }
+            }
+
+            `when`("a minus operation is done") {
+                val newValues = values.map { driverHeartRate - it }
+
+                then("it should correctly subtract the values") {
+                    newValues.forEach {
+                        it.value shouldBe 95
+                    }
+                }
+            }
+
+            `when`("a divide operation is done") {
+                val newValues = values.map { driverHeartRate / it }
+
+                then("it should correctly divide the values") {
+                    newValues.forEach {
+                        it.value shouldBe 20
+                    }
+                }
+            }
+
+            `when`("a multiply operation is done") {
+                val newValues = values.map { driverHeartRate * it }
+
+                then("it should correctly multiply the values") {
+                    newValues.forEach {
+                        it.value shouldBe 500
+                    }
+                }
+            }
+        }
+
         and("a changed value") {
             val newValue = 40
 
-            `when`("a deep copy is done via the plus operator") {
-                val newHeartRate = driverHeartRate + newValue
-                val copiedSpecification = vehicle + newHeartRate
+            `when`("a deep copy is done via the invoke operator") {
+                val copiedHeartRate = driverHeartRate(newValue)
+                val copiedSpecification = vehicle(copiedHeartRate)
 
                 then("it should return a copy with the updated value") {
                     val heartRateValue = copiedSpecification.driver.heartRate.value
-
-                    heartRateValue shouldBe newValue
-                }
-            }
-
-            `when`("a value copy is done") {
-                val copiedSpecification = driverHeartRate + newValue
-
-                then("it should return a copy with the updated value") {
-                    val heartRateValue = copiedSpecification.value
-
-                    heartRateValue shouldBe newValue
-                }
-            }
-
-            `when`("a value copy is done via assign") {
-                driverHeartRate += newValue
-
-                then("it should return a copy with the updated value") {
-                    val heartRateValue = driverHeartRate.value
 
                     heartRateValue shouldBe newValue
                 }
@@ -126,17 +153,20 @@ class VssSpecificationCopyTest : BehaviorSpec({
             }
         }
 
-        and("an incompatible DataPoint") {
-            val boolArray = BoolArray.newBuilder().addValues(true).build()
-            val datapoint = Types.Datapoint.newBuilder().setBoolArray(boolArray).build()
+        and("an empty DataPoint") {
+            val datapoint = Types.Datapoint.newBuilder().build()
 
-            `when`("a copy is done") {
-                val exception = shouldThrow<IllegalArgumentException> {
-                    driverHeartRate.copy(datapoint)
-                }
+            and("an invalid VssSpecification") {
+                val invalidSpecification = VssInvalid()
 
-                then("it should throw an IllegalArgumentException") {
-                    exception.message shouldStartWith "argument type mismatch"
+                `when`("a copy is done") {
+                    val exception = shouldThrow<NoSuchFieldException> {
+                        invalidSpecification.copy(datapoint)
+                    }
+
+                    then("it should throw an IllegalArgumentException") {
+                        exception.message shouldStartWith "Could not convert value"
+                    }
                 }
             }
         }
