@@ -20,25 +20,9 @@ package org.eclipse.kuksa.extension
 
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.latestGeneration
-
-/**
- * Finds all [VssProperty] heirs for the [VssSpecification] and converts them into a collection of [Pair] with a
- * [Property] and [Datapoint].
- */
-fun VssSpecification.createPropertyDataPoints(
-    fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
-): Collection<Pair<Property, Datapoint>> {
-    return latestGeneration
-        .map { vssProperty ->
-            val property = Property(vssProperty.vssPath, fields)
-            val datapoint = vssProperty.datapoint
-            Pair(property, datapoint)
-        }
-}
 
 /**
  * Finds all [VssProperty] heirs for the [VssSpecification] and converts them into a collection of [Property].

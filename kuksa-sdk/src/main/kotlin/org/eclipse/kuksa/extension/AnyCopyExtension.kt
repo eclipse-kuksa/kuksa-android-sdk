@@ -27,19 +27,15 @@ import kotlin.reflect.full.memberFunctions
 /**
  * Uses reflection to create a copy with any constructor parameter which matches the given [paramToValue] map.
  * It is recommend to only use data classes.
- *
- * @param paramToValue <PropertyName, value> to match the constructor parameters
- * @return a copy of the class or this if an error occurs
- *
- * @throws [IllegalArgumentException] if the copied types do not match
  */
+// The type information is lost when using "callBy" but it must be T if no exception occurs.
 @Suppress("UNCHECKED_CAST")
 internal fun <T : Any> T.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
     val instanceClass = this::class
 
     val copyFunction = instanceClass::memberFunctions.get().firstOrNull { it.name == "copy" }
     if (copyFunction == null) {
-        Log.w(instanceClass.TAG, "No copy function found for class: $instanceClass")
+        Log.w(instanceClass.TAG, "No copy function found for class: $instanceClass!")
         return this
     }
 
@@ -54,7 +50,11 @@ internal fun <T : Any> T.copy(paramToValue: Map<String, Any?> = emptyMap()): T {
 
     val parameterToInstance = mapOf(instanceParameter to this)
     val parameterToValue = parameterToInstance + valueArgs
-    val copy = copyFunction.callBy(parameterToValue) ?: this
 
-    return copy as T
+    return try {
+        (copyFunction.callBy(parameterToValue) ?: this) as T
+    } catch (e: IllegalArgumentException) {
+        Log.w(instanceClass.TAG, "Copied types did not match: $e!")
+        this
+    }
 }

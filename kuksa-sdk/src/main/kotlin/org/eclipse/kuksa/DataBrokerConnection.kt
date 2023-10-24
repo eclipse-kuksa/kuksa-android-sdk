@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.createProperties
-import org.eclipse.kuksa.extension.createPropertyDataPoints
+import org.eclipse.kuksa.extension.datapoint
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
@@ -43,6 +43,7 @@ import org.eclipse.kuksa.proto.v1.VALGrpc
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.heritage
+import org.eclipse.kuksa.vsscore.model.latestGeneration
 
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
@@ -283,14 +284,14 @@ class DataBrokerConnection internal constructor(
      * Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
      * because a [VssSpecification] may consists of multiple values which may need to be updated.
      *
-     *  @throws DataBrokerException in case the connection to the DataBroker is no longer active
+     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     suspend fun update(vssSpecification: VssSpecification): List<SetResponse> {
         val responses = mutableListOf<SetResponse>()
 
-        val propertyDataPointPairs = vssSpecification.createPropertyDataPoints()
-        propertyDataPointPairs.forEach { (property, dataPoint) ->
-            val response = update(property, dataPoint)
+        vssSpecification.latestGeneration.forEach { vssProperty ->
+            val property = Property(vssProperty.vssPath)
+            val response = update(property, vssProperty.datapoint)
             responses.add(response)
         }
 

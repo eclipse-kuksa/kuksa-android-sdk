@@ -73,10 +73,12 @@ class VssDefinitionProcessor(
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             val containingFile = classDeclaration.containingFile ?: return
 
+            val dependencies = Dependencies(false, containingFile)
+            val annotatedProcessorFileName = classDeclaration.toClassName().simpleName + FILE_NAME_PROCESSOR_POSTFIX
             codeGenerator.createNewFile(
-                Dependencies(false, containingFile),
+                dependencies,
                 PACKAGE_NAME,
-                classDeclaration.toClassName().simpleName + FILE_NAME_PROCESSOR_POSTFIX,
+                annotatedProcessorFileName,
             )
 
             val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).first()

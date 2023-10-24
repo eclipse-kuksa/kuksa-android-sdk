@@ -53,7 +53,10 @@ val <T : Any> VssProperty<T>.datapoint: Datapoint
             BooleanArray::class -> ValueCase.BOOL_ARRAY.createDatapoint(stringValue)
             LongArray::class -> ValueCase.INT64_ARRAY.createDatapoint(stringValue)
 
-            else -> throw IllegalArgumentException("Could not create datapoint for the value class: ${value::class}!")
+            else -> {
+                Log.w(TAG, "${value::class} is not valid for creating a datapoint - fallback to string!")
+                ValueCase.STRING.createDatapoint(stringValue)
+            }
         }
     }
 
