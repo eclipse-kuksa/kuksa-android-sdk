@@ -73,35 +73,35 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [property] and notifies the provided [propertyObserver] about updates.
+     * Subscribes to the specified [property] and notifies the provided [propertyListener] about updates.
      *
      * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
      */
     fun subscribe(
         property: Property,
-        propertyObserver: PropertyObserver,
+        propertyListener: PropertyListener,
     ) {
         val vssPath = property.vssPath
         property.fields.forEach { field ->
-            dataBrokerSubscriber.subscribe(vssPath, field, propertyObserver)
+            dataBrokerSubscriber.subscribe(vssPath, field, propertyListener)
         }
     }
 
     /**
-     * Unsubscribes the [propertyObserver] from updates of the specified [property].
+     * Unsubscribes the [propertyListener] from updates of the specified [property].
      */
     fun unsubscribe(
         property: Property,
-        propertyObserver: PropertyObserver,
+        propertyListener: PropertyListener,
     ) {
         val vssPath = property.vssPath
         property.fields.forEach { field ->
-            dataBrokerSubscriber.unsubscribe(vssPath, field, propertyObserver)
+            dataBrokerSubscriber.unsubscribe(vssPath, field, propertyListener)
         }
     }
 
     /**
-     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationObserver]. Only a [VssProperty]
+     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssProperty]
      * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
      * [subscribe] method will find all [VssProperty] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssProperty]. The [fields] can be used to
@@ -114,23 +114,23 @@ class DataBrokerConnection internal constructor(
     fun <T : VssSpecification> subscribe(
         specification: T,
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
-        observer: VssSpecificationObserver<T>,
+        listener: VssSpecificationListener<T>,
     ) {
         fields.forEach { field ->
-            dataBrokerSubscriber.subscribe(specification, field, observer)
+            dataBrokerSubscriber.subscribe(specification, field, listener)
         }
     }
 
     /**
-     * Unsubscribes the [observer] from updates of the specified [fields] and [specification].
+     * Unsubscribes the [listener] from updates of the specified [fields] and [specification].
      */
     fun <T : VssSpecification> unsubscribe(
         specification: T,
         fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
-        observer: VssSpecificationObserver<T>,
+        listener: VssSpecificationListener<T>,
     ) {
         fields.forEach { field ->
-            dataBrokerSubscriber.unsubscribe(specification, field, observer)
+            dataBrokerSubscriber.unsubscribe(specification, field, listener)
         }
     }
 

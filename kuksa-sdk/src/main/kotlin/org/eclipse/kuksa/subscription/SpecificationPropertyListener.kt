@@ -20,18 +20,18 @@
 package org.eclipse.kuksa.subscription
 
 import android.util.Log
-import org.eclipse.kuksa.PropertyObserver
-import org.eclipse.kuksa.VssSpecificationObserver
+import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
-internal class SpecificationObserverWrapper<T : VssSpecification>(
+internal class SpecificationPropertyListener<T : VssSpecification>(
     specification: T,
-    vssPaths: List<String>,
-    private val observer: VssSpecificationObserver<T>,
-) : PropertyObserver {
+    vssPaths: Collection<String>,
+    private val observer: VssSpecificationListener<T>,
+) : PropertyListener {
     // TODO: Remove as soon as the server supports subscribing to vssPaths which are not VssProperties
     // Reduces the load on the observer for big VssSpecifications. We wait for the initial update
     // of all VssProperties before notifying the observer about the first batch
@@ -62,7 +62,7 @@ internal class SpecificationObserverWrapper<T : VssSpecification>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SpecificationObserverWrapper<*>
+        other as SpecificationPropertyListener<*>
 
         if (observer != other.observer) return false
 

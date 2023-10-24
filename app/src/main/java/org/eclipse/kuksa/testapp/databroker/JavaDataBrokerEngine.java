@@ -28,9 +28,9 @@ import org.eclipse.kuksa.CoroutineCallback;
 import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
-import org.eclipse.kuksa.PropertyObserver;
+import org.eclipse.kuksa.PropertyListener;
 import org.eclipse.kuksa.TimeoutConfig;
-import org.eclipse.kuksa.VssSpecificationObserver;
+import org.eclipse.kuksa.VssSpecificationListener;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
@@ -192,18 +192,18 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void subscribe(@NonNull Property property, @NonNull PropertyObserver propertyObserver) {
+    public void subscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.subscribe(property, propertyObserver);
+        dataBrokerConnection.subscribe(property, propertyListener);
     }
 
     @Override
     public <T extends VssSpecification> void subscribe(
         @NonNull T specification,
-        @NonNull VssSpecificationObserver<T> propertyObserver
+        @NonNull VssSpecificationListener<T> specificationListener
     ) {
         if (dataBrokerConnection == null) {
             return;
@@ -215,13 +215,13 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             }
         };
 
-        dataBrokerConnection.subscribe(specification, fields, propertyObserver);
+        dataBrokerConnection.subscribe(specification, fields, specificationListener);
     }
 
     @Override
     public <T extends VssSpecification> void unsubscribe(
         @NonNull T specification,
-        @NonNull VssSpecificationObserver<T> propertyObserver
+        @NonNull VssSpecificationListener<T> specificationListener
     ) {
         if (dataBrokerConnection == null) {
             return;
@@ -233,7 +233,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             }
         };
 
-        dataBrokerConnection.unsubscribe(specification, fields, propertyObserver);
+        dataBrokerConnection.unsubscribe(specification, fields, specificationListener);
     }
 
     public void disconnect() {
@@ -273,9 +273,9 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void unsubscribe(@NonNull Property property, @NonNull PropertyObserver propertyObserver) {
+    public void unsubscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
         if (dataBrokerConnection != null) {
-            dataBrokerConnection.unsubscribe(property, propertyObserver);
+            dataBrokerConnection.unsubscribe(property, propertyListener);
         }
     }
 }

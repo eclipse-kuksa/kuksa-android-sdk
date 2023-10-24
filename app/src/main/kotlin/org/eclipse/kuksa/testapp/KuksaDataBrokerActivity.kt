@@ -32,8 +32,8 @@ import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyObserver
-import org.eclipse.kuksa.VssSpecificationObserver
+import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
@@ -90,7 +90,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         outputViewModel.appendOutput("DataBroker disconnected")
     }
 
-    private val propertyObserver = object : PropertyObserver {
+    private val propertyListener = object : PropertyListener {
         override fun onPropertyChanged(vssPath: String, field: Field, updatedValue: DataEntry) {
             Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, field = $field, changedValue = $updatedValue")
             outputViewModel.appendOutput("Updated value: $updatedValue")
@@ -101,7 +101,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
-    private val specificationObserver = object : VssSpecificationObserver<VssSpecification> {
+    private val specificationListener = object : VssSpecificationListener<VssSpecification> {
         override fun onSpecificationChanged(vssSpecification: VssSpecification) {
             outputViewModel.appendOutput("Updated specification: $vssSpecification")
         }
@@ -171,19 +171,19 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
 
         vssPropertiesViewModel.onSubscribeProperty = { property: Property ->
-            dataBrokerEngine.subscribe(property, propertyObserver)
+            dataBrokerEngine.subscribe(property, propertyListener)
         }
 
         vssPropertiesViewModel.onUnsubscribeProperty = { property: Property ->
-            dataBrokerEngine.unsubscribe(property, propertyObserver)
+            dataBrokerEngine.unsubscribe(property, propertyListener)
         }
 
         vssSpecificationsViewModel.onSubscribeSpecification = { specification ->
-            dataBrokerEngine.subscribe(specification, specificationObserver)
+            dataBrokerEngine.subscribe(specification, specificationListener)
         }
 
         vssSpecificationsViewModel.onUnsubscribeSpecification = { specification ->
-            dataBrokerEngine.unsubscribe(specification, specificationObserver)
+            dataBrokerEngine.unsubscribe(specification, specificationListener)
         }
 
         vssSpecificationsViewModel.onGetSpecification = { specification ->

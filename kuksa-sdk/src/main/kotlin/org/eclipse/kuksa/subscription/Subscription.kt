@@ -22,14 +22,14 @@ package org.eclipse.kuksa.subscription
 import android.util.Log
 import io.grpc.Context
 import io.grpc.stub.StreamObserver
-import org.eclipse.kuksa.PropertyObserver
+import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types.Field
 
 /**
  * Denotes a Subscription to the DataBroker. Will be notified about changes w.r.t. the specified [vssPath] and [field].
- * To get informed about these changes it is required to register an [PropertyObserver] using [observers].
+ * To get informed about these changes it is required to register an [PropertyListener] using [observers].
  * [cancellableContext] is used to cancel the subscription. When the Subscription is canceled the communication channel
  * to the DataBroker is closed, no more updates will be received from that point on.
  *
@@ -42,7 +42,7 @@ internal class Subscription(
     val field: Field,
     private val cancellableContext: Context.CancellableContext,
 ) {
-    val observers: MultiListener<PropertyObserver> = MultiListener(
+    val observers: MultiListener<PropertyListener> = MultiListener(
         onRegistered = { observer ->
             // initial update on registration
             if (lastThrowable != null) {
@@ -88,6 +88,7 @@ internal class Subscription(
                     observer.onPropertyChanged(vssPath, field, entry)
                 }
             }
+
             lastSubscribeResponse = value
         }
 

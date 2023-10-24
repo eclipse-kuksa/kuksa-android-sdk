@@ -102,15 +102,15 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                 `when`("Subscribing to the vssPath using FIELD_VALUE") {
                     val subscription = classUnderTest.subscribe(vssPath, Types.Field.FIELD_VALUE)
 
-                    val propertyObserver = mockk<PropertyObserver>(relaxed = true)
-                    subscription.observers.register(propertyObserver)
+                    val propertyListener = mockk<PropertyListener>(relaxed = true)
+                    subscription.observers.register(propertyListener)
 
                     and("The value of the vssPath is updated") {
                         classUnderTest.updateRandomFloatValue(vssPath)
 
-                        then("The PropertyObserver should be notified") {
+                        then("The PropertyListener should be notified") {
                             verify {
-                                propertyObserver.onPropertyChanged(vssPath, Types.Field.FIELD_VALUE, any())
+                                propertyListener.onPropertyChanged(vssPath, Types.Field.FIELD_VALUE, any())
                             }
                         }
                     }
@@ -119,12 +119,12 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                 `when`("Subscribing to an invalid vssPath") {
                     val subscription = classUnderTest.subscribe("Vehicle.Some.Invalid.Path", Types.Field.FIELD_VALUE)
 
-                    val propertyObserver = mockk<PropertyObserver>(relaxed = true)
-                    subscription.observers.register(propertyObserver)
+                    val propertyListener = mockk<PropertyListener>(relaxed = true)
+                    subscription.observers.register(propertyListener)
 
                     then("An Error should be triggered") {
                         verify(timeout = 100L) {
-                            propertyObserver.onError(any())
+                            propertyListener.onError(any())
                         }
                     }
                 }

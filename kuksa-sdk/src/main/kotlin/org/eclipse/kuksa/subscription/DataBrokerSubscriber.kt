@@ -22,8 +22,8 @@ package org.eclipse.kuksa.subscription
 import android.util.Log
 import org.eclipse.kuksa.DataBrokerApiInteraction
 import org.eclipse.kuksa.DataBrokerException
-import org.eclipse.kuksa.PropertyObserver
-import org.eclipse.kuksa.VssSpecificationObserver
+import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
@@ -35,7 +35,7 @@ import org.eclipse.kuksa.vsscore.model.heritage
  * Creates [Subscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
  * If no [Subscription] for a given vssPath and field does exist the DataBrokerSubscriber will create a new one. If it
  * was already requested before, the same [Subscription] will be re-used.
- * When the last [PropertyObserver] of a [Subscription] unsubscribes the [Subscription] will be automatically canceled
+ * When the last [PropertyListener] of a [Subscription] unsubscribes the [Subscription] will be automatically canceled
  * and removed from the active [Subscription]s.
  */
 internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBrokerApiInteraction) {
@@ -43,10 +43,10 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
 
     /**
      * Checks if the SDK is already subscribed to the corresponding [vssPath] and [field], if the SDK is already
-     * subscribed it will simply add the 3rd-party [propertyObserver] to the current subscription. If not, a new
-     * Subscription is made and the [propertyObserver] is added to it.
+     * subscribed it will simply add the 3rd-party [propertyListener] to the current subscription. If not, a new
+     * Subscription is made and the [propertyListener] is added to it.
      */
-    fun subscribe(vssPath: String, field: Field, propertyObserver: PropertyObserver) {
+    fun subscribe(vssPath: String, field: Field, propertyListener: PropertyListener) {
         val identifier = Subscription.toIdentifier(vssPath, field)
         var subscription = subscriptions[identifier]
         if (subscription == null) {
@@ -55,19 +55,19 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
             Log.d(TAG, "Created $subscription")
         }
 
-        subscription.observers.register(propertyObserver)
+        subscription.observers.register(propertyListener)
     }
 
     /**
-     * Removes the specified [propertyObserver] for the specified [vssPath] and [field] from an already existing
+     * Removes the specified [propertyListener] for the specified [vssPath] and [field] from an already existing
      * Subscription to the DataBroker. If the given Subscription has no more Observers after unsubscribing it will be
      * canceled and removed. Gracefully ignores invalid input, e.g. when a [vssPath] and [field] of a non-subscribed
      * property is provided.
      */
-    fun unsubscribe(vssPath: String, field: Field, propertyObserver: PropertyObserver) {
+    fun unsubscribe(vssPath: String, field: Field, propertyListener: PropertyListener) {
         val identifier = Subscription.toIdentifier(vssPath, field)
         val subscription = subscriptions[identifier] ?: return
-        subscription.observers.unregister(propertyObserver)
+        subscription.observers.unregister(propertyListener)
 
         if (subscription.observers.isEmpty()) {
             Log.d(TAG, "Removing $subscription: no more observers")
@@ -77,7 +77,7 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
     }
 
     /**
-     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationObserver]. Only a [VssProperty]
+     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssProperty]
      * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
      * [subscribe] method will find all [VssProperty] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssProperty]. The [field] can be used to
@@ -89,7 +89,7 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
     fun <T : VssSpecification> subscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
-        observer: VssSpecificationObserver<T>,
+        observer: VssSpecificationListener<T>,
     ) {
         val vssPathToVssProperty = specification.heritage
             .ifEmpty { setOf(specification) }
@@ -98,9 +98,9 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
             .mapValues { it.value.first() } // Always one result because the vssPath is unique
         val vssPaths = vssPathToVssProperty.map { it.value.vssPath }
 
-        val specificationObserverWrapper = SpecificationObserverWrapper(specification, vssPaths, observer)
+        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, observer)
         vssPaths.forEach { vssPath ->
-            subscribe(vssPath, field, specificationObserverWrapper)
+            subscribe(vssPath, field, specificationPropertyListener)
         }
     }
 
@@ -113,7 +113,7 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
     fun <T : VssSpecification> unsubscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
-        observer: VssSpecificationObserver<T>,
+        observer: VssSpecificationListener<T>,
     ) {
         val vssPathToVssProperty = specification.heritage
             .ifEmpty { setOf(specification) }
@@ -122,9 +122,9 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
             .mapValues { it.value.first() } // Always one result because the vssPath is unique
         val vssPaths = vssPathToVssProperty.map { it.value.vssPath }
 
-        val specificationObserverWrapper = SpecificationObserverWrapper(specification, vssPaths, observer)
+        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, observer)
         vssPaths.forEach { vssPath ->
-            unsubscribe(vssPath, field, specificationObserverWrapper)
+            unsubscribe(vssPath, field, specificationPropertyListener)
         }
     }
 }
