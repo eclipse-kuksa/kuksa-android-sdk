@@ -26,7 +26,7 @@ import io.kotest.matchers.types.instanceOf
 import io.mockk.mockk
 import io.mockk.verify
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
-import org.eclipse.kuksa.extensions.setRandomFloatValue
+import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
@@ -106,7 +106,7 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
                     subscription.observers.register(propertyObserver)
 
                     and("The value of the vssPath is updated") {
-                        classUnderTest.setRandomFloatValue(vssPath)
+                        classUnderTest.updateRandomFloatValue(vssPath)
 
                         then("The PropertyObserver should be notified") {
                             verify {
