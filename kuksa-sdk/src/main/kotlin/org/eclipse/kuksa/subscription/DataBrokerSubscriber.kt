@@ -20,8 +20,8 @@
 package org.eclipse.kuksa.subscription
 
 import android.util.Log
-import org.eclipse.kuksa.DataBrokerApiInteraction
 import org.eclipse.kuksa.DataBrokerException
+import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
@@ -38,7 +38,7 @@ import org.eclipse.kuksa.vsscore.model.heritage
  * When the last [PropertyListener] of a [Subscription] unsubscribes the [Subscription] will be automatically canceled
  * and removed from the active [Subscription]s.
  */
-internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBrokerApiInteraction) {
+internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBrokerTransporter) {
     private val subscriptions = mutableMapOf<String, Subscription>() // String(Subscription#identifier) -> Subscription
 
     /**
@@ -50,7 +50,7 @@ internal class DataBrokerSubscriber(private val dataBrokerApiInteraction: DataBr
         val identifier = createIdentifier(vssPath, field)
         var subscription = subscriptions[identifier]
         if (subscription == null) {
-            subscription = dataBrokerApiInteraction.subscribe(vssPath, field)
+            subscription = dataBrokerTransporter.subscribe(vssPath, field)
             subscriptions[identifier] = subscription
             Log.d(TAG, "Created $subscription")
         }

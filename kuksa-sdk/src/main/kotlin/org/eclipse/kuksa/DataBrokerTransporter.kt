@@ -36,12 +36,14 @@ import org.eclipse.kuksa.proto.v1.VALGrpc
 import org.eclipse.kuksa.subscription.Subscription
 
 /**
- * Encapsulates the Protobuf-specific interactions with the DataBroker using gRPC. The DataBrokerApiInteraction requires
- * a [managedChannel] which is already connected to the corresponding DataBroker.
+ * Encapsulates the Protobuf-specific interactions with the DataBroker send over gRPC. Provides fetch, update and
+ * subscribe methods to retrieve and update data, as well as registering to be notified about external data updates
+ * using a [Subscription].
+ * The DataBrokerTransporter requires a [managedChannel] which is already connected to the corresponding DataBroker.
  *
  * @throws IllegalStateException in case the state of the [managedChannel] is not [ConnectivityState.READY]
  */
-internal class DataBrokerApiInteraction(
+internal class DataBrokerTransporter(
     private val managedChannel: ManagedChannel,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
@@ -55,7 +57,7 @@ internal class DataBrokerApiInteraction(
     /**
      * Sends a request to the DataBroker to respond with the specified [vssPath] and [fields] values.
      *
-     * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
+     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     suspend fun fetch(
         vssPath: String,
@@ -83,7 +85,7 @@ internal class DataBrokerApiInteraction(
      * Sends a request to the DataBroker to update the specified [fields] of the [vssPath] and replace it's value with
      * the specified [updatedDatapoint].
      *
-     * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
+     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     suspend fun update(
         vssPath: String,
@@ -117,7 +119,7 @@ internal class DataBrokerApiInteraction(
      * Returns a [Subscription] which can be used to register or unregister additional listeners or cancel / closing
      * the subscription.
      *
-     * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
+     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     fun subscribe(
         vssPath: String,

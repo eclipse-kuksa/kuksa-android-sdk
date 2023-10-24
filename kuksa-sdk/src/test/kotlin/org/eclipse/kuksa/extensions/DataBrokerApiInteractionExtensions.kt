@@ -20,11 +20,11 @@
 package org.eclipse.kuksa.extensions
 
 import io.kotest.assertions.fail
-import org.eclipse.kuksa.DataBrokerApiInteraction
+import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.proto.v1.Types
 import kotlin.random.Random
 
-internal suspend fun DataBrokerApiInteraction.updateRandomFloatValue(vssPath: String, maxValue: Int = 300): Float {
+internal suspend fun DataBrokerTransporter.updateRandomFloatValue(vssPath: String, maxValue: Int = 300): Float {
     val random = Random(System.nanoTime())
     val randomValue = random.nextInt(maxValue)
     val randomFloat = randomValue.toFloat()
@@ -39,7 +39,7 @@ internal suspend fun DataBrokerApiInteraction.updateRandomFloatValue(vssPath: St
     return randomFloat
 }
 
-internal suspend fun DataBrokerApiInteraction.updateRandomUint32Value(vssPath: String, maxValue: Int = 300): Int {
+internal suspend fun DataBrokerTransporter.updateRandomUint32Value(vssPath: String, maxValue: Int = 300): Int {
     val random = Random(System.nanoTime())
     val randomValue = random.nextInt(maxValue)
     val updatedDatapoint = Types.Datapoint.newBuilder().setUint32(randomValue).build()

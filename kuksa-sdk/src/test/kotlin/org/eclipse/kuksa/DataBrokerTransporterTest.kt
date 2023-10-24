@@ -36,7 +36,7 @@ import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
 import kotlin.random.Random
 
-class DataBrokerApiInteractionTest : BehaviorSpec({
+class DataBrokerTransporterTest : BehaviorSpec({
     tags(Integration, Insecure)
 
     given("An active Connection to the DataBroker") {
@@ -44,8 +44,8 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
         val connector = dataBrokerConnectorProvider.createInsecure()
         connector.connect()
 
-        and("An Instance of DataBrokerApiInteraction") {
-            val classUnderTest = DataBrokerApiInteraction(dataBrokerConnectorProvider.managedChannel)
+        and("An Instance of DataBrokerTransporter") {
+            val classUnderTest = DataBrokerTransporter(dataBrokerConnectorProvider.managedChannel)
 
             and("Some VSS-related data") {
                 val vssPath = "Vehicle.ADAS.CruiseControl.SpeedSet"
@@ -136,9 +136,9 @@ class DataBrokerApiInteractionTest : BehaviorSpec({
     given("An inactive Connection to the DataBroker") {
         val inactiveManagedChannel = ManagedChannelBuilder.forAddress("someHost", 12345).build()
 
-        `when`("Trying to instantiate the DataBrokerApiInteraction ") {
+        `when`("Trying to instantiate the DataBrokerTransporter") {
             val result = kotlin.runCatching {
-                DataBrokerApiInteraction(inactiveManagedChannel)
+                DataBrokerTransporter(inactiveManagedChannel)
             }
 
             then("An IllegalStateException is thrown") {

@@ -45,11 +45,11 @@ import org.eclipse.kuksa.vsscore.model.heritage
 class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
-    private val dataBrokerApiInteraction: DataBrokerApiInteraction = DataBrokerApiInteraction(
+    private val dataBrokerTransporter: DataBrokerTransporter = DataBrokerTransporter(
         managedChannel,
         dispatcher,
     ),
-    private val dataBrokerSubscriber: DataBrokerSubscriber = DataBrokerSubscriber(dataBrokerApiInteraction),
+    private val dataBrokerSubscriber: DataBrokerSubscriber = DataBrokerSubscriber(dataBrokerTransporter),
 ) {
     val disconnectListeners = MultiListener<DisconnectListener>()
 
@@ -143,7 +143,7 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun fetch(property: Property): GetResponse {
         Log.d(TAG, "fetchProperty() called with: property: $property")
-        return dataBrokerApiInteraction.fetch(property.vssPath, property.fields)
+        return dataBrokerTransporter.fetch(property.vssPath, property.fields)
     }
 
     /**
@@ -197,7 +197,7 @@ class DataBrokerConnection internal constructor(
         updatedDatapoint: Datapoint,
     ): SetResponse {
         Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
-        return dataBrokerApiInteraction.update(property.vssPath, property.fields, updatedDatapoint)
+        return dataBrokerTransporter.update(property.vssPath, property.fields, updatedDatapoint)
     }
 
     /**

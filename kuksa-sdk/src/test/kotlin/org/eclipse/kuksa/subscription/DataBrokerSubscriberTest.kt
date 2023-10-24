@@ -25,7 +25,7 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.eclipse.kuksa.DataBrokerApiInteraction
+import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
@@ -48,8 +48,8 @@ class DataBrokerSubscriberTest : BehaviorSpec({
         connector.connect()
 
         and("An Instance of DataBrokerSubscriber") {
-            val databrokerApiInteraction = DataBrokerApiInteraction(dataBrokerConnectorProvider.managedChannel)
-            val classUnderTest = DataBrokerSubscriber(databrokerApiInteraction)
+            val databrokerTransporter = DataBrokerTransporter(dataBrokerConnectorProvider.managedChannel)
+            val classUnderTest = DataBrokerSubscriber(databrokerTransporter)
 
             `when`("Subscribing using VSS_PATH to Vehicle.Speed with FIELD_VALUE") {
                 val vssPath = "Vehicle.Speed"
@@ -58,7 +58,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 classUnderTest.subscribe(vssPath, fieldValue, propertyListener)
 
                 and("When the FIELD_VALUE of Vehicle.Speed is updated") {
-                    databrokerApiInteraction.updateRandomFloatValue(vssPath)
+                    databrokerTransporter.updateRandomFloatValue(vssPath)
 
                     then("The PropertyListener is notified about the change") {
                         verify(timeout = 100L) {
@@ -74,8 +74,8 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     classUnderTest.subscribe(otherVssPath, fieldValue, propertyListener)
 
                     and("Both values are updated") {
-                        databrokerApiInteraction.updateRandomFloatValue(vssPath)
-                        databrokerApiInteraction.updateRandomFloatValue(otherVssPath)
+                        databrokerTransporter.updateRandomFloatValue(vssPath)
+                        databrokerTransporter.updateRandomFloatValue(otherVssPath)
 
                         then("The Observer is notified about both changes") {
                             verify(timeout = 100L) {
@@ -100,7 +100,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     }
 
                     and("When the FIELD_VALUE of Vehicle.Speed is updated") {
-                        val randomFloatValue = databrokerApiInteraction.updateRandomFloatValue(vssPath)
+                        val randomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
                         then("The PropertyListener is only notified once") {
                             propertyListenerMocks.forEach { propertyListenerMock ->
@@ -122,7 +122,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     classUnderTest.unsubscribe(vssPath, fieldValue, propertyListener)
 
                     and("When the FIELD_VALUE of Vehicle.Speed is updated") {
-                        databrokerApiInteraction.updateRandomFloatValue(vssPath)
+                        databrokerTransporter.updateRandomFloatValue(vssPath)
 
                         then("The PropertyListener is not notified") {
                             verify(timeout = 100L, exactly = 0) {
@@ -141,7 +141,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 classUnderTest.subscribe(vssPath, fieldValue, propertyListenerMock)
 
                 and("When the FIELD_VALUE of Vehicle.Speed is updated") {
-                    val randomFloatValue = databrokerApiInteraction.updateRandomFloatValue(vssPath)
+                    val randomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
                     then("The PropertyListener is only notified once") {
                         val dataEntries = mutableListOf<DataEntry>()
@@ -163,7 +163,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
-                    databrokerApiInteraction.updateRandomFloatValue(specification.vssPath)
+                    databrokerTransporter.updateRandomFloatValue(specification.vssPath)
 
                     then("The Observer should be triggered") {
                         verify(timeout = 100) { specificationObserverMock.onSpecificationChanged(any()) }
@@ -177,7 +177,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
-                    val randomIntValue = databrokerApiInteraction.updateRandomUint32Value(specification.vssPath)
+                    val randomIntValue = databrokerTransporter.updateRandomUint32Value(specification.vssPath)
 
                     then("The Observer is only notified once") {
                         val heartRates = mutableListOf<VssHeartRate>()
@@ -192,13 +192,13 @@ class DataBrokerSubscriberTest : BehaviorSpec({
         }
     }
 
-    given("An Instance of DataBrokerSubscriber with a mocked DataBrokerApiInteraction") {
+    given("An Instance of DataBrokerSubscriber with a mocked DataBrokerTransporter") {
         val subscriptionMock = mockk<Subscription>(relaxed = true)
-        val dataBrokerApiInteractionMock = mockk<DataBrokerApiInteraction>(relaxed = true)
+        val dataBrokerTransporterMock = mockk<DataBrokerTransporter>(relaxed = true)
         val multiListener = MultiListener<PropertyListener>()
-        every { dataBrokerApiInteractionMock.subscribe(any(), any()) } returns subscriptionMock
+        every { dataBrokerTransporterMock.subscribe(any(), any()) } returns subscriptionMock
         every { subscriptionMock.listeners } returns multiListener
-        val classUnderTest = DataBrokerSubscriber(dataBrokerApiInteractionMock)
+        val classUnderTest = DataBrokerSubscriber(dataBrokerTransporterMock)
 
         `when`("Subscribing for the first time to a vssPath and field") {
             val vssPath = "Vehicle.Speed"
@@ -209,19 +209,19 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
             then("A new Subscription is created and the PropertyListener is added to the list of Listeners") {
                 verify {
-                    dataBrokerApiInteractionMock.subscribe(vssPath, field)
+                    dataBrokerTransporterMock.subscribe(vssPath, field)
                 }
                 multiListener.count() shouldBe 1
             }
 
             `when`("Another PropertyListener subscribes to the same vssPath and field") {
-                clearMocks(dataBrokerApiInteractionMock)
+                clearMocks(dataBrokerTransporterMock)
 
                 classUnderTest.subscribe(vssPath, field, propertyListenerMock2)
 
                 then("No new Subscription is created and the PropertyListener is added to the list of Listeners") {
                     verify(exactly = 0) {
-                        dataBrokerApiInteractionMock.subscribe(vssPath, field)
+                        dataBrokerTransporterMock.subscribe(vssPath, field)
                     }
                     multiListener.count() shouldBe 2
                 }
