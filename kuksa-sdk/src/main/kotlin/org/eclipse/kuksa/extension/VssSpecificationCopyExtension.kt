@@ -40,8 +40,10 @@ import org.eclipse.kuksa.vsscore.model.variableName
  * A deep copy is necessary for a nested history tree with at least two generations. The VssWindowChildLockEngaged
  * is replaced inside VssCabin where this again is replaced inside VssVehicle. Use the [generation] to start copying
  * from the [VssSpecification] to the [deepCopy]. Returns a copy where every heir in the given [changedHeritage] is
- * replaced with a another copy
+ * replaced with another copy.
  */
+// The suggested method to improve the performance can't be used here because we are already working with a full array.
+// https://detekt.dev/docs/rules/performance/
 @Suppress("performance:SpreadOperator")
 fun <T : VssSpecification> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssSpecification): T {
     if (generation == changedHeritage.size) { // Reached the end, use the changed VssProperty
@@ -65,10 +67,8 @@ fun <T : VssSpecification> T.deepCopy(generation: Int = 0, vararg changedHeritag
 
 /**
  * Creates a copy of a [VssProperty] where the [VssProperty.value] is changed to the given [Datapoint].
- *
- * @throws [NoSuchElementException] if the class has no "copy" method
- * @throws [IllegalArgumentException] if the copied types do not match
  */
+// The actual value type is unknown but it is expected that the casted [valueCase] is valid if no exception was thrown.
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
     with(datapoint) {
@@ -132,9 +132,6 @@ fun <T : Any> VssProperty<T>.copy(value: T): VssProperty<T> {
  * @param consideredHeritage the heritage of the [VssSpecification] which is considered for searching. The default
  * will always generate the up to date heritage of the current [VssSpecification]. For performance reason it may make
  * sense to cache the input and reuse the [Collection] here.
- *
- * @throws [NoSuchElementException] if the class has no "copy" method
- * @throws [IllegalArgumentException] if the copied types do not match
  */
 @Suppress("UNCHECKED_CAST")
 fun <T : VssSpecification> T.copy(
@@ -155,31 +152,20 @@ fun <T : VssSpecification> T.copy(
     return deepCopy(0, updatedVssProperty)
 }
 
-/**
- * Convenience operator for [copy] with a value [T].
- */
-operator fun <T : Any> VssProperty<T>.plusAssign(value: T) {
-    copy(value)
-}
-
-/**
- * Convenience operator for [copy] with a value [T].
- */
-operator fun <T : Any> VssProperty<T>.plus(value: T): VssProperty<T> {
-    return copy(value)
-}
-
-/**
- * Convenience operator for [copy] with a [Boolean] value which will be inverted.
- */
-operator fun VssProperty<Boolean>.not(): VssProperty<Boolean> {
-    return copy(!value)
-}
+// region Operators
 
 /**
  * Convenience operator for [deepCopy] with a [VssProperty]. It will return the [VssSpecification] with the updated
  * [VssProperty].
  */
-operator fun <T : VssSpecification, V : Any> T.plus(property: VssProperty<V>): T {
-    return deepCopy(0, property)
+operator fun <T : VssSpecification, V : Any> T.invoke(vararg property: VssProperty<V>): T {
+    return deepCopy(0, *property)
 }
+
+/**
+ * Convenience operator for [copy] with a value [T].
+ */
+operator fun <T : Any> VssProperty<T>.invoke(value: T): VssProperty<T> {
+    return copy(value)
+}
+// endregion
