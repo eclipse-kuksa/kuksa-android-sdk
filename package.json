@@ -8,9 +8,11 @@
   "devDependencies": {
     "@commitlint/cli": "^17.6.6",
     "@commitlint/config-conventional": "^17.6.6",
+    "commit-and-tag-version": "^11.3.0",
     "husky": "^8.0.3"
   },
   "scripts": {
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "release": "commit-and-tag-version"
   }
 }

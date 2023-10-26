@@ -34,7 +34,7 @@ android {
         applicationId = "org.eclipse.kuksa.testapp"
         minSdk = 27
         targetSdk = 34
-        versionCode = rootProject.extra["projectVersionCode"].toString().toInt()
+        versionCode = 1
         versionName = rootProject.extra["projectVersion"].toString()
         vectorDrawables {
             useSupportLibrary = true
