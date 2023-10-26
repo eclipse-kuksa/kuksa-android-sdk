@@ -32,15 +32,16 @@ import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyObserver
-import org.eclipse.kuksa.VssSpecificationObserver
+import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.metadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
-import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.proto.v1.Types.DataEntry
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.JavaDataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.KotlinDataBrokerEngine
@@ -59,6 +60,7 @@ import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 @VssDefinition("vss_rel_4.0.yaml")
+@Suppress("complexity:TooManyFunctions")
 class KuksaDataBrokerActivity : ComponentActivity() {
     private lateinit var connectionInfoRepository: ConnectionInfoRepository
 
@@ -88,9 +90,9 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         outputViewModel.appendOutput("DataBroker disconnected")
     }
 
-    private val propertyObserver = object : PropertyObserver {
-        override fun onPropertyChanged(vssPath: String, updatedValue: Types.DataEntry) {
-            Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, changedValue = $updatedValue")
+    private val propertyListener = object : PropertyListener {
+        override fun onPropertyChanged(vssPath: String, field: Field, updatedValue: DataEntry) {
+            Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, field = $field, changedValue = $updatedValue")
             outputViewModel.appendOutput("Updated value: $updatedValue")
         }
 
@@ -99,7 +101,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
-    private val specificationObserver = object : VssSpecificationObserver<VssSpecification> {
+    private val specificationListener = object : VssSpecificationListener<VssSpecification> {
         override fun onSpecificationChanged(vssSpecification: VssSpecification) {
             outputViewModel.appendOutput("Updated specification: $vssSpecification")
         }
@@ -169,11 +171,19 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
 
         vssPropertiesViewModel.onSubscribeProperty = { property: Property ->
-            subscribeProperty(property)
+            dataBrokerEngine.subscribe(property, propertyListener)
+        }
+
+        vssPropertiesViewModel.onUnsubscribeProperty = { property: Property ->
+            dataBrokerEngine.unsubscribe(property, propertyListener)
         }
 
         vssSpecificationsViewModel.onSubscribeSpecification = { specification ->
-            subscribeSpecification(specification)
+            dataBrokerEngine.subscribe(specification, specificationListener)
+        }
+
+        vssSpecificationsViewModel.onUnsubscribeSpecification = { specification ->
+            dataBrokerEngine.unsubscribe(specification, specificationListener)
         }
 
         vssSpecificationsViewModel.onGetSpecification = { specification ->
@@ -258,12 +268,6 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
-    private fun subscribeProperty(property: Property) {
-        Log.d(TAG, "Subscribing to property: $property")
-
-        dataBrokerEngine.subscribe(property, propertyObserver)
-    }
-
     private fun fetchSpecification(specification: VssSpecification) {
         dataBrokerEngine.fetch(
             specification,
@@ -278,9 +282,5 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 }
             },
         )
-    }
-
-    private fun subscribeSpecification(specification: VssSpecification) {
-        dataBrokerEngine.subscribe(specification, specificationObserver)
     }
 }

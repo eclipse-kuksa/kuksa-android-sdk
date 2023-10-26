@@ -33,4 +33,10 @@ interface ListenerCollection<T : Listener> : Iterable<T> {
      * Removes a [listener] and returns true if the [listener] was successfully removed, returns false otherwise.
      */
     fun unregister(listener: T): Boolean
+
+    /**
+     * isEmpty checks the number of registered listeners and returns true, if no listener is registered or false if at
+     * least one listener is registered.
+     */
+    fun isEmpty(): Boolean
 }

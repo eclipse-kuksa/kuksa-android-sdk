@@ -23,8 +23,8 @@ import android.content.Context
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyObserver
-import org.eclipse.kuksa.VssSpecificationObserver
+import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -32,6 +32,7 @@ import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
+@Suppress("complexity:TooManyFunctions") // required to test the api
 interface DataBrokerEngine {
     var dataBrokerConnection: DataBrokerConnection?
 
@@ -54,11 +55,18 @@ interface DataBrokerEngine {
         callback: CoroutineCallback<SetResponse>,
     )
 
-    fun subscribe(property: Property, propertyObserver: PropertyObserver)
+    fun subscribe(property: Property, propertyListener: PropertyListener)
+
+    fun unsubscribe(property: Property, propertyListener: PropertyListener)
 
     fun <T : VssSpecification> subscribe(
         specification: T,
-        propertyObserver: VssSpecificationObserver<T>,
+        specificationListener: VssSpecificationListener<T>,
+    )
+
+    fun <T : VssSpecification> unsubscribe(
+        specification: T,
+        specificationListener: VssSpecificationListener<T>,
     )
 
     fun disconnect()
