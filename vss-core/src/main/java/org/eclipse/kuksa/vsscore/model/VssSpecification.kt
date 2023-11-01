@@ -112,7 +112,7 @@ val VssSpecification.heritage: Collection<VssSpecification>
 /**
  * Finds the latest generation in the form of [VssProperty] for the current [VssSpecification].
  */
-val VssSpecification.latestGeneration: Collection<VssProperty<*>>
+val VssSpecification.vssProperties: Collection<VssProperty<*>>
     get() = heritage
         .ifEmpty { setOf(this) }
         .filterIsInstance<VssProperty<*>>()

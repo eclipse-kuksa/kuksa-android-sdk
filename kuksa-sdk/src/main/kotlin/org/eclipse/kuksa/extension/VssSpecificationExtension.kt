@@ -22,14 +22,14 @@ import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.latestGeneration
+import org.eclipse.kuksa.vsscore.model.vssProperties
 
 /**
  * Finds all [VssProperty] heirs for the [VssSpecification] and converts them into a collection of [Property].
  */
 fun VssSpecification.createProperties(
-    fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
+    vararg fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
 ): Collection<Property> {
-    return latestGeneration
-        .map { Property(it.vssPath, fields) }
+    return vssProperties
+        .map { Property(it.vssPath, fields.toSet()) }
 }

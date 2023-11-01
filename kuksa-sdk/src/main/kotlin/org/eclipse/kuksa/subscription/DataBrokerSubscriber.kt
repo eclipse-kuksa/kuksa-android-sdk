@@ -25,11 +25,11 @@ import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
+import org.eclipse.kuksa.extension.createProperties
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.heritage
 
 /**
  * Creates [Subscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
@@ -91,12 +91,8 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
         field: Field = Field.FIELD_VALUE,
         observer: VssSpecificationListener<T>,
     ) {
-        val vssPathToVssProperty = specification.heritage
-            .ifEmpty { setOf(specification) }
-            .filterIsInstance<VssProperty<*>>() // Only final leafs with a value can be observed
-            .groupBy { it.vssPath }
-            .mapValues { it.value.first() } // Always one result because the vssPath is unique
-        val vssPaths = vssPathToVssProperty.map { it.value.vssPath }
+        val leafProperties = specification.createProperties(field)
+        val vssPaths = leafProperties.map { it.vssPath }
 
         val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, observer)
         vssPaths.forEach { vssPath ->
@@ -115,12 +111,8 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
         field: Field = Field.FIELD_VALUE,
         observer: VssSpecificationListener<T>,
     ) {
-        val vssPathToVssProperty = specification.heritage
-            .ifEmpty { setOf(specification) }
-            .filterIsInstance<VssProperty<*>>() // Only final leafs with a value can be observed
-            .groupBy { it.vssPath }
-            .mapValues { it.value.first() } // Always one result because the vssPath is unique
-        val vssPaths = vssPathToVssProperty.map { it.value.vssPath }
+        val leafProperties = specification.createProperties(field)
+        val vssPaths = leafProperties.map { it.vssPath }
 
         val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, observer)
         vssPaths.forEach { vssPath ->

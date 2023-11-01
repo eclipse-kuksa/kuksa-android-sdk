@@ -23,6 +23,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.deepCopy
 import org.eclipse.kuksa.extension.invoke
@@ -50,9 +51,9 @@ class VssSpecificationCopyTest : BehaviorSpec({
                 val deepCopiedSpecification = vehicle.deepCopy(0, updatedHeartRate)
 
                 then("it should return the new children as a copy") {
-                    val heartRateValue = deepCopiedSpecification.driver.heartRate.value
+                    val heartRate = deepCopiedSpecification.driver.heartRate
 
-                    heartRateValue shouldBe newValue
+                    heartRate shouldBeSameInstanceAs updatedHeartRate
                 }
             }
         }
@@ -117,9 +118,9 @@ class VssSpecificationCopyTest : BehaviorSpec({
                 val copiedSpecification = vehicle(copiedHeartRate)
 
                 then("it should return a copy with the updated value") {
-                    val heartRateValue = copiedSpecification.driver.heartRate.value
+                    val heartRate = copiedSpecification.driver.heartRate
 
-                    heartRateValue shouldBe newValue
+                    heartRate shouldBeSameInstanceAs copiedHeartRate
                 }
             }
         }

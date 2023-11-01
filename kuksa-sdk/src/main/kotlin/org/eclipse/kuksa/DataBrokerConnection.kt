@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
+import org.eclipse.kuksa.extension.datapoint
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
@@ -37,6 +38,7 @@ import org.eclipse.kuksa.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.heritage
+import org.eclipse.kuksa.vsscore.model.vssProperties
 
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
@@ -194,10 +196,31 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun update(
         property: Property,
-        updatedDatapoint: Datapoint,
+        datapoint: Datapoint,
     ): SetResponse {
         Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
-        return dataBrokerTransporter.update(property.vssPath, property.fields, updatedDatapoint)
+        return dataBrokerTransporter.update(property.vssPath, property.fields, datapoint)
+    }
+
+    /**
+     * Only a [VssProperty] can be updated because they have an actual value. When provided with any parent
+     * [VssSpecification] then this [update] method will find all [VssProperty] children and updates them instead.
+     * Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
+     * because a [VssSpecification] may consists of multiple values which may need to be updated.
+     *
+     * @throws DataBrokerException in case the connection to the DataBroker is no longer active
+     * @throws IllegalArgumentException if the [VssProperty] could not be converted to a [Datapoint].
+     */
+    suspend fun update(vssSpecification: VssSpecification): List<SetResponse> {
+        val responses = mutableListOf<SetResponse>()
+
+        vssSpecification.vssProperties.forEach { vssProperty ->
+            val property = Property(vssProperty.vssPath)
+            val response = update(property, vssProperty.datapoint)
+            responses.add(response)
+        }
+
+        return responses
     }
 
     /**
