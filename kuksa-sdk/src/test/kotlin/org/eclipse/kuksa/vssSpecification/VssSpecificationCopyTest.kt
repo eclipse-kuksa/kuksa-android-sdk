@@ -27,11 +27,7 @@ import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.deepCopy
 import org.eclipse.kuksa.extension.invoke
-import org.eclipse.kuksa.extension.vssProperty.div
-import org.eclipse.kuksa.extension.vssProperty.minus
 import org.eclipse.kuksa.extension.vssProperty.not
-import org.eclipse.kuksa.extension.vssProperty.plus
-import org.eclipse.kuksa.extension.vssProperty.times
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Unit
 import org.eclipse.kuksa.vsscore.model.VssProperty
@@ -63,101 +59,6 @@ class VssSpecificationCopyTest : BehaviorSpec({
 
             then("it should return a copy with the inverted value") {
                 invertedSpecification.value shouldBe false
-            }
-        }
-
-        and("values for arithmetic operations") {
-            val valueInt = VssValueInt(value = 100)
-            val valueFloat = VssValueFloat(value = 100f)
-            val valueLong = VssValueLong(value = 100L)
-            val valueDouble = VssValueDouble(value = 100.0)
-
-            val values = listOf<Number>(5, 5L, 5f, 5.0)
-
-            `when`("a plus operation is done") {
-                val newValues = values.map {
-                    listOf(
-                        valueInt + it,
-                        valueFloat + it,
-                        valueLong + it,
-                        valueDouble + it,
-                    )
-                }
-
-                then("it should correctly add the values") {
-                    newValues.forEach { properties ->
-                        properties.forEach {
-                            it.value shouldBe 105
-                        }
-                    }
-                }
-            }
-
-            `when`("a minus operation is done") {
-                val newValues = values.map {
-                    listOf(
-                        valueInt - it,
-                        valueFloat - it,
-                        valueLong - it,
-                        valueDouble - it,
-                    )
-                }
-
-                then("it should correctly subtract the values") {
-                    newValues.forEach { properties ->
-                        properties.forEach {
-                            it.value shouldBe 95
-                        }
-                    }
-                }
-            }
-
-            `when`("a divide operation with zero is done") {
-                val exception = shouldThrow<ArithmeticException> {
-                    valueInt / 0
-                }
-
-                then("it should throw an exception") {
-                    exception.message shouldStartWith "/ by zero"
-                }
-            }
-
-            `when`("a divide operation is done") {
-                val newValues = values.map {
-                    listOf(
-                        valueInt / it,
-                        valueFloat / it,
-                        valueLong / it,
-                        valueDouble / it,
-                    )
-                }
-
-                then("it should correctly divide the values") {
-                    newValues.forEach { properties ->
-                        properties.forEach {
-                            it.value shouldBe 20
-                        }
-                    }
-                }
-            }
-
-            `when`("a multiply operation is done") {
-                val newValues = values.map {
-                    listOf(
-                        valueInt * it,
-                        valueFloat * it,
-                        valueLong * it,
-                        valueDouble * it,
-                    )
-                }
-
-                then("it should correctly multiply the values") {
-                    newValues.forEach { properties ->
-                        properties.forEach {
-                            it.value shouldBe 500
-                        }
-                    }
-                }
             }
         }
 
