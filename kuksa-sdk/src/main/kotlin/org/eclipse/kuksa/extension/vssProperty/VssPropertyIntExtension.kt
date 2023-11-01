@@ -23,6 +23,9 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by adding [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.plusAssign(value: Number) {
     copy(this.value + value.toInt())
@@ -30,6 +33,9 @@ operator fun VssProperty<Int>.plusAssign(value: Number) {
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by adding [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.plus(value: Number): VssProperty<Int> {
     return copy(this.value + value.toInt())
@@ -37,6 +43,9 @@ operator fun VssProperty<Int>.plus(value: Number): VssProperty<Int> {
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by subtracting [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.minusAssign(value: Number) {
     copy(this.value - value.toInt())
@@ -44,6 +53,9 @@ operator fun VssProperty<Int>.minusAssign(value: Number) {
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by subtracting [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.minus(value: Number): VssProperty<Int> {
     return copy(this.value - value.toInt())
@@ -51,6 +63,9 @@ operator fun VssProperty<Int>.minus(value: Number): VssProperty<Int> {
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by dividing [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.divAssign(value: Number) {
     copy(this.value / value.toInt())
@@ -58,6 +73,9 @@ operator fun VssProperty<Int>.divAssign(value: Number) {
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by dividing [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.div(value: Number): VssProperty<Int> {
     return copy(this.value / value.toInt())
@@ -65,6 +83,9 @@ operator fun VssProperty<Int>.div(value: Number): VssProperty<Int> {
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by multiplying [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.timesAssign(value: Number) {
     copy(this.value * value.toInt())
@@ -72,6 +93,9 @@ operator fun VssProperty<Int>.timesAssign(value: Number) {
 
 /**
  * Convenience operator for [copy] which updates the [VssProperty.value] by multiplying [value] to it.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun VssProperty<Int>.times(value: Number): VssProperty<Int> {
     return copy(this.value * value.toInt())

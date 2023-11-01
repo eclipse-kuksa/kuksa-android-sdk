@@ -27,6 +27,7 @@ import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.findHeritageLine
 import org.eclipse.kuksa.vsscore.model.heritage
 import org.eclipse.kuksa.vsscore.model.variableName
+import kotlin.reflect.full.memberProperties
 
 /**
  * Creates a copy of the [VssSpecification] where the whole [VssSpecification.findHeritageLine] is replaced
@@ -41,6 +42,10 @@ import org.eclipse.kuksa.vsscore.model.variableName
  * is replaced inside VssCabin where this again is replaced inside VssVehicle. Use the [generation] to start copying
  * from the [VssSpecification] to the [deepCopy]. Returns a copy where every heir in the given [changedHeritage] is
  * replaced with another copy.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match. This can happen if the [heritage] is not
+ * correct.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 // The suggested method to improve the performance can't be used here because we are already working with a full array.
 // https://detekt.dev/docs/rules/performance/
@@ -119,9 +124,15 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
 
 /**
  * Calls the generated copy method of the data class for the [VssProperty] and returns a new copy with the new [value].
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 fun <T : Any> VssProperty<T>.copy(value: T): VssProperty<T> {
-    val valueMap = mapOf("value" to value)
+    val memberProperties = VssProperty::class.memberProperties
+    val firstPropertyName = memberProperties.first().name
+    val valueMap = mapOf(firstPropertyName to value)
+
     return this@copy.copy(valueMap)
 }
 
@@ -132,6 +143,9 @@ fun <T : Any> VssProperty<T>.copy(value: T): VssProperty<T> {
  * @param consideredHeritage the heritage of the [VssSpecification] which is considered for searching. The default
  * will always generate the up to date heritage of the current [VssSpecification]. For performance reason it may make
  * sense to cache the input and reuse the [Collection] here.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 @Suppress("UNCHECKED_CAST")
 fun <T : VssSpecification> T.copy(
@@ -155,17 +169,24 @@ fun <T : VssSpecification> T.copy(
 // region Operators
 
 /**
- * Convenience operator for [deepCopy] with a [VssProperty]. It will return the [VssSpecification] with the updated
- * [VssProperty].
+ * Convenience operator for [deepCopy] with a [VssSpecification]. It will return the [VssSpecification] with the updated
+ * [VssSpecification].
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun <T : VssSpecification, V : Any> T.invoke(vararg property: VssProperty<V>): T {
+operator fun <T : VssSpecification> T.invoke(vararg property: VssSpecification): T {
     return deepCopy(0, *property)
 }
 
 /**
  * Convenience operator for [copy] with a value [T].
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 operator fun <T : Any> VssProperty<T>.invoke(value: T): VssProperty<T> {
     return copy(value)
 }
+
 // endregion

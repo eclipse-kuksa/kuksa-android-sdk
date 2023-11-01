@@ -285,6 +285,7 @@ class DataBrokerConnection internal constructor(
      * because a [VssSpecification] may consists of multiple values which may need to be updated.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
+     * @throws IllegalArgumentException if the [VssProperty] could not be converted to a [Datapoint].
      */
     suspend fun update(vssSpecification: VssSpecification): List<SetResponse> {
         val responses = mutableListOf<SetResponse>()

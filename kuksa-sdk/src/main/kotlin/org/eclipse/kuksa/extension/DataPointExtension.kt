@@ -36,6 +36,8 @@ val Types.Metadata.valueType: ValueCase
 
 /**
  * Converts the [VssProperty.value] into a [Datapoint] object.
+ *
+ * @throws IllegalArgumentException if the [VssProperty] could not be converted to a [Datapoint].
  */
 val <T : Any> VssProperty<T>.datapoint: Datapoint
     get() {
@@ -53,10 +55,7 @@ val <T : Any> VssProperty<T>.datapoint: Datapoint
             BooleanArray::class -> ValueCase.BOOL_ARRAY.createDatapoint(stringValue)
             LongArray::class -> ValueCase.INT64_ARRAY.createDatapoint(stringValue)
 
-            else -> {
-                Log.w(TAG, "${value::class} is not valid for creating a datapoint - fallback to string!")
-                ValueCase.STRING.createDatapoint(stringValue)
-            }
+            else -> throw IllegalArgumentException("Could not create datapoint for the value class: ${value::class}!")
         }
     }
 
