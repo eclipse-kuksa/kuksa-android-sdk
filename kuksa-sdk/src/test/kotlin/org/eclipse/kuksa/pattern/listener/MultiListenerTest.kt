@@ -29,12 +29,24 @@ class MultiListenerTest : BehaviorSpec({
     given("An Instance of a MultiListener with generic type TestListener") {
         val classUnderTest = MultiListener<TestListener>()
 
+        `when`("Checking isEmpty on a newly instantiated MultiListener") {
+            val isEmpty = classUnderTest.isEmpty()
+
+            then("It should return true") {
+                isEmpty shouldBe true
+            }
+        }
+
         `when`("Trying to register a TestListener") {
             val testListener = TestListener()
             classUnderTest.register(testListener)
 
             then("The registration is successful") {
                 classUnderTest.count() shouldBe 1
+            }
+
+            then("isEmpty should return false") {
+                classUnderTest.isEmpty() shouldBe false
             }
 
             `when`("Trying to register the same listener again") {

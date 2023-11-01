@@ -32,9 +32,9 @@ import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyObserver
+import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.TimeoutConfig
-import org.eclipse.kuksa.VssSpecificationObserver
+import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -168,18 +168,28 @@ class KotlinDataBrokerEngine(
         }
     }
 
-    override fun subscribe(property: Property, propertyObserver: PropertyObserver) {
-        val properties = listOf(property)
-        dataBrokerConnection?.subscribe(properties, propertyObserver)
+    override fun subscribe(property: Property, propertyListener: PropertyListener) {
+        dataBrokerConnection?.subscribe(property, propertyListener)
+    }
+
+    override fun unsubscribe(property: Property, propertyListener: PropertyListener) {
+        dataBrokerConnection?.unsubscribe(property, propertyListener)
     }
 
     override fun <T : VssSpecification> subscribe(
         specification: T,
-        propertyObserver: VssSpecificationObserver<T>,
+        specificationListener: VssSpecificationListener<T>,
     ) {
         lifecycleScope.launch {
-            dataBrokerConnection?.subscribe(specification, observer = propertyObserver)
+            dataBrokerConnection?.subscribe(specification, listener = specificationListener)
         }
+    }
+
+    override fun <T : VssSpecification> unsubscribe(
+        specification: T,
+        specificationListener: VssSpecificationListener<T>,
+    ) {
+        dataBrokerConnection?.unsubscribe(specification, listener = specificationListener)
     }
 
     override fun disconnect() {

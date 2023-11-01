@@ -19,15 +19,16 @@
 
 package org.eclipse.kuksa
 
+import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.clearMocks
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.model.Property
@@ -51,17 +52,15 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val property = Property("Vehicle.Acceleration.Lateral", fields)
 
             `when`("Subscribing to the Property") {
-                val properties = listOf(property)
-
-                val propertyObserver = mockk<PropertyObserver>(relaxed = true)
-                dataBrokerConnection.subscribe(properties, propertyObserver)
+                val propertyListener = mockk<PropertyListener>(relaxed = true)
+                dataBrokerConnection.subscribe(property, propertyListener)
 
                 then("The #onPropertyChanged method is triggered") {
-                    verify { propertyObserver.onPropertyChanged(any(), any()) }
+                    verify(timeout = 100L) { propertyListener.onPropertyChanged(any(), any(), any()) }
                 }
 
                 `when`("The observed Property changes") {
-                    clearMocks(propertyObserver)
+                    clearMocks(propertyListener)
 
                     val random = Random(System.currentTimeMillis())
                     val newValue = random.nextFloat()
@@ -71,7 +70,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     then("The #onPropertyChanged callback is triggered with the new value") {
                         val capturingSlot = slot<Types.DataEntry>()
 
-                        verify { propertyObserver.onPropertyChanged(any(), capture(capturingSlot)) }
+                        verify { propertyListener.onPropertyChanged(any(), any(), capture(capturingSlot)) }
 
                         val dataEntry = capturingSlot.captured
                         val capturedDatapoint = dataEntry.value
@@ -81,12 +80,12 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     }
 
                     `when`("The same value is set again") {
-                        clearMocks(propertyObserver)
+                        clearMocks(propertyListener)
 
                         dataBrokerConnection.update(property, datapoint)
 
                         then("The #onPropertyChangedCallback should NOT be triggered again") {
-                            verify(exactly = 0) { propertyObserver.onPropertyChanged(any(), any()) }
+                            verify(exactly = 0) { propertyListener.onPropertyChanged(any(), any(), any()) }
                         }
                     }
                 }
@@ -161,13 +160,11 @@ class DataBrokerConnectionTest : BehaviorSpec({
             }
 
             `when`("Subscribing to the specification") {
-                val propertyObserver = mockk<VssSpecificationObserver<VssDriver>>(relaxed = true)
-                dataBrokerConnection.subscribe(specification, observer = propertyObserver)
-
-                delay(100)
+                val specificationListener = mockk<VssSpecificationListener<VssDriver>>(relaxed = true)
+                dataBrokerConnection.subscribe(specification, listener = specificationListener)
 
                 then("The #onSpecificationChanged method is triggered") {
-                    verify { propertyObserver.onSpecificationChanged(any()) }
+                    verify(timeout = 100L) { specificationListener.onSpecificationChanged(any()) }
                 }
 
                 and("The initial value is different from the default for a child") {
@@ -179,7 +176,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     then("Every child property has been updated with the correct value") {
                         val capturingSlots = mutableListOf<VssDriver>()
 
-                        verify(exactly = 2) { propertyObserver.onSpecificationChanged(capture(capturingSlots)) }
+                        verify(exactly = 2) { specificationListener.onSpecificationChanged(capture(capturingSlots)) }
 
                         val updatedDriver = capturingSlots[1]
                         val heartRate = updatedDriver.heartRate
@@ -197,7 +194,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     then("The subscribed Specification should be updated") {
                         val capturingSlots = mutableListOf<VssDriver>()
 
-                        verify(exactly = 3) { propertyObserver.onSpecificationChanged(capture(capturingSlots)) }
+                        verify(exactly = 3) { specificationListener.onSpecificationChanged(capture(capturingSlots)) }
 
                         val updatedDriver = capturingSlots[2]
                         val heartRate = updatedDriver.heartRate
@@ -213,16 +210,12 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val property = Property("Vehicle.Some.Unknown.Path", fields)
 
             `when`("Trying to subscribe to the INVALID Property") {
-                val properties = listOf(property)
+                val propertyListener = mockk<PropertyListener>(relaxed = true)
+                dataBrokerConnection.subscribe(property, propertyListener)
 
-                val propertyObserver = mockk<PropertyObserver>(relaxed = true)
-                dataBrokerConnection.subscribe(properties, propertyObserver)
-
-                delay(100)
-
-                then("The PropertyObserver#onError method should be triggered with 'NOT_FOUND' (Path not found)") {
+                then("The PropertyListener#onError method should be triggered with 'NOT_FOUND' (Path not found)") {
                     val capturingSlot = slot<Throwable>()
-                    verify { propertyObserver.onError(capture(capturingSlot)) }
+                    verify(timeout = 100L) { propertyListener.onError(capture(capturingSlot)) }
                     val capturedThrowable = capturingSlot.captured
                     capturedThrowable.message shouldContain "NOT_FOUND"
                 }
@@ -279,6 +272,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
     }
     given("A DataBrokerConnection with a mocked ManagedChannel") {
         val managedChannel = mockk<ManagedChannel>(relaxed = true)
+        every { managedChannel.getState(any()) }.returns(ConnectivityState.READY)
         val dataBrokerConnection = DataBrokerConnection(managedChannel)
 
         `when`("Disconnect is called") {

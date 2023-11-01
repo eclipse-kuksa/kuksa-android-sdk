@@ -28,9 +28,9 @@ import org.eclipse.kuksa.CoroutineCallback;
 import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
-import org.eclipse.kuksa.PropertyObserver;
+import org.eclipse.kuksa.PropertyListener;
 import org.eclipse.kuksa.TimeoutConfig;
-import org.eclipse.kuksa.VssSpecificationObserver;
+import org.eclipse.kuksa.VssSpecificationListener;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
@@ -44,9 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -194,19 +192,18 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void subscribe(@NonNull Property property, @NonNull PropertyObserver propertyObserver) {
+    public void subscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        List<Property> properties = Collections.singletonList(property);
-        dataBrokerConnection.subscribe(properties, propertyObserver);
+        dataBrokerConnection.subscribe(property, propertyListener);
     }
 
     @Override
     public <T extends VssSpecification> void subscribe(
         @NonNull T specification,
-        @NonNull VssSpecificationObserver<T> propertyObserver
+        @NonNull VssSpecificationListener<T> specificationListener
     ) {
         if (dataBrokerConnection == null) {
             return;
@@ -215,11 +212,28 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         ArrayList<Types.Field> fields = new ArrayList<>() {
             {
                 add(Types.Field.FIELD_VALUE);
-                add(Types.Field.FIELD_METADATA);
             }
         };
 
-        dataBrokerConnection.subscribe(specification, fields, propertyObserver);
+        dataBrokerConnection.subscribe(specification, fields, specificationListener);
+    }
+
+    @Override
+    public <T extends VssSpecification> void unsubscribe(
+        @NonNull T specification,
+        @NonNull VssSpecificationListener<T> specificationListener
+    ) {
+        if (dataBrokerConnection == null) {
+            return;
+        }
+
+        ArrayList<Types.Field> fields = new ArrayList<>() {
+            {
+                add(Types.Field.FIELD_VALUE);
+            }
+        };
+
+        dataBrokerConnection.unsubscribe(specification, fields, specificationListener);
     }
 
     public void disconnect() {
@@ -255,6 +269,13 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         disconnectListeners.remove(listener);
         if (dataBrokerConnection != null) {
             dataBrokerConnection.getDisconnectListeners().unregister(listener);
+        }
+    }
+
+    @Override
+    public void unsubscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
+        if (dataBrokerConnection != null) {
+            dataBrokerConnection.unsubscribe(property, propertyListener);
         }
     }
 }

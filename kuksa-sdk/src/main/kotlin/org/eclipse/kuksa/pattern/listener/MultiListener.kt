@@ -24,15 +24,30 @@ package org.eclipse.kuksa.pattern.listener
  * The ListenerCollection is backed by a LinkedHashSet to prevent the same listener from being registered multiple
  * times. The order of registered elements is kept in tact.
  */
-class MultiListener<T : Listener> : ListenerCollection<T> {
+class MultiListener<T : Listener>(
+    private val onRegistered: ((T) -> Unit)? = null,
+    private val onUnregistered: ((T) -> Unit)? = null,
+) : ListenerCollection<T> {
     private var listeners: MutableSet<T> = LinkedHashSet()
 
     override fun register(listener: T): Boolean {
-        return listeners.add(listener)
+        val isAdded = listeners.add(listener)
+        if (isAdded) {
+            onRegistered?.invoke(listener)
+        }
+        return isAdded
     }
 
     override fun unregister(listener: T): Boolean {
-        return listeners.remove(listener)
+        val isRemoved = listeners.remove(listener)
+        if (isRemoved) {
+            onUnregistered?.invoke(listener)
+        }
+        return isRemoved
+    }
+
+    override fun isEmpty(): Boolean {
+        return listeners.isEmpty()
     }
 
     override fun iterator(): Iterator<T> {

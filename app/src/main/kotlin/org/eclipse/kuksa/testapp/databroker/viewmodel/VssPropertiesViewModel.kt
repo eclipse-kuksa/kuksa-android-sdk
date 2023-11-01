@@ -20,7 +20,9 @@
 package org.eclipse.kuksa.testapp.databroker.viewmodel
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -34,6 +36,13 @@ class VSSPropertiesViewModel : ViewModel() {
     var onGetProperty: (property: Property) -> Unit = { }
     var onSetProperty: (property: Property, datapoint: Datapoint) -> Unit = { _: Property, _: Datapoint -> }
     var onSubscribeProperty: (property: Property) -> Unit = { }
+    var onUnsubscribeProperty: (property: Property) -> Unit = { }
+
+    var subscribedProperties = mutableStateListOf<Property>()
+
+    val isSubscribed by derivedStateOf {
+        subscribedProperties.contains(property)
+    }
 
     var vssProperties: VSSProperties by mutableStateOf(VSSProperties())
         private set

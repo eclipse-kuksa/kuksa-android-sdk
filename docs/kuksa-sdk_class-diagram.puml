@@ -23,7 +23,7 @@ package kuksa {
 
     DataBrokerConnector -down-> DataBrokerException
     DataBrokerConnector -down-> DataBrokerConnection
-    DataBrokerConnection -down-> PropertyObserver
+    DataBrokerConnection -down-> PropertyListener
     DataBrokerConnection -down-> Property
     DataBrokerConnection -left-> DataBrokerException
     DataBrokerConnection -up-> MultiListener
@@ -41,13 +41,13 @@ package kuksa {
 
     class DataBrokerConnection {
         + disconnectListeners: MultiListener<DisconnectListener>
-        + subscribe(List<Property>, PropertyObserver)
+        + subscribe(List<Property>, PropertyListener)
         + fetchProperty(Property): GetResponse
         + updateProperty(Property, Datapoint): SetResponse
         + disconnect()
     }
     
-    interface PropertyObserver {
+    interface PropertyListener {
         + onPropertyChanged(vssPath: String, Types.DataEntry)
         + onError(Throwable)
     }

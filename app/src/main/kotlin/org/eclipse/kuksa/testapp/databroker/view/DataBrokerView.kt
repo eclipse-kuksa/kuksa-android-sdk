@@ -221,10 +221,20 @@ fun DataBrokerSpecifications(viewModel: VssSpecificationsViewModel) {
             ) {
                 Text(text = "Get")
             }
-            Button(onClick = {
-                viewModel.onSubscribeSpecification(viewModel.specification)
-            }) {
-                Text(text = "Subscribe")
+            if (viewModel.isSubscribed) {
+                Button(onClick = {
+                    viewModel.subscribedSpecifications.remove(viewModel.specification)
+                    viewModel.onUnsubscribeSpecification(viewModel.specification)
+                }) {
+                    Text(text = "Unsubscribe")
+                }
+            } else {
+                Button(onClick = {
+                    viewModel.subscribedSpecifications.add(viewModel.specification)
+                    viewModel.onSubscribeSpecification(viewModel.specification)
+                }) {
+                    Text(text = "Subscribe")
+                }
             }
         }
     }
@@ -342,10 +352,20 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
             ) {
                 Text(text = "Set")
             }
-            Button(onClick = {
-                viewModel.onSubscribeProperty(viewModel.property)
-            }) {
-                Text(text = "Subscribe")
+            if (viewModel.isSubscribed) {
+                Button(onClick = {
+                    viewModel.subscribedProperties.remove(viewModel.property)
+                    viewModel.onUnsubscribeProperty(viewModel.property)
+                }) {
+                    Text(text = "Unsubscribe")
+                }
+            } else {
+                Button(onClick = {
+                    viewModel.subscribedProperties.add(viewModel.property)
+                    viewModel.onSubscribeProperty(viewModel.property)
+                }) {
+                    Text(text = "Subscribe")
+                }
             }
         }
     }
