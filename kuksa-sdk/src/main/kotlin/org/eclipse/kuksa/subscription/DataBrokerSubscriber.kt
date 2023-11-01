@@ -89,19 +89,19 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     fun <T : VssSpecification> subscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
-        observer: VssSpecificationListener<T>,
+        listener: VssSpecificationListener<T>,
     ) {
         val leafProperties = specification.createProperties(field)
         val vssPaths = leafProperties.map { it.vssPath }
 
-        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, observer)
+        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, listener)
         vssPaths.forEach { vssPath ->
             subscribe(vssPath, field, specificationPropertyListener)
         }
     }
 
     /**
-     * Removes the specified [observer] for the specified [specification] and [field] from an already existing
+     * Removes the specified [listener] for the specified [specification] and [field] from an already existing
      * Subscription to the DataBroker. If the given Subscription has no more Listeners after unsubscribing it will be
      * canceled and removed. Gracefully ignores invalid input, e.g. when a [specification] and [field] of a
      * non-subscribed property is provided.
@@ -109,12 +109,12 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     fun <T : VssSpecification> unsubscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
-        observer: VssSpecificationListener<T>,
+        listener: VssSpecificationListener<T>,
     ) {
         val leafProperties = specification.createProperties(field)
         val vssPaths = leafProperties.map { it.vssPath }
 
-        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, observer)
+        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, listener)
         vssPaths.forEach { vssPath ->
             unsubscribe(vssPath, field, specificationPropertyListener)
         }

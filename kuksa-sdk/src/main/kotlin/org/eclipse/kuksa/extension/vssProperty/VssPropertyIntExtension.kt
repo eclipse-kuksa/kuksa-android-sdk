@@ -66,6 +66,7 @@ operator fun VssProperty<Int>.minus(value: Number): VssProperty<Int> {
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
+ * @throws [ArithmeticException] if divided by zero.
  */
 operator fun VssProperty<Int>.divAssign(value: Number) {
     copy(this.value / value.toInt())
@@ -76,6 +77,7 @@ operator fun VssProperty<Int>.divAssign(value: Number) {
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
+ * @throws [ArithmeticException] if divided by zero.
  */
 operator fun VssProperty<Int>.div(value: Number): VssProperty<Int> {
     return copy(this.value / value.toInt())

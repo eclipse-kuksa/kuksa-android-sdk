@@ -66,6 +66,7 @@ operator fun VssProperty<Float>.minus(value: Number): VssProperty<Float> {
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
+ * @throws [ArithmeticException] if divided by zero.
  */
 operator fun VssProperty<Float>.divAssign(value: Number) {
     copy(this.value / +value.toFloat())
@@ -76,6 +77,7 @@ operator fun VssProperty<Float>.divAssign(value: Number) {
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
+ * @throws [ArithmeticException] if divided by zero.
  */
 operator fun VssProperty<Float>.div(value: Number): VssProperty<Float> {
     return copy(this.value / +value.toFloat())

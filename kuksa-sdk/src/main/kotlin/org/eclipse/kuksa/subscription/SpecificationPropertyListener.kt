@@ -30,7 +30,7 @@ import org.eclipse.kuksa.vsscore.model.VssSpecification
 internal class SpecificationPropertyListener<T : VssSpecification>(
     specification: T,
     vssPaths: Collection<String>,
-    private val observer: VssSpecificationListener<T>,
+    private val listener: VssSpecificationListener<T>,
 ) : PropertyListener {
     // TODO: Remove as soon as the server supports subscribing to vssPaths which are not VssProperties
     // Reduces the load on the observer for big VssSpecifications. We wait for the initial update
@@ -48,28 +48,28 @@ internal class SpecificationPropertyListener<T : VssSpecification>(
         initialSubscriptionUpdates[vssPath] = true
         val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
         if (isInitialSubscriptionComplete) {
-            Log.d(TAG, "Initial update for subscribed property complete: $vssPath - $updatedValue")
-            observer.onSpecificationChanged(updatedVssSpecification)
+            Log.d(TAG, "Update for subscribed property complete: $vssPath - $updatedValue")
+            listener.onSpecificationChanged(updatedVssSpecification)
         }
     }
 
     override fun onError(throwable: Throwable) {
-        observer.onError(throwable)
+        listener.onError(throwable)
     }
 
-    // two SpecificationObserverWrapper instances are equal if they have the same observer set!
+    // Two SpecificationObserverWrapper instances are equal if they have the same observer set!
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as SpecificationPropertyListener<*>
 
-        if (observer != other.observer) return false
+        if (listener != other.listener) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return observer.hashCode()
+        return listener.hashCode()
     }
 }
