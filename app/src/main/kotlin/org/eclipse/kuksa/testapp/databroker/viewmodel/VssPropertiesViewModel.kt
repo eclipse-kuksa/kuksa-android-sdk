@@ -48,9 +48,7 @@ class VSSPropertiesViewModel : ViewModel() {
         private set
 
     val valueTypes: List<ValueCase> = ValueCase.values().toList()
-    val fieldTypes: List<Field> = Field.values().toList()
-        .filterNot { it.toString().contains(EXCLUDED_FIELD_TYPES) }
-        .minus(listOf(Field.FIELD_UNSPECIFIED, Field.UNRECOGNIZED)) // Not relevant field types
+    val fieldTypes: List<Field> = listOf(Field.FIELD_VALUE, Field.FIELD_ACTUATOR_TARGET)
 
     val datapoint: Datapoint
         get() = vssProperties.valueType.createDatapoint(vssProperties.value)
@@ -62,10 +60,6 @@ class VSSPropertiesViewModel : ViewModel() {
     fun updateVssProperties(vssProperties: VSSProperties = VSSProperties()) {
         this.vssProperties = vssProperties
     }
-
-    companion object {
-        const val EXCLUDED_FIELD_TYPES = "METADATA"
-    }
 }
 
 @Immutable
@@ -73,5 +67,5 @@ data class VSSProperties(
     val vssPath: String = "Vehicle.Speed",
     val valueType: ValueCase = ValueCase.VALUE_NOT_SET,
     val value: String = "130",
-    val fieldType: Field = Field.FIELD_UNSPECIFIED,
+    val fieldType: Field = Field.FIELD_VALUE,
 )
