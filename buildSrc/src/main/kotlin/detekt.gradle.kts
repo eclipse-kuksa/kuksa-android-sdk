@@ -26,7 +26,7 @@ tasks.withType<Detekt>().configureEach {
     parallel = true
     setSource(projectDir)
     include("**/*.kt", "**/*.kts")
-    exclude("**/resources/**", "**/build/**")
+    exclude("**/resources/**", "**/build/**", "**/node_modules/**")
     config.setFrom(project.file("$rootDir/config/detekt/config.yml"))
     baseline.set(baselineFile)
 
