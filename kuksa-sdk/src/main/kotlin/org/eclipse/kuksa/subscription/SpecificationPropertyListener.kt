@@ -20,11 +20,9 @@
 package org.eclipse.kuksa.subscription
 
 import android.util.Log
-import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
@@ -48,15 +46,14 @@ internal class SpecificationPropertyListener<T : VssSpecification>(
 
     // Multiple onPropertyChanged updates from different threads may be called. The updatedVssSpecification must be
     // in sync however. Calling the .copy in a blocking context is necessary for this.
-    @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-    private val specificationUpdateContext = newSingleThreadContext("SpecificationUpdateContext")
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val specificationUpdateContext = Dispatchers.IO.limitedParallelism(1)
 
     override fun onPropertyChanged(vssPath: String, field: Types.Field, updatedValue: Types.DataEntry) {
         Log.d(TAG, "Update from subscribed property: $vssPath - $field: ${updatedValue.value}")
-        runBlocking {
-            withContext(specificationUpdateContext) {
-                updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
-            }
+
+        runBlocking(specificationUpdateContext) {
+            updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
         }
 
         initialSubscriptionUpdates[vssPath] = true
