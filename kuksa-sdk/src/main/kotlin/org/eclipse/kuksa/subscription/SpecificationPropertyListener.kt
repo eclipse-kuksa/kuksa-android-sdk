@@ -20,6 +20,11 @@
 package org.eclipse.kuksa.subscription
 
 import android.util.Log
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
@@ -41,14 +46,23 @@ internal class SpecificationPropertyListener<T : VssSpecification>(
     // would override the last heir value with every new response.
     private var updatedVssSpecification: T = specification
 
+    // Multiple onPropertyChanged updates from different threads may be called. The updatedVssSpecification must be
+    // in sync however. Calling the .copy in a blocking context is necessary for this.
+    @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+    private val specificationUpdateContext = newSingleThreadContext("SpecificationUpdateContext")
+
     override fun onPropertyChanged(vssPath: String, field: Types.Field, updatedValue: Types.DataEntry) {
-        Log.v(TAG, "Update from subscribed property: $vssPath - $field - $updatedValue")
-        updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
+        Log.d(TAG, "Update from subscribed property: $vssPath - $field: ${updatedValue.value}")
+        runBlocking {
+            withContext(specificationUpdateContext) {
+                updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
+            }
+        }
 
         initialSubscriptionUpdates[vssPath] = true
         val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
         if (isInitialSubscriptionComplete) {
-            Log.d(TAG, "Update for subscribed property complete: $vssPath - $updatedValue")
+            Log.d(TAG, "Update for subscribed specification complete: ${updatedVssSpecification.vssPath}")
             listener.onSpecificationChanged(updatedVssSpecification)
         }
     }
