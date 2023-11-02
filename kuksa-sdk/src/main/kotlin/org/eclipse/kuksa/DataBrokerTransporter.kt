@@ -28,6 +28,7 @@ import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
@@ -94,16 +95,11 @@ internal class DataBrokerTransporter(
     ): KuksaValV1.SetResponse {
         return withContext(defaultDispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
-            val dataEntry = Types.DataEntry.newBuilder()
-                .setPath(vssPath)
-                .setValue(updatedDatapoint)
-                .build()
-            val entryUpdate = KuksaValV1.EntryUpdate.newBuilder()
-                .setEntry(dataEntry)
-                .addAllFields(fields)
-                .build()
+
+            val entryUpdates = fields.map { createEntryUpdate(vssPath, it, updatedDatapoint) }
+
             val request = KuksaValV1.SetRequest.newBuilder()
-                .addUpdates(entryUpdate)
+                .addAllUpdates(entryUpdates)
                 .build()
 
             return@withContext try {
@@ -162,7 +158,7 @@ internal class DataBrokerTransporter(
             }
 
             override fun onCompleted() {
-                Log.d("TAG", "onCompleted() called")
+                Log.d(TAG, "onCompleted() called")
             }
         }
 
@@ -175,5 +171,31 @@ internal class DataBrokerTransporter(
         }
 
         return subscription
+    }
+
+    private fun createEntryUpdate(
+        vssPath: String,
+        field: Field,
+        updatedDatapoint: Types.Datapoint,
+    ): KuksaValV1.EntryUpdate {
+        val builder = Types.DataEntry.newBuilder()
+            .setPath(vssPath)
+
+        when (field) {
+            Field.FIELD_ACTUATOR_TARGET -> {
+                builder.actuatorTarget = updatedDatapoint
+            }
+
+            else -> {
+                builder.value = updatedDatapoint
+            }
+        }
+
+        builder.build()
+
+        return KuksaValV1.EntryUpdate.newBuilder()
+            .setEntry(builder.build())
+            .addFields(field)
+            .build()
     }
 }

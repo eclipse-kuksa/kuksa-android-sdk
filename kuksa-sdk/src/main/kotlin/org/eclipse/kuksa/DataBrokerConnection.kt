@@ -34,6 +34,7 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
@@ -117,7 +118,7 @@ class DataBrokerConnection internal constructor(
     @JvmOverloads
     fun <T : VssSpecification> subscribe(
         specification: T,
-        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
+        fields: List<Field> = listOf(Field.FIELD_VALUE),
         listener: VssSpecificationListener<T>,
     ) {
         fields.forEach { field ->
@@ -130,7 +131,7 @@ class DataBrokerConnection internal constructor(
      */
     fun <T : VssSpecification> unsubscribe(
         specification: T,
-        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
+        fields: List<Field> = listOf(Field.FIELD_VALUE),
         listener: VssSpecificationListener<T>,
     ) {
         fields.forEach { field ->
@@ -160,7 +161,7 @@ class DataBrokerConnection internal constructor(
     @JvmOverloads
     suspend fun <T : VssSpecification> fetch(
         specification: T,
-        fields: List<Types.Field> = listOf(Types.Field.FIELD_VALUE),
+        fields: List<Field> = listOf(Field.FIELD_VALUE),
     ): T {
         return withContext(dispatcher) {
             try {
@@ -204,18 +205,22 @@ class DataBrokerConnection internal constructor(
 
     /**
      * Only a [VssProperty] can be updated because they have an actual value. When provided with any parent
-     * [VssSpecification] then this [update] method will find all [VssProperty] children and updates them instead.
+     * [VssSpecification] then this [update] method will find all [VssProperty] children and updates their corresponding
+     * [fields] instead.
      * Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
      * because a [VssSpecification] may consists of multiple values which may need to be updated.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      * @throws IllegalArgumentException if the [VssProperty] could not be converted to a [Datapoint].
      */
-    suspend fun update(vssSpecification: VssSpecification): List<SetResponse> {
+    suspend fun update(
+        vssSpecification: VssSpecification,
+        fields: List<Field> = listOf(Field.FIELD_VALUE),
+    ): List<SetResponse> {
         val responses = mutableListOf<SetResponse>()
 
         vssSpecification.vssProperties.forEach { vssProperty ->
-            val property = Property(vssProperty.vssPath)
+            val property = Property(vssProperty.vssPath, fields)
             val response = update(property, vssProperty.datapoint)
             responses.add(response)
         }
