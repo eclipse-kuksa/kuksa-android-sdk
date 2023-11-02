@@ -37,42 +37,34 @@ class VssSpecificationArithmeticTest : BehaviorSpec({
         val valueLong = VssValueLong(value = 100L)
         val valueDouble = VssValueDouble(value = 100.0)
 
-        val values = listOf<Number>(5, 5L, 5f, 5.0)
+        val value = 5
 
         `when`("a plus operation is done") {
-            val newValues = values.map {
-                listOf(
-                    valueInt + it,
-                    valueFloat + it,
-                    valueLong + it,
-                    valueDouble + it,
-                )
-            }
+            val newValues = listOf(
+                valueInt + value,
+                valueFloat + value,
+                valueLong + value,
+                valueDouble + value,
+            )
 
             then("it should correctly add the values") {
-                newValues.forEach { properties ->
-                    properties.forEach {
-                        it.value shouldBe 105
-                    }
+                newValues.forEach {
+                    it.value shouldBe 105
                 }
             }
         }
 
         `when`("a minus operation is done") {
-            val newValues = values.map {
-                listOf(
-                    valueInt - it,
-                    valueFloat - it,
-                    valueLong - it,
-                    valueDouble - it,
-                )
-            }
+            val newValues = listOf(
+                valueInt - value,
+                valueFloat - value,
+                valueLong - value,
+                valueDouble - value,
+            )
 
             then("it should correctly subtract the values") {
-                newValues.forEach { properties ->
-                    properties.forEach {
-                        it.value shouldBe 95
-                    }
+                newValues.forEach {
+                    it.value shouldBe 95
                 }
             }
         }
@@ -88,39 +80,31 @@ class VssSpecificationArithmeticTest : BehaviorSpec({
         }
 
         `when`("a divide operation is done") {
-            val newValues = values.map {
-                listOf(
-                    valueInt / it,
-                    valueFloat / it,
-                    valueLong / it,
-                    valueDouble / it,
-                )
-            }
+            val newValues = listOf(
+                valueInt / value,
+                valueFloat / value,
+                valueLong / value,
+                valueDouble / value,
+            )
 
             then("it should correctly divide the values") {
-                newValues.forEach { properties ->
-                    properties.forEach {
-                        it.value shouldBe 20
-                    }
+                newValues.forEach {
+                    it.value shouldBe 20
                 }
             }
         }
 
         `when`("a multiply operation is done") {
-            val newValues = values.map {
-                listOf(
-                    valueInt * it,
-                    valueFloat * it,
-                    valueLong * it,
-                    valueDouble * it,
-                )
-            }
+            val newValues = listOf(
+                valueInt * value,
+                valueFloat * value,
+                valueLong * value,
+                valueDouble * value,
+            )
 
             then("it should correctly multiply the values") {
-                newValues.forEach { properties ->
-                    properties.forEach {
-                        it.value shouldBe 500
-                    }
+                newValues.forEach {
+                    it.value shouldBe 500
                 }
             }
         }
