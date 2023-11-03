@@ -161,7 +161,7 @@ class DataBrokerConnection internal constructor(
     @JvmOverloads
     suspend fun <T : VssSpecification> fetch(
         specification: T,
-        fields: List<Field> = listOf(Field.FIELD_VALUE),
+        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
     ): T {
         return withContext(dispatcher) {
             try {
