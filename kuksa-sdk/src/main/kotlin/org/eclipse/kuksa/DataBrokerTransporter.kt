@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.extension.TAG
+import org.eclipse.kuksa.extension.applyDatapoint
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
@@ -96,7 +97,17 @@ internal class DataBrokerTransporter(
         return withContext(defaultDispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
 
-            val entryUpdates = fields.map { createEntryUpdate(vssPath, it, updatedDatapoint) }
+            val entryUpdates = fields.map { field ->
+                val dataEntry = Types.DataEntry.newBuilder()
+                    .setPath(vssPath)
+                    .applyDatapoint(updatedDatapoint, field)
+                    .build()
+
+                KuksaValV1.EntryUpdate.newBuilder()
+                    .setEntry(dataEntry)
+                    .addFields(field)
+                    .build()
+            }
 
             val request = KuksaValV1.SetRequest.newBuilder()
                 .addAllUpdates(entryUpdates)
@@ -171,31 +182,5 @@ internal class DataBrokerTransporter(
         }
 
         return subscription
-    }
-
-    private fun createEntryUpdate(
-        vssPath: String,
-        field: Field,
-        updatedDatapoint: Types.Datapoint,
-    ): KuksaValV1.EntryUpdate {
-        val builder = Types.DataEntry.newBuilder()
-            .setPath(vssPath)
-
-        when (field) {
-            Field.FIELD_ACTUATOR_TARGET -> {
-                builder.actuatorTarget = updatedDatapoint
-            }
-
-            else -> {
-                builder.value = updatedDatapoint
-            }
-        }
-
-        val dataEntry = builder.build()
-
-        return KuksaValV1.EntryUpdate.newBuilder()
-            .setEntry(dataEntry)
-            .addFields(field)
-            .build()
     }
 }
