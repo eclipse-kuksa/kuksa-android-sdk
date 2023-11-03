@@ -191,10 +191,10 @@ internal class DataBrokerTransporter(
             }
         }
 
-        builder.build()
+        val dataEntry = builder.build()
 
         return KuksaValV1.EntryUpdate.newBuilder()
-            .setEntry(builder.build())
+            .setEntry(dataEntry)
             .addFields(field)
             .build()
     }
