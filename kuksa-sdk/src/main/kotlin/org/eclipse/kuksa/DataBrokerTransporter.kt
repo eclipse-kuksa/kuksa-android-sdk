@@ -28,6 +28,8 @@ import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.extension.TAG
+import org.eclipse.kuksa.extension.applyDatapoint
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
@@ -94,16 +96,21 @@ internal class DataBrokerTransporter(
     ): KuksaValV1.SetResponse {
         return withContext(defaultDispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
-            val dataEntry = Types.DataEntry.newBuilder()
-                .setPath(vssPath)
-                .setValue(updatedDatapoint)
-                .build()
-            val entryUpdate = KuksaValV1.EntryUpdate.newBuilder()
-                .setEntry(dataEntry)
-                .addAllFields(fields)
-                .build()
+
+            val entryUpdates = fields.map { field ->
+                val dataEntry = Types.DataEntry.newBuilder()
+                    .setPath(vssPath)
+                    .applyDatapoint(updatedDatapoint, field)
+                    .build()
+
+                KuksaValV1.EntryUpdate.newBuilder()
+                    .setEntry(dataEntry)
+                    .addFields(field)
+                    .build()
+            }
+
             val request = KuksaValV1.SetRequest.newBuilder()
-                .addUpdates(entryUpdate)
+                .addAllUpdates(entryUpdates)
                 .build()
 
             return@withContext try {
@@ -162,7 +169,7 @@ internal class DataBrokerTransporter(
             }
 
             override fun onCompleted() {
-                Log.d("TAG", "onCompleted() called")
+                Log.d(TAG, "onCompleted() called")
             }
         }
 
