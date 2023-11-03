@@ -14,25 +14,19 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.model
+package org.eclipse.kuksa.extension.vssProperty
 
-import org.eclipse.kuksa.proto.v1.Types.Field
-import org.eclipse.kuksa.proto.v1.Types.Field.FIELD_VALUE
+import org.eclipse.kuksa.extension.copy
+import org.eclipse.kuksa.vsscore.model.VssProperty
 
 /**
- * A DataBroker Property.
+ * Convenience operator for [copy] with a [Boolean] value which will be inverted.
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-data class Property(
-    /**
-     * The VehicleSignalSpecification path.
-     */
-    val vssPath: String,
-
-    /**
-     * The corresponding field type of the Property. The default is [FIELD_VALUE].
-     */
-    val fields: Collection<Field> = listOf(FIELD_VALUE),
-)
+operator fun VssProperty<Boolean>.not(): VssProperty<Boolean> {
+    return copy(!value)
+}

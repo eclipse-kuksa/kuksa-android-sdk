@@ -23,64 +23,98 @@ import android.util.Log
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
+import org.eclipse.kuksa.vsscore.model.VssProperty
 
 private const val CSV_DELIMITER = ","
 
-val Types.Metadata.valueType: Datapoint.ValueCase
+/**
+ * Returns the converted VSS value types -> Protobuf data types.
+ */
+val Types.Metadata.valueType: ValueCase
     get() = dataType.dataPointValueCase
 
-fun Datapoint.ValueCase.createDatapoint(value: String): Datapoint {
+/**
+ * Converts the [VssProperty.value] into a [Datapoint] object.
+ *
+ * @throws IllegalArgumentException if the [VssProperty] could not be converted to a [Datapoint].
+ */
+val <T : Any> VssProperty<T>.datapoint: Datapoint
+    get() {
+        val stringValue = value.toString()
+        return when (value::class) {
+            String::class -> ValueCase.STRING.createDatapoint(stringValue)
+            Boolean::class -> ValueCase.BOOL.createDatapoint(stringValue)
+            Float::class -> ValueCase.FLOAT.createDatapoint(stringValue)
+            Double::class -> ValueCase.DOUBLE.createDatapoint(stringValue)
+            Int::class -> ValueCase.INT32.createDatapoint(stringValue)
+            Long::class -> ValueCase.INT64.createDatapoint(stringValue)
+            UInt::class -> ValueCase.UINT32.createDatapoint(stringValue)
+            Array<String>::class -> ValueCase.DOUBLE.createDatapoint(stringValue)
+            IntArray::class -> ValueCase.INT32_ARRAY.createDatapoint(stringValue)
+            BooleanArray::class -> ValueCase.BOOL_ARRAY.createDatapoint(stringValue)
+            LongArray::class -> ValueCase.INT64_ARRAY.createDatapoint(stringValue)
+
+            else -> throw IllegalArgumentException("Could not create datapoint for the value class: ${value::class}!")
+        }
+    }
+
+/**
+ * Creates a [Datapoint] object with a given [value] which is in [String] format. The [String] will be converted
+ * to the correct type for the [Datapoint.Builder].
+ */
+fun ValueCase.createDatapoint(value: String): Datapoint {
     val datapointBuilder = Datapoint.newBuilder()
 
     try {
         when (this) {
-            Datapoint.ValueCase.VALUE_NOT_SET, // also explicitly handled on UI level
-            Datapoint.ValueCase.STRING,
+            ValueCase.VALUE_NOT_SET, // also explicitly handled on UI level
+            ValueCase.STRING,
             -> datapointBuilder.string = value
 
-            Datapoint.ValueCase.UINT32 ->
+            ValueCase.UINT32 ->
                 datapointBuilder.uint32 = value.toInt()
 
-            Datapoint.ValueCase.INT32 ->
+            ValueCase.INT32 ->
                 datapointBuilder.int32 = value.toInt()
 
-            Datapoint.ValueCase.UINT64 ->
+            ValueCase.UINT64 ->
                 datapointBuilder.uint64 = value.toLong()
 
-            Datapoint.ValueCase.INT64 ->
+            ValueCase.INT64 ->
                 datapointBuilder.int64 = value.toLong()
 
-            Datapoint.ValueCase.FLOAT ->
+            ValueCase.FLOAT ->
                 datapointBuilder.float = value.toFloat()
 
-            Datapoint.ValueCase.DOUBLE ->
+            ValueCase.DOUBLE ->
                 datapointBuilder.double = value.toDouble()
 
-            Datapoint.ValueCase.BOOL ->
+            ValueCase.BOOL ->
                 datapointBuilder.bool = value.toBoolean()
 
-            Datapoint.ValueCase.STRING_ARRAY ->
+            ValueCase.STRING_ARRAY ->
                 datapointBuilder.stringArray = createStringArray(value)
 
-            Datapoint.ValueCase.UINT32_ARRAY ->
+            ValueCase.UINT32_ARRAY ->
                 datapointBuilder.uint32Array = createUInt32Array(value)
 
-            Datapoint.ValueCase.INT32_ARRAY ->
+            ValueCase.INT32_ARRAY ->
                 datapointBuilder.int32Array = createInt32Array(value)
 
-            Datapoint.ValueCase.UINT64_ARRAY ->
+            ValueCase.UINT64_ARRAY ->
                 datapointBuilder.uint64Array = createUInt64Array(value)
 
-            Datapoint.ValueCase.INT64_ARRAY ->
+            ValueCase.INT64_ARRAY ->
                 datapointBuilder.int64Array = createInt64Array(value)
 
-            Datapoint.ValueCase.FLOAT_ARRAY ->
+            ValueCase.FLOAT_ARRAY ->
                 datapointBuilder.floatArray = createFloatArray(value)
 
-            Datapoint.ValueCase.DOUBLE_ARRAY ->
+            ValueCase.DOUBLE_ARRAY ->
                 datapointBuilder.doubleArray = createDoubleArray(value)
 
-            Datapoint.ValueCase.BOOL_ARRAY ->
+            ValueCase.BOOL_ARRAY ->
                 datapointBuilder.boolArray = createBoolArray(value)
         }
     } catch (e: NumberFormatException) {

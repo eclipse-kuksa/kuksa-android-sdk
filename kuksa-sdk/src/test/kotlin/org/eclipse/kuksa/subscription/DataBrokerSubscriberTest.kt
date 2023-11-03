@@ -37,7 +37,7 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.DataEntry
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
-import org.eclipse.kuksa.vssSpecification.VssHeartRate
+import org.eclipse.kuksa.vssSpecification.VssDriver
 
 class DataBrokerSubscriberTest : BehaviorSpec({
     tags(Integration, Insecure)
@@ -156,10 +156,10 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 }
             }
 
-            val specification = VssHeartRate()
+            val specification = VssDriver.VssHeartRate()
 
             `when`("Subscribing using VssSpecification to Vehicle.Driver.HeartRate with Field FIELD_VALUE") {
-                val specificationObserverMock = mockk<VssSpecificationListener<VssHeartRate>>(relaxed = true)
+                val specificationObserverMock = mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
                 classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
@@ -172,7 +172,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             }
 
             `when`("Subscribing the same SpecificationObserver twice to Vehicle.Driver.HeartRate") {
-                val specificationObserverMock = mockk<VssSpecificationListener<VssHeartRate>>(relaxed = true)
+                val specificationObserverMock = mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
                 classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
                 classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
 
@@ -180,7 +180,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     val randomIntValue = databrokerTransporter.updateRandomUint32Value(specification.vssPath)
 
                     then("The Observer is only notified once") {
-                        val heartRates = mutableListOf<VssHeartRate>()
+                        val heartRates = mutableListOf<VssDriver.VssHeartRate>()
 
                         verify(timeout = 100) { specificationObserverMock.onSpecificationChanged(capture(heartRates)) }
 

@@ -14,25 +14,22 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.model
+package org.eclipse.kuksa.extension
 
-import org.eclipse.kuksa.proto.v1.Types.Field
-import org.eclipse.kuksa.proto.v1.Types.Field.FIELD_VALUE
+import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.vssProperties
 
 /**
- * A DataBroker Property.
+ * Finds all [VssProperty] heirs for the [VssSpecification] and converts them into a collection of [Property].
  */
-data class Property(
-    /**
-     * The VehicleSignalSpecification path.
-     */
-    val vssPath: String,
-
-    /**
-     * The corresponding field type of the Property. The default is [FIELD_VALUE].
-     */
-    val fields: Collection<Field> = listOf(FIELD_VALUE),
-)
+fun VssSpecification.createProperties(
+    vararg fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
+): Collection<Property> {
+    return vssProperties
+        .map { Property(it.vssPath, fields.toSet()) }
+}

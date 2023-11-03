@@ -23,31 +23,56 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.deepCopy
+import org.eclipse.kuksa.extension.invoke
+import org.eclipse.kuksa.extension.vssProperty.not
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.test.kotest.Unit
+import org.eclipse.kuksa.vsscore.model.VssProperty
 
 class VssSpecificationCopyTest : BehaviorSpec({
     tags(Unit)
 
     given("A specification") {
-        val driver = VssDriver()
-        val heartRate = driver.heartRate
+        val vehicle = VssVehicle()
+        val driverHeartRate: VssProperty<Int> = vehicle.driver.heartRate
 
         and("a changed heritage line") {
             val newValue = 70
-            val updatedHeartRate = VssHeartRate(value = newValue)
-            val changedHeritageLine = listOf(updatedHeartRate)
+            val updatedHeartRate = VssDriver.VssHeartRate(value = newValue)
 
             `when`("a deep copy is done with a changed heritage line") {
-                val deepCopiedSpecification = driver.deepCopy(changedHeritageLine)
+                val deepCopiedSpecification = vehicle.deepCopy(0, updatedHeartRate)
 
                 then("it should return the new children as a copy") {
-                    val heartRateValue = deepCopiedSpecification.heartRate.value
+                    val heartRate = deepCopiedSpecification.driver.heartRate
 
-                    heartRateValue shouldBe newValue
+                    heartRate shouldBeSameInstanceAs updatedHeartRate
+                }
+            }
+        }
+
+        `when`("a value copy is done via the not operator") {
+            val invertedSpecification = !vehicle.driver.isEyesOnRoad
+
+            then("it should return a copy with the inverted value") {
+                invertedSpecification.value shouldBe false
+            }
+        }
+
+        and("a changed value") {
+            val newValue = 40
+
+            `when`("a deep copy is done via the invoke operator") {
+                val copiedHeartRate = driverHeartRate(newValue)
+                val copiedSpecification = vehicle(copiedHeartRate)
+
+                then("it should return a copy with the updated value") {
+                    val heartRate = copiedSpecification.driver.heartRate
+
+                    heartRate shouldBeSameInstanceAs copiedHeartRate
                 }
             }
         }
@@ -57,7 +82,7 @@ class VssSpecificationCopyTest : BehaviorSpec({
             val datapoint = Types.Datapoint.newBuilder().setInt32(newValue).build()
 
             `when`("a copy is done") {
-                val copiedSpecification = heartRate.copy(datapoint)
+                val copiedSpecification = driverHeartRate.copy(datapoint)
 
                 then("it should return a copy with the updated value") {
                     val heartRateValue = copiedSpecification.value
@@ -67,10 +92,10 @@ class VssSpecificationCopyTest : BehaviorSpec({
             }
 
             and("a vssPath") {
-                val vssPath = heartRate.vssPath
+                val vssPath = driverHeartRate.vssPath
 
                 `when`("a copy is done") {
-                    val copiedSpecification = heartRate.copy(vssPath, datapoint)
+                    val copiedSpecification = driverHeartRate.copy(vssPath, datapoint)
 
                     then("it should return a copy with the updated value") {
                         val heartRateValue = copiedSpecification.value
@@ -81,17 +106,20 @@ class VssSpecificationCopyTest : BehaviorSpec({
             }
         }
 
-        and("an incompatible DataPoint") {
-            val boolArray = BoolArray.newBuilder().addValues(true).build()
-            val datapoint = Types.Datapoint.newBuilder().setBoolArray(boolArray).build()
+        and("an empty DataPoint") {
+            val datapoint = Types.Datapoint.newBuilder().build()
 
-            `when`("a copy is done") {
-                val exception = shouldThrow<IllegalArgumentException> {
-                    heartRate.copy(datapoint)
-                }
+            and("an invalid VssSpecification") {
+                val invalidSpecification = VssInvalid()
 
-                then("it should throw an IllegalArgumentException") {
-                    exception.message shouldStartWith "argument type mismatch"
+                `when`("a copy is done") {
+                    val exception = shouldThrow<NoSuchFieldException> {
+                        invalidSpecification.copy(datapoint)
+                    }
+
+                    then("it should throw an IllegalArgumentException") {
+                        exception.message shouldStartWith "Could not convert value"
+                    }
                 }
             }
         }

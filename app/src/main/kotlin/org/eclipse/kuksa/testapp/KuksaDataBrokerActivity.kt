@@ -60,7 +60,6 @@ import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 @VssDefinition("vss_rel_4.0.yaml")
-@Suppress("complexity:TooManyFunctions")
 class KuksaDataBrokerActivity : ComponentActivity() {
     private lateinit var connectionInfoRepository: ConnectionInfoRepository
 

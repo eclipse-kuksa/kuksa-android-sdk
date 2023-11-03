@@ -23,7 +23,7 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 
 /**
- * Returns the converted VSS data types -> Protobuf data types
+ * Returns the converted VSS data types -> Protobuf data types.
  */
 val Types.DataType.dataPointValueCase: ValueCase
     get() {

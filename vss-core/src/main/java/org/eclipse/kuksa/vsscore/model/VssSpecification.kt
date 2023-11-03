@@ -106,21 +106,16 @@ val VssSpecification.parentKey: String
 /**
  * Iterates through all nested children which also may have children and aggregates them into one big collection.
  */
-val VssSpecification.heritage: List<VssSpecification>
+val VssSpecification.heritage: Collection<VssSpecification>
     get() = children.toList() + children.flatMap { it.heritage }
 
 /**
- * Creates an inheritance line to the given heir. Similar to [vssPathHeritageLine] but the other way around.
- *
- * @param heir where the inheritance line should stop
- * @return a [Collection] of the full heritage line in the form of [VssSpecification]
+ * Finds the latest generation in the form of [VssProperty] for the current [VssSpecification].
  */
-fun VssSpecification.findHeritageLine(heir: VssSpecification): List<VssSpecification> {
-    val specificationKeys = heir.vssPathHeritageLine
-    return heritage.filter { child ->
-        specificationKeys.contains(child.vssPath)
-    }
-}
+val VssSpecification.vssProperties: Collection<VssProperty<*>>
+    get() = heritage
+        .ifEmpty { setOf(this) }
+        .filterIsInstance<VssProperty<*>>()
 
 /**
  * Uses the [variablePrefix] to generate a unique variable name. The first character is at least lowercased.
@@ -160,3 +155,48 @@ private val VssSpecification.isVariableOccupied: Boolean
 
 private val classNamePrefix: String
     get() = "Vss"
+
+/**
+ * Creates an inheritance line to the given [heir]. Similar to [vssPathHeritageLine] but the other way around. It
+ * returns a [Collection] of the full heritage line in the form of [VssSpecification].
+ *
+ * ### Hint
+ * The given heir is only used to find the heir inside the [VssSpecification]. It may differ from the one which is
+ * returned. If you want the heritage replaced by the given [heir] parameter then use the [isReplacingHeir] parameter.
+ */
+fun VssSpecification.findHeritageLine(
+    heir: VssSpecification,
+    isReplacingHeir: Boolean = false,
+): Collection<VssSpecification> {
+    val specificationKeys = heir.vssPathHeritageLine
+    val heritageLine = heritage.filter { child ->
+        specificationKeys.contains(child.vssPath)
+    }.toMutableList()
+
+    if (isReplacingHeir && heritageLine.isNotEmpty()) {
+        heritageLine.removeLast()
+        heritageLine.add(heir)
+    }
+
+    return heritageLine
+}
+
+/**
+ * Finds the given [property] inside the current [VssSpecification].
+ */
+fun <T : VssProperty<V>, V : Any> VssSpecification.findProperty(property: VssProperty<V>): VssProperty<V> {
+    return heritage
+        .filterIsInstance<VssProperty<V>>()
+        .first { it.uuid == property.uuid }
+}
+
+/**
+ * Finds all [VssProperty] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
+ * with the same Name exists but are pretty much the same besides the [VssSpecification.vssPath] etc.
+ */
+fun <T : VssProperty<V>, V : Any> VssSpecification.findProperties(type: KClass<T>): Map<String, VssProperty<V>> {
+    return heritage
+        .filterIsInstance<VssProperty<V>>()
+        .filter { it::class.simpleName == type.simpleName }
+        .associateBy { it.vssPath }
+}
