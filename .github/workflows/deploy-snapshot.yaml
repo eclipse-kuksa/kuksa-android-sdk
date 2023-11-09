@@ -23,7 +23,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Publish Library
-        run: ./gradlew publishReleasePublicationToGithubPackagesRepository
+        run: ./gradlew setSnapshotVersion publishReleasePublicationToGithubPackagesRepository
           -Pgpr.repository=${{ github.repository }}
           -Pgpr.user=${{ github.actor }}
           -Pgpr.token=${{ secrets.GITHUB_TOKEN }}
