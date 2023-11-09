@@ -22,8 +22,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
+      - name: Update Version
+        run: npm run bump-release # Updates the semantic version depending on the last commits e.g. feature / bugfix
+
+      - name: Set Snapshot Version
+        run: ./gradlew setSnapshotVersion
+
       - name: Publish Library
-        run: ./gradlew setSnapshotVersion publishReleasePublicationToGithubPackagesRepository
+        run: ./gradlew publishReleasePublicationToGithubPackagesRepository
           -Pgpr.repository=${{ github.repository }}
           -Pgpr.user=${{ github.actor }}
           -Pgpr.token=${{ secrets.GITHUB_TOKEN }}

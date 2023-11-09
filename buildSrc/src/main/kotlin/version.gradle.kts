@@ -1,33 +1,33 @@
-import org.eclipse.kuksa.util.Version
+import org.eclipse.kuksa.util.SemanticVersion
 
-val file = File("$rootDir/version")
-val semanticVersion = file.readText()
-val version = Version(semanticVersion)
+val file = File("$rootDir/version.txt")
+val fileContent = file.readText()
+val semanticVersion = SemanticVersion(fileContent)
 
 updateExtras()
 
 tasks.register("setReleaseVersion") {
     group = "version"
     doLast {
-        version.suffix = ""
+        semanticVersion.suffix = ""
 
-        updateExtras()
+        updateVersion()
     }
 }
 
 tasks.register("setSnapshotVersion") {
     group = "version"
     doLast {
-        version.suffix = "SNAPSHOT"
+        semanticVersion.suffix = "SNAPSHOT"
 
-        updateExtras()
+        updateVersion()
     }
 }
 
 tasks.register("printVersion") {
     group = "version"
     doLast {
-        val version = version.versionString
+        val version = semanticVersion.versionString
 
         println("VERSION=$version")
     }
@@ -36,6 +36,12 @@ tasks.register("printVersion") {
 }
 
 fun updateExtras() {
-    rootProject.extra["projectVersion"] = version.versionString
-    rootProject.extra["projectVersionCode"] = version.versionCode
+    rootProject.extra["projectVersion"] = semanticVersion.versionString
+    rootProject.extra["projectVersionCode"] = semanticVersion.versionCode
+}
+
+fun updateVersion() {
+    updateExtras()
+
+    file.writeText(semanticVersion.versionString)
 }

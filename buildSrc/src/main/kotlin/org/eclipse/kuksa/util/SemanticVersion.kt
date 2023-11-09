@@ -21,7 +21,7 @@ package org.eclipse.kuksa.util
 
 import java.util.Locale
 
-class Version(semanticVersion: String) {
+class SemanticVersion(semanticVersion: String) {
     val major: Int
     val minor: Int
     val patch: Int
@@ -48,9 +48,14 @@ class Version(semanticVersion: String) {
         }
 
     init {
-        val versions = semanticVersion.trim().split(".")
+        val versions = semanticVersion.trim()
+            .substringBefore("-") // Ignore suffixes like -SNAPSHOT
+            .split(".")
+        val suffix = semanticVersion.substringAfter("-")
+
         major = versions[0].toInt()
         minor = versions[1].toInt()
         patch = versions[2].toInt()
+        this.suffix = suffix
     }
 }
