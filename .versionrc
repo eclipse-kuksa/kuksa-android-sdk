@@ -11,8 +11,8 @@
     {"type": "docs", "section": "Documentation"},
     {"type": "perf", "section": "Performance"},
     {"type": "refactor", "section": "Refactoring"},
-    {"type": "test", "section": "Tests"},
     {"type": "revert", "section": "Reverts"},
+    {"type": "test", "hidden": true},
     {"type": "chore", "hidden": true},
     {"type": "style", "hidden": true}
   ],
