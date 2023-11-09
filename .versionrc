@@ -12,7 +12,9 @@
     {"type": "perf", "section": "Performance"},
     {"type": "refactor", "section": "Refactoring"},
     {"type": "test", "section": "Tests"},
+    {"type": "revert", "section": "Reverts"},
     {"type": "chore", "hidden": true},
     {"type": "style", "hidden": true}
-  ]
+  ],
+  "preMajor": true
 }

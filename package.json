@@ -13,8 +13,7 @@
   },
   "scripts": {
     "postinstall": "husky install",
-    "release": "commit-and-tag-version",
-    "generate-changelog": "npx commit-and-tag-version -t release/ --skip.bump=true --skip.commit=true --skip.tag=true",
-    "changelog-to-html": "npx changelog-to-html"
+    "release": "commit-and-tag-version -t release/ --skip.tag=true",
+    "generate-changelog": "npx commit-and-tag-version -t release/ --skip.bump=true --skip.commit=true --skip.tag=true"
   }
 }
