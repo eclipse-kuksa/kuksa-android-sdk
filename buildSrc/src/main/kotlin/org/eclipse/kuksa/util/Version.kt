@@ -22,21 +22,18 @@ package org.eclipse.kuksa.util
 import java.util.Locale
 
 class Version(semanticVersion: String) {
-
     val major: Int
-
     val minor: Int
-
     val patch: Int
-
     var suffix: String = ""
 
-    val version: String
+    val versionString: String
         get() {
             var version = "$major.$minor.$patch"
             if (suffix.isNotEmpty()) {
                 version += "-$suffix"
             }
+
             return version
         }
 

@@ -27,7 +27,7 @@ tasks.register("setSnapshotVersion") {
 tasks.register("printVersion") {
     group = "version"
     doLast {
-        val version = version.version
+        val version = version.versionString
 
         println("VERSION=$version")
     }
@@ -35,8 +35,7 @@ tasks.register("printVersion") {
     mustRunAfter("setReleaseVersion", "setSnapshotVersion")
 }
 
-
 fun updateExtras() {
-    rootProject.extra["projectVersion"] = version.version
+    rootProject.extra["projectVersion"] = version.versionString
     rootProject.extra["projectVersionCode"] = version.versionCode
 }
