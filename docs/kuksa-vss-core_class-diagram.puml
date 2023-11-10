@@ -1,0 +1,33 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+!startsub VssCore
+package VssCore {
+    VssNode <|- VssSpecification
+    VssSpecification <|- VssProperty
+
+    annotation VssDefinition {
+        + vssDefinitionPath: String
+    }
+
+    interface VssNode {
+        + children: Set<VssSpecification>
+        + parentClass: KClass<*>
+    }
+
+    interface VssSpecification {
+        + uuid: String
+        + vssPath: String
+        + description: String
+        + type: String
+        + comment: String
+    }
+
+    interface VssProperty<T : Any> {
+        + value: T
+    }
+}
+
+!endsub
+
+@enduml
