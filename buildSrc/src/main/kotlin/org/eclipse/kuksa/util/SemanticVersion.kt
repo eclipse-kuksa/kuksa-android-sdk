@@ -51,11 +51,13 @@ class SemanticVersion(semanticVersion: String) {
         val versions = semanticVersion.trim()
             .substringBefore("-") // Ignore suffixes like -SNAPSHOT
             .split(".")
-        val suffix = semanticVersion.substringAfter("-")
+        val suffix = semanticVersion.substringAfter("-", "")
 
         major = versions[0].toInt()
         minor = versions[1].toInt()
         patch = versions[2].toInt()
         this.suffix = suffix
+
+        print("New SemanticVersion($versionString)")
     }
 }
