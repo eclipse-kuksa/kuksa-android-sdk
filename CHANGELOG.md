@@ -24,6 +24,9 @@ All notable changes to this project will be documented in this file. See [commit
 ### Documentation
 
 * Adapt Architecture Documentation ([0fbb6ab](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/commit/0fbb6ab2af1b08156860f7cdb74650db458d50ef))
+* Add class diagram for vss-core ([d00dc8e](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/commit/d00dc8e79602bcbb0716804b0b9d7468dcccd022))
+* Add class diagram for vss-processor ([a22b083](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/commit/a22b083f010899a63acb19e03bf04d30603c6590))
+* Add release HowTo docs ([b51059b](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/commit/b51059bf0c5806e32ccd9ddcc1ea85cb7c91ef97))
 * Improve documentation ([61b34cc](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/commit/61b34cc903a9ecaff1c84b5451d14340ce2daaaa))
 
 

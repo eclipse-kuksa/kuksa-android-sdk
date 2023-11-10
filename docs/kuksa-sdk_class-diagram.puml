@@ -23,15 +23,18 @@ package kuksa {
 
     DataBrokerConnector -down-> DataBrokerException
     DataBrokerConnector -down-> DataBrokerConnection
+    DataBrokerConnection -down-> DataBrokerTransporter
+    DataBrokerConnection -down-> DataBrokerSubscriber
     DataBrokerConnection -down-> PropertyListener
     DataBrokerConnection -down-> Property
     DataBrokerConnection -left-> DataBrokerException
     DataBrokerConnection -up-> MultiListener
+    DataBrokerSubscriber -up-> DataBrokerTransporter
     MultiListener -right-> DisconnectListener
     TimeoutConfig -left-* DataBrokerConnector
 
     class DataBrokerConnector {
-        + connect(ManagedChannel): DataBrokerConnection
+        + connect(): DataBrokerConnection
     }
 
     class TimeoutConfig {
@@ -39,11 +42,30 @@ package kuksa {
         + timeUnit: TimeUnit
     }
 
+    class DataBrokerTransporter {
+        + fetch(vssPath: String, Collection<Field>): GetResponse
+        + update(vssPath: String, Collection<Field>, Types.Datapoint): KuksaValV1.SetResponse
+    }
+
+    class DataBrokerSubscriber {
+        + subscribe(vssPath: String, Field, PropertyListener)
+        + subscribe<T : VssSpecification>(T, Field, VssSpecificationListener<T>)
+        + unsubscribe(vssPath: String, Field, PropertyListener)
+        + unsubscribe<T : VssSpecification>(T, Field, VssSpecificationListener<T>)
+    }
+
     class DataBrokerConnection {
         + disconnectListeners: MultiListener<DisconnectListener>
-        + subscribe(List<Property>, PropertyListener)
-        + fetchProperty(Property): GetResponse
-        + updateProperty(Property, Datapoint): SetResponse
+        + subscriptions: Collection<Property>
+
+        + subscribe(Property, PropertyListener)
+        + subscribe<T : VssSpecification>(T, Collection<Field>, VssSpecificationListener<T>)
+        + unsubscribe(Property, PropertyListener)
+        + unsubscribe<T : VssSpecification>(T, Collection<Field>, VssSpecificationListener<T>)
+        + fetch(Property): GetResponse
+        + fetch<T : VssSpecification>(T, Collection<Field>)
+        + update(Property, Datapoint): SetResponse
+        + update(VssSpecification, Collection<Field>): SetResponse
         + disconnect()
     }
     
@@ -54,7 +76,7 @@ package kuksa {
 
     class Property {
         + vssPath: String
-        + types: List<Types.Field>
+        + fields: Collection<Types.Field>
     }
 
     class DataBrokerException
