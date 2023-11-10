@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.util
+package org.eclipse.kuksa.version
 
 import java.util.Locale
 

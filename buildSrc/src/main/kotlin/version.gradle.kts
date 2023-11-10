@@ -1,4 +1,4 @@
-import org.eclipse.kuksa.util.SemanticVersion
+import org.eclipse.kuksa.version.SemanticVersion
 
 val file = File("$rootDir/version.txt")
 val fileContent = file.readText()
@@ -6,6 +6,7 @@ val semanticVersion = SemanticVersion(fileContent)
 
 updateExtras()
 
+// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
 tasks.register("setReleaseVersion") {
     group = "version"
     doLast {
@@ -15,6 +16,7 @@ tasks.register("setReleaseVersion") {
     }
 }
 
+// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
 tasks.register("setSnapshotVersion") {
     group = "version"
     doLast {

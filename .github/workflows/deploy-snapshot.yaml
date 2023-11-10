@@ -26,7 +26,7 @@ jobs:
         run: npm run bump-release # Updates the semantic version depending on the last commits e.g. feature / bugfix
 
       - name: Set Snapshot Version
-        run: ./gradlew setSnapshotVersion
+        run: ./gradlew setSnapshotVersion # Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
 
       - name: Publish Library
         run: ./gradlew publishReleasePublicationToGithubPackagesRepository
