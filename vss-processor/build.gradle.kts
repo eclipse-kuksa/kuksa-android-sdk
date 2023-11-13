@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.eclipse.kuksa.vss-processor"
-version = "0.1.0-SNAPSHOT"
+version = rootProject.extra["projectVersion"].toString()
 
 dependencies {
     implementation(project(":vss-core"))
@@ -34,6 +34,6 @@ tasks.withType<Test>().configureEach {
 }
 
 configure<Publish_gradle.PublishPluginExtension> {
-    mavenPublicationName = "maven"
+    mavenPublicationName = "release"
     componentName = "java"
 }
