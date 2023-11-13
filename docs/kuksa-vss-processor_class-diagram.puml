@@ -1,0 +1,43 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+!includesub kuksa-vss-core_class-diagram.puml!VssCore
+
+package App {
+    MainActivity --o VssDefinition
+
+    class MainActivity
+}
+
+package VssProcessor {
+
+    VssDefinitionProcessor -down-> VssDefinitionVisitor
+    VssDefinitionProcessor -down-> VssDefinitionParser
+    VssDefinitionProcessor -down-> SpecModel
+    VssDefinitionParser <|- YamlDefinitionParser
+    SpecModel <|- VssSpecificationSpecModel
+    VssSpecification <|- VssSpecificationSpecModel
+
+    class VssDefinitionProcessor {
+        + VssDefinitionProcessor(CodeGenerator, KSPLogger)
+    }
+
+    class VssDefinitionVisitor {
+        + visitClassDeclaration(KSClassDeclaration)
+    }
+
+    interface VssDefinitionParser {
+        + parseSpecifications(File, elementDelimiter: String,): Collection<VssSpecificationSpecModel>
+    }
+
+    class YamlDefinitionParser
+
+    interface SpecModel<T : SpecModel<T>> {
+        + createClassSpec(packageName: String, relatedSpecifications: Collection<T>, nestedClasses: Collection<String>): TypeSpec
+    }
+
+    class VssSpecificationSpecModel {
+    }
+}
+
+@enduml

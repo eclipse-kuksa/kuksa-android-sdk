@@ -1,68 +1,49 @@
-import org.eclipse.kuksa.util.VersionProperties
+import org.eclipse.kuksa.version.SemanticVersion
 
-val properties = VersionProperties("$rootDir/version.properties")
-properties.load()
+val file = File("$rootDir/version.txt")
+val fileContent = file.readText()
+val semanticVersion = SemanticVersion(fileContent)
 
-rootProject.extra["projectVersion"] = properties.version
-rootProject.extra["projectVersionCode"] = properties.versionCode
+updateExtras()
 
-tasks.register("increaseMajorVersion") {
-    group = "version"
-    doLast {
-        properties.major += 1
-        properties.minor = 0
-        properties.patch = 0
-        properties.store()
-    }
-}
-
-tasks.register("increaseMinorVersion") {
-    group = "version"
-    doLast {
-        properties.minor += 1
-        properties.patch = 0
-        properties.store()
-    }
-}
-
-tasks.register("increasePatchVersion") {
-    group = "version"
-    doLast {
-        properties.patch += 1
-        properties.store()
-    }
-}
-
+// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
 tasks.register("setReleaseVersion") {
     group = "version"
     doLast {
-        properties.suffix = ""
-        properties.store()
+        semanticVersion.suffix = ""
+
+        updateVersion()
     }
 }
 
+// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
 tasks.register("setSnapshotVersion") {
     group = "version"
     doLast {
-        properties.suffix = "SNAPSHOT"
-        properties.store()
+        semanticVersion.suffix = "SNAPSHOT"
+
+        updateVersion()
     }
 }
 
 tasks.register("printVersion") {
     group = "version"
     doLast {
-        val version = properties.version
+        val version = semanticVersion.versionString
 
         println("VERSION=$version")
     }
+
+    mustRunAfter("setReleaseVersion", "setSnapshotVersion")
 }
 
-tasks.register("printVersionCode") {
-    group = "version"
-    doLast {
-        val versionCode = properties.versionCode
+fun updateExtras() {
+    rootProject.extra["projectVersion"] = semanticVersion.versionString
+    rootProject.extra["projectVersionCode"] = semanticVersion.versionCode
+}
 
-        println("VERSION_CODE=$versionCode")
-    }
+fun updateVersion() {
+    updateExtras()
+
+    file.writeText(semanticVersion.versionString)
 }

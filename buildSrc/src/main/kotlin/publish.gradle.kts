@@ -31,7 +31,17 @@ val extension = project.extensions.create<PublishPluginExtension>("publish")
 afterEvaluate {
     publishing {
         repositories {
-            // to be defined
+            maven {
+                name = "GithubPackages"
+
+                val repository = project.findProperty("gpr.repository") as String? ?: System.getenv("GPR_REPOSITORY")
+                url = uri("https://maven.pkg.github.com/$repository")
+
+                credentials {
+                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USERNAME")
+                    password = project.findProperty("gpr.token") as String? ?: System.getenv("GPR_TOKEN")
+                }
+            }
         }
         publications {
             register<MavenPublication>("${extension.mavenPublicationName.get()}") {
