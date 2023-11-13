@@ -1,3 +1,5 @@
+name: deploy-snapshot
+
 concurrency: production
 
 on:
