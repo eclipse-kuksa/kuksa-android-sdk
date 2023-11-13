@@ -7,6 +7,8 @@ on:
     branches:
       - main
 
+permissions: write-all
+
 jobs:
   deployment:
     runs-on: ubuntu-latest
