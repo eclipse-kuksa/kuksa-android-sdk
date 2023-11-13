@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
 package org.eclipse.kuksa.version
@@ -58,6 +57,6 @@ class SemanticVersion(semanticVersion: String) {
         patch = versions[2].toInt()
         this.suffix = suffix
 
-        print("New SemanticVersion($versionString)")
+        print("Current SemanticVersion($versionString)\n")
     }
 }
