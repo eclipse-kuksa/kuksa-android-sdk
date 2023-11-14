@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.1](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/compare/release/v0.1.0...release/v0.1.1) (2023-11-14)
+
+
+### Bug Fixes
+
+* Fix missing upload of sub project packages ([96d28e8](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/commit/96d28e896233ec957a04919c61b86afa44a7c865)), closes [#35](https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android/issues/35)
+
 ## 0.1.0 (2023-11-09)
 
 
