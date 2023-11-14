@@ -6,7 +6,7 @@ plugins {
     publish
 }
 
-group = "org.eclipse.kuksa.vss-core"
+group = "org.eclipse.kuksa"
 version = rootProject.extra["projectVersion"].toString()
 
 dependencies {
