@@ -31,12 +31,16 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.vss.VssVehicle
+import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import java.io.IOException
 
-@Suppress("UNUSED_VARIABLE", "SwallowedException", "UNUSED_ANONYMOUS_PARAMETER")
+@Suppress("UNUSED_VARIABLE", "SwallowedException")
+@VssDefinition("vss_rel_4.0.yaml")
 class KotlinActivity : AppCompatActivity() {
 
     private var disconnectListener = DisconnectListener {
@@ -96,6 +100,12 @@ class KotlinActivity : AppCompatActivity() {
         }
     }
 
+    fun disconnect() {
+        dataBrokerConnection?.disconnectListeners?.unregister(disconnectListener)
+        dataBrokerConnection?.disconnect()
+        dataBrokerConnection = null
+    }
+
     fun fetchProperty(property: Property) {
         lifecycleScope.launch {
             try {
@@ -122,6 +132,11 @@ class KotlinActivity : AppCompatActivity() {
         val propertyListener = object : PropertyListener {
             override fun onPropertyChanged(vssPath: String, field: Types.Field, updatedValue: Types.DataEntry) {
                 // handle property change
+                when (vssPath) {
+                    "Vehicle.Speed" -> {
+                        val speed = updatedValue.value.float
+                    }
+                }
             }
 
             override fun onError(throwable: Throwable) {
@@ -132,9 +147,36 @@ class KotlinActivity : AppCompatActivity() {
         dataBrokerConnection?.subscribe(property, propertyListener)
     }
 
-    fun disconnect() {
-        dataBrokerConnection?.disconnectListeners?.unregister(disconnectListener)
-        dataBrokerConnection?.disconnect()
-        dataBrokerConnection = null
+    // region: Specifications
+    fun fetchSpecification() {
+        lifecycleScope.launch {
+            try {
+                val vssSpeed = VssVehicle.VssSpeed()
+                val updatedSpeed = dataBrokerConnection?.fetch(vssSpeed)
+                val speed = updatedSpeed?.value
+            } catch (e: DataBrokerException) {
+                // handle errors
+            }
+        }
     }
+
+    fun updateSpecification() {
+        lifecycleScope.launch {
+            val vssSpeed = VssVehicle.VssSpeed(value = 100f)
+            val updatedSpeed = dataBrokerConnection?.update(vssSpeed)
+        }
+    }
+
+    fun subscribeSpecification() {
+        val vssSpeed = VssVehicle.VssSpeed(value = 100f)
+        dataBrokerConnection?.subscribe(
+            vssSpeed,
+            listener = object : VssSpecificationListener<VssVehicle.VssSpeed> {
+                override fun onSpecificationChanged(vssSpecification: VssVehicle.VssSpeed) {
+                    val speed = vssSpeed.value
+                }
+            },
+        )
+    }
+    // endregion
 }

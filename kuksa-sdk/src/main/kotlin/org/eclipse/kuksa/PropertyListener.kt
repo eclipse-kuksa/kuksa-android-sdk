@@ -36,7 +36,7 @@ interface PropertyListener : Listener {
     /**
      * Will be triggered when an error happens during subscription and forwards the [throwable].
      */
-    fun onError(throwable: Throwable)
+    fun onError(throwable: Throwable) {}
 }
 
 /**
@@ -53,5 +53,5 @@ interface VssSpecificationListener<T : VssSpecification> {
     /**
      * Will be triggered when an error happens during subscription and forwards the [throwable].
      */
-    fun onError(throwable: Throwable)
+    fun onError(throwable: Throwable) {}
 }
