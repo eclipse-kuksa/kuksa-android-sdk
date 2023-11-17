@@ -35,6 +35,7 @@ The following types are supported:
       {"type": "docs", "section": "Documentation"},
       {"type": "perf", "section": "Performance"},
       {"type": "refactor", "section": "Refactoring"},
+      {"type": "revert", "section": "Reverts"},
       {"type": "test", "section": "Tests"},
       {"type": "chore", "hidden": true},
       {"type": "style", "hidden": true},
