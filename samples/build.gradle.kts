@@ -36,8 +36,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":kuksa-sdk"))
-    ksp(project(":vss-processor"))
+    implementation(project(":kuksa-sdk")) // org.eclipse.kuksa.kuksa-sdk:<VERSION>
+    ksp(project(":vss-processor")) // org.eclipse.kuksa.vss-processor:<VERSION>
 
     // app dependencies
     implementation(libs.androidx.appcompat)

@@ -26,13 +26,19 @@ import org.eclipse.kuksa.CoroutineCallback;
 import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
+import org.eclipse.kuksa.PropertyListener;
+import org.eclipse.kuksa.VssSpecificationListener;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
+import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
+import org.eclipse.kuksa.vss.VssVehicle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 
 import javax.annotation.Nullable;
 
@@ -42,7 +48,10 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.TlsChannelCredentials;
 
-/** @noinspection unused*/
+/**
+ * @noinspection unused
+ */
+//@VssDefinition(vssDefinitionPath = "vss_rel_4.0.yaml") // Commented out to prevent conflicts with the Kotlin activity
 public class JavaActivity extends AppCompatActivity {
 
     private final DisconnectListener disconnectListener = () -> {
@@ -111,10 +120,16 @@ public class JavaActivity extends AppCompatActivity {
         });
     }
 
+    public void disconnect() {
+        if (dataBrokerConnection == null) return;
+
+        dataBrokerConnection.getDisconnectListeners().unregister(disconnectListener);
+        dataBrokerConnection.disconnect();
+        dataBrokerConnection = null;
+    }
+
     public void fetchProperty(Property property) {
-        if (dataBrokerConnection == null) {
-            return;
-        }
+        if (dataBrokerConnection == null) return;
 
         dataBrokerConnection.fetch(property, new CoroutineCallback<GetResponse>() {
             @Override
@@ -130,9 +145,7 @@ public class JavaActivity extends AppCompatActivity {
     }
 
     public void updateProperty(Property property, Datapoint datapoint) {
-        if (dataBrokerConnection == null) {
-            return;
-        }
+        if (dataBrokerConnection == null) return;
 
         dataBrokerConnection.update(property, datapoint, new CoroutineCallback<KuksaValV1.SetResponse>() {
             @Override
@@ -145,14 +158,91 @@ public class JavaActivity extends AppCompatActivity {
                 // handle error
             }
         });
-
     }
 
-    public void disconnect() {
+    public void subscribeProperty(Property property) {
         if (dataBrokerConnection == null) return;
 
-        dataBrokerConnection.getDisconnectListeners().unregister(disconnectListener);
-        dataBrokerConnection.disconnect();
-        dataBrokerConnection = null;
+        dataBrokerConnection.subscribe(property, new PropertyListener() {
+            @Override
+            public void onPropertyChanged(
+                @NonNull String vssPath,
+                @NonNull Types.Field field,
+                @NonNull Types.DataEntry updatedValue) {
+                // handle result
+            }
+
+            @Override
+            public void onError(@NonNull Throwable throwable) {
+                // handle error
+            }
+        });
     }
+
+    // region: Specifications
+    public void fetchSpecification() {
+        if (dataBrokerConnection == null) return;
+
+        VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
+        dataBrokerConnection.fetch(
+            vssSpeed,
+            Collections.singleton(Types.Field.FIELD_VALUE),
+            new CoroutineCallback<VssVehicle.VssSpeed>() {
+                @Override
+                public void onSuccess(@Nullable VssVehicle.VssSpeed result) {
+                    if (result == null) return;
+
+                    Float speed = result.getValue();
+                }
+
+                @Override
+                public void onError(@NonNull Throwable error) {
+                    // handle error
+                }
+            }
+        );
+    }
+
+    public void updateSpecification() {
+        if (dataBrokerConnection == null) return;
+
+        VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed(100f);
+        dataBrokerConnection.update(
+            vssSpeed,
+            Collections.singleton(Types.Field.FIELD_VALUE),
+            new CoroutineCallback<Collection<? extends KuksaValV1.SetResponse>>() {
+                @Override
+                public void onSuccess(@Nullable Collection<? extends KuksaValV1.SetResponse> result) {
+                    // handle result
+                }
+
+                @Override
+                public void onError(@NonNull Throwable error) {
+                    // handle error
+                }
+            }
+        );
+    }
+
+    public void subscribeSpecification() {
+        if (dataBrokerConnection == null) return;
+
+        VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
+        dataBrokerConnection.subscribe(
+            vssSpeed,
+            Collections.singleton(Types.Field.FIELD_VALUE),
+            new VssSpecificationListener<VssVehicle.VssSpeed>() {
+                @Override
+                public void onSpecificationChanged(@NonNull VssVehicle.VssSpeed vssSpecification) {
+                    Float speed = vssSpecification.getValue();
+                }
+
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    // handle error
+                }
+            }
+        );
+    }
+    // endregion
 }

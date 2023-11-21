@@ -58,6 +58,7 @@ class KotlinActivity : AppCompatActivity() {
             val connector = DataBrokerConnector(managedChannel)
             try {
                 dataBrokerConnection = connector.connect()
+                dataBrokerConnection?.disconnectListeners?.register(disconnectListener)
                 // Connection to DataBroker successfully established
             } catch (e: DataBrokerException) {
                 // Connection to DataBroker failed
@@ -112,7 +113,7 @@ class KotlinActivity : AppCompatActivity() {
                 val response = dataBrokerConnection?.fetch(property) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
-                // handle errors
+                // handle error
             }
         }
     }
@@ -123,7 +124,7 @@ class KotlinActivity : AppCompatActivity() {
                 val response = dataBrokerConnection?.update(property, datapoint) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
-                // handle errors
+                // handle error
             }
         }
     }
@@ -152,10 +153,10 @@ class KotlinActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val vssSpeed = VssVehicle.VssSpeed()
-                val updatedSpeed = dataBrokerConnection?.fetch(vssSpeed)
+                val updatedSpeed = dataBrokerConnection?.fetch(vssSpeed, listOf(Types.Field.FIELD_VALUE))
                 val speed = updatedSpeed?.value
             } catch (e: DataBrokerException) {
-                // handle errors
+                // handle error
             }
         }
     }
@@ -163,7 +164,7 @@ class KotlinActivity : AppCompatActivity() {
     fun updateSpecification() {
         lifecycleScope.launch {
             val vssSpeed = VssVehicle.VssSpeed(value = 100f)
-            val updatedSpeed = dataBrokerConnection?.update(vssSpeed)
+            dataBrokerConnection?.update(vssSpeed, listOf(Types.Field.FIELD_VALUE))
         }
     }
 
@@ -171,9 +172,14 @@ class KotlinActivity : AppCompatActivity() {
         val vssSpeed = VssVehicle.VssSpeed(value = 100f)
         dataBrokerConnection?.subscribe(
             vssSpeed,
+            listOf(Types.Field.FIELD_VALUE),
             listener = object : VssSpecificationListener<VssVehicle.VssSpeed> {
                 override fun onSpecificationChanged(vssSpecification: VssVehicle.VssSpeed) {
                     val speed = vssSpeed.value
+                }
+
+                override fun onError(throwable: Throwable) {
+                    // handle error
                 }
             },
         )

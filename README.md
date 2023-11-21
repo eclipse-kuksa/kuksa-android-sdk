@@ -8,7 +8,7 @@ This is an Android SDK for the [KUKSA Vehicle Abstraction Layer](https://github.
 
 ## Overview
 
-The Kuksa Android SDK allows you to interact with [VSS data](https://github.com/COVESA/vehicle_signal_specification) 
+The Kuksa Android SDK allows you to interact with [VSS data](https://covesa.github.io/vehicle_signal_specification/) 
 from the [KUKSA Databroker](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker)
 within an Android App. The main functionality consists of fetching, updating and subscribing to VSS data. 
 
@@ -16,18 +16,20 @@ within an Android App. The main functionality consists of fetching, updating and
 
 *build.gradle*
 ```
-implementation(org.eclipse.kuksa:kuksa-sdk:<VERSION>)
+implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
 ```
 
 The latest release version can be seen [here](https://github.com/eclipse-kuksa/kuksa-android-sdk/releases).
+
+Snapshot builds are also available (but of course less stable): [Package view](https://github.com/eclipse-kuksa/kuksa-android-sdk/packages/1986280/versions)
 
 See the [Quickstart guide](https://github.com/eclipse-kuksa/kuksa-android-sdk/tree/main/docs/QUICKSTART.md) for 
 additional integration options.
 
 ### GitHub packages
 
-The Kuksa SDK is currently uploaded to GitHub packages where an authentication is needed to download the dependency.
-It is recommended to not check these information into your version control.
+The Kuksa SDK is currently uploaded to [GitHub packages](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#authenticating-to-github-packages)
+where an authentication is needed to download the dependency.
 
 ```
 maven {
@@ -41,7 +43,10 @@ maven {
 
 ## Usage
 
-```
+> [!NOTE]
+> The following snippet expects an unsecure setup of the Databroker. Please see the [QUICKSTART](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/docs/QUICKSTART.md) guide.
+
+```kotlin
 private var dataBrokerConnection: DataBrokerConnection? = null
 
 fun connectInsecure(host: String, port: Int) {
@@ -51,21 +56,21 @@ fun connectInsecure(host: String, port: Int) {
             .build()
 
         val connector = DataBrokerConnector(managedChannel)
-            dataBrokerConnection = connector.connect()
-            // Connection to the DataBroker successfully established
-        } catch (e: DataBrokerException) {
-            // Connection to the DataBroker failed
-        }
+        dataBrokerConnection = connector.connect()
+        // Connection to the DataBroker successfully established
+    } catch (e: DataBrokerException) {
+        // Connection to the DataBroker failed
     }
 }
 ```
 
-```
+```kotlin
 fun fetch() {
     lifecycleScope.launch {
-        val property = Property("Vehicle.Speed")
+        val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
         val response = dataBrokerConnection?.fetch(property) ?: return@launch
-        val value = response.firstValue
+        val entry = entriesList.first() // Don't forget to handle empty responses
+        val value = entry.value
         val speed = value.float
     }
 }
@@ -78,14 +83,15 @@ further insight into the Kuksa SDK API. You can also checkout the [sample](https
 ## Requirements
 
 - A working setup requires at least a running Kuksa [Databroker](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker) 
-- Optional: The [Kuksa Databroker CLI](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker) can be used to manually feed data and test your app.
-- Optional: The [Kuksa (Mock)service](https://github.com/eclipse/kuksa.val.services/tree/main/mock_service) can be used to simulate a "real" environment.
+- Optional: The [Kuksa Databroker CLI](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker) can be used to manually feed data and test your app. 
+  See [this chapter](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker#reading-and-writing-vss-data-using-the-cli) on how to read and write data via the CLI.
+- Optional: The [(Vehicle) Mock Service](https://github.com/eclipse/kuksa.val.services/tree/main/mock_service) can be used to simulate a "real" environment. 
 
 ## Contribution
 
-Please feel free create [GitHub issues](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues) and contribute 
+Please feel free to create [GitHub issues](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues) and contribute 
 [(Guidelines)](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/docs/CONTRIBUTING.md).
 
 ## License
 
-The Kuksa Android SDK is provided under the terms of the [Apache Software License 2.0](https://github.com/eclipse/kuksa.val/blob/master/LICENSE).
+The Kuksa Android SDK is provided under the terms of the [Apache Software License 2.0](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/LICENSE).
