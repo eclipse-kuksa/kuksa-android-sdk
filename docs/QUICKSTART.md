@@ -1,6 +1,6 @@
 ## Introduction
 
-Get instantly bootstrapped into the world of the Kuksa SDK with the following code snippets!
+Get instantly bootstrapped into the world of the KUKSA SDK with the following code snippets!
 
 ## Integration
 
@@ -9,9 +9,9 @@ Get instantly bootstrapped into the world of the Kuksa SDK with the following co
 implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
 ```
 
-## Connecting to the DataBroker
+## Connecting to the Databroker
 
-You can use the following snippet for a simple (unsecure) connection to the DataBroker. This highly depends on your 
+You can use the following snippet for a simple (unsecure) connection to the Databroker. This highly depends on your 
 setup so see the [samples package](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/samples/src/main/kotlin/com/example/sample/KotlinActivity.kt)
 for a detailed implementation or how to connect in a secure way with a certificate.
 
@@ -28,9 +28,9 @@ fun connectInsecure(host: String, port: Int) {
         val connector = DataBrokerConnector(managedChannel)
         try {
             dataBrokerConnection = connector.connect()
-            // Connection to the DataBroker successfully established
+            // Connection to the Databroker successfully established
         } catch (e: DataBrokerException) {
-            // Connection to the DataBroker failed
+            // Connection to the Databroker failed
         }
     }
 }
@@ -51,13 +51,13 @@ void connectInsecure(String host, int port) {
         
         @Override
         public void onError(@NonNull Throwable error) {
-            // Connection to the DataBroker failed
+            // Connection to the Databroker failed
         }
     });
 }
 ```
 
-## Interacting with the DataBroker
+## Interacting with the Databroker
 
 *Kotlin*
 ```kotlin
@@ -150,7 +150,7 @@ the `subscribe` example. You may choose to reuse the same listener for multiple 
 of the `vssPath` after receiving an updated value to correctly cast it back. This is feasible for simple use cases but can get tedious when working with a lot of vehicle signals.
 
 For a more convenient usage you can opt in to auto generate Kotlin models via [Symbol Processing](https://kotlinlang.org/docs/ksp-quickstart.html) 
-of the same specification the DataBroker uses. For starters you can retrieve an extensive default specification from the
+of the same specification the Databroker uses. For starters you can retrieve an extensive default specification from the
 release page of the [COVESA Vehicle Signal Specification GitHub repository](https://github.com/COVESA/vehicle_signal_specification/releases).
 
 *build.gradle*
@@ -174,7 +174,7 @@ class KotlinActivity
 public class JavaActivity
 ```
 > [!IMPORTANT]
-> Keep in mind to always synchronize the specification file between the client and the DataBroker.
+> Keep in mind to always synchronize the specification file between the client and the Databroker.
 
 
 *Example .yaml specification file*
