@@ -45,7 +45,7 @@ maven {
 ## Usage
 
 > [!NOTE]
-> The following snippet expects an **unsecure** setup of the Databroker. See the [quickstart](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/docs/QUICKSTART.md) guide
+> The following snippet expects an **unsecure** setup of the Databroker. See the [quickstart guide](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/docs/QUICKSTART.md)
 > for instructions on how to establish a **secure** connection to the Databroker.
 
 ```kotlin
