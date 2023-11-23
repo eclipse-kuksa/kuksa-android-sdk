@@ -112,7 +112,7 @@ class DataBrokerConnection internal constructor(
     @JvmOverloads
     fun <T : VssSpecification> subscribe(
         specification: T,
-        fields: List<Field> = listOf(Field.FIELD_VALUE),
+        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
         listener: VssSpecificationListener<T>,
     ) {
         fields.forEach { field ->
@@ -125,7 +125,7 @@ class DataBrokerConnection internal constructor(
      */
     fun <T : VssSpecification> unsubscribe(
         specification: T,
-        fields: List<Field> = listOf(Field.FIELD_VALUE),
+        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
         listener: VssSpecificationListener<T>,
     ) {
         fields.forEach { field ->
@@ -207,10 +207,11 @@ class DataBrokerConnection internal constructor(
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      * @throws IllegalArgumentException if the [VssProperty] could not be converted to a [Datapoint].
      */
+    @JvmOverloads
     suspend fun update(
         vssSpecification: VssSpecification,
-        fields: List<Field> = listOf(Field.FIELD_VALUE),
-    ): List<SetResponse> {
+        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
+    ): Collection<SetResponse> {
         val responses = mutableListOf<SetResponse>()
 
         vssSpecification.vssProperties.forEach { vssProperty ->
