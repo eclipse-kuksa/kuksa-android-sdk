@@ -1,10 +1,10 @@
-name: build
+name: dash
 
 on:
   pull_request
 
 jobs:
-  build-project:
+  check-dash:
     runs-on: ubuntu-latest
     steps:
 
@@ -19,11 +19,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Run 'assemble' with Gradle Wrapper
-        run: ./gradlew assemble
+      - name: Create Dash Dependency Report
+        run: ./gradlew mergeDashFiles
 
-      - name: Run 'check' with Gradle Wrapper
-        run: ./gradlew ktlintCheck detekt
-
-      - name: Run 'test' with Gradle Wrapper
-        run: ./gradlew test -Dkotest.tags="!Integration"
+      - name: Dash license check
+        uses: eclipse-kuksa/kuksa-actions/check-dash@2
+        with:
+          dashinput: ${{github.workspace}}/build/oss/all/all-dependencies.txt
