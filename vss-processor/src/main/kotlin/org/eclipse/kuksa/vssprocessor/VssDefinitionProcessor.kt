@@ -81,12 +81,12 @@ class VssDefinitionProcessor(
                 annotatedProcessorFileName,
             )
 
-            val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).first()
+            val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).firstOrNull() ?: return
             val vssDefinitionPath = vssDefinition.vssDefinitionPath
 
             val definitionFile = loadAssetFile(vssDefinitionPath)
-            if (!definitionFile.exists()) {
-                logger.error("No VSS definition file was found!")
+            if (definitionFile == null || !definitionFile.exists()) {
+                logger.info("No VSS definition file was found!")
                 return
             }
 
@@ -97,13 +97,14 @@ class VssDefinitionProcessor(
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.
-        private fun loadAssetFile(fileName: String): File {
-            val generationPath = codeGenerator.generatedFile.first().absolutePath
+        private fun loadAssetFile(fileName: String): File? {
+            val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return null
+            val generationPath = generatedFile.absolutePath
             val buildPath = generationPath.replaceAfter(BUILD_FOLDER_NAME, "")
             val assetsFilePath = "$buildPath/$ASSETS_BUILD_DIRECTORY"
             val assetsFolder = File(assetsFilePath)
 
-            return assetsFolder.walk().first { it.name == fileName }
+            return assetsFolder.walk().firstOrNull { it.name == fileName }
         }
 
         private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssSpecificationSpecModel>) {
@@ -112,7 +113,7 @@ class VssDefinitionProcessor(
                 .filter { it.value.size > 1 }
                 .keys
 
-            logger.logging("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
+            logger.info("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
 
             for ((vssPath, specModel) in vssPathToSpecification) {
                 // Every duplicate is produced as a nested class - No separate file should be generated
