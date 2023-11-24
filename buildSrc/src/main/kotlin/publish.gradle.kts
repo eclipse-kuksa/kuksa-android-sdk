@@ -19,6 +19,7 @@
 
 plugins {
     `maven-publish`
+    signing
 }
 
 interface PublishPluginExtension {
@@ -32,14 +33,21 @@ afterEvaluate {
     publishing {
         repositories {
             maven {
-                name = "GithubPackages"
+                name = "OSSRHRelease"
 
-                val repository = project.findProperty("gpr.repository") as String? ?: System.getenv("GPR_REPOSITORY")
-                url = uri("https://maven.pkg.github.com/$repository")
-
+                url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
                 credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USERNAME")
-                    password = project.findProperty("gpr.token") as String? ?: System.getenv("GPR_TOKEN")
+                    username = System.getenv("ORG_OSSRH_USERNAME")
+                    password = System.getenv("ORG_OSSRH_PASSWORD")
+                }
+            }
+            maven {
+                name = "OSSRHSnapshot"
+
+                url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+                credentials {
+                    username = System.getenv("ORG_OSSRH_USERNAME")
+                    password = System.getenv("ORG_OSSRH_PASSWORD")
                 }
             }
         }
@@ -48,5 +56,13 @@ afterEvaluate {
                 from(components["${extension.componentName.get()}"])
             }
         }
+    }
+
+    signing {
+        val signingKey = System.getenv("ORG_GPG_PASSPHRASE")
+        val signingPassword = System.getenv("ORG_GPG_PRIVATE_KEY")
+        useInMemoryPgpKeys(signingKey, signingPassword)
+
+        sign(publishing.publications)
     }
 }

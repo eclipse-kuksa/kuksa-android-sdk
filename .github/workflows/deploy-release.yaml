@@ -7,9 +7,6 @@ on:
     tags:
       - 'release/v*'
 
-permissions:
-  packages: write
-
 jobs:
   deployment:
     runs-on: ubuntu-latest
@@ -29,7 +26,9 @@ jobs:
         run: ./gradlew setReleaseVersion # Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
 
       - name: Publish Library
-        run: ./gradlew publishReleasePublicationToGithubPackagesRepository
-          -Pgpr.repository=${{ github.repository }}
-          -Pgpr.user=${{ github.actor }}
-          -Pgpr.token=${{ secrets.GITHUB_TOKEN }}
+        env:
+          ORG_GPG_PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
+          ORG_GPG_PRIVATE_KEY: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
+          ORG_OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
+          ORG_OSSRH_USERNAME: ${{ secrets.ORG_OSSRH_USERNAME }}
+        run: ./gradlew publishAllPublicationsToOSSRHReleaseRepository
