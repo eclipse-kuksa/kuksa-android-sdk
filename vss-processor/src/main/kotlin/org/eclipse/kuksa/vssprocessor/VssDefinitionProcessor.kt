@@ -81,7 +81,7 @@ class VssDefinitionProcessor(
                 annotatedProcessorFileName,
             )
 
-            val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).first()
+            val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).firstOrNull() ?: return
             val vssDefinitionPath = vssDefinition.vssDefinitionPath
 
             val definitionFile = loadAssetFile(vssDefinitionPath)
