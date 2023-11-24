@@ -86,7 +86,7 @@ class VssDefinitionProcessor(
 
             val definitionFile = loadAssetFile(vssDefinitionPath)
             if (definitionFile == null || !definitionFile.exists()) {
-                logger.error("No VSS definition file was found!")
+                logger.info("No VSS definition file was found!")
                 return
             }
 
@@ -113,7 +113,7 @@ class VssDefinitionProcessor(
                 .filter { it.value.size > 1 }
                 .keys
 
-            logger.logging("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
+            logger.info("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
 
             for ((vssPath, specModel) in vssPathToSpecification) {
                 // Every duplicate is produced as a nested class - No separate file should be generated
