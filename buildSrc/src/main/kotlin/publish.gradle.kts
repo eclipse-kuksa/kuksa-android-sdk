@@ -59,11 +59,12 @@ afterEvaluate {
     }
 
     signing {
+        useGpgCmd()
+
         val signingKey = System.getenv("ORG_GPG_PRIVATE_KEY")
         val signingPassword = System.getenv("ORG_GPG_PASSPHRASE")
         useInMemoryPgpKeys(signingKey, signingPassword)
 
-        useGpgCmd()
         sign(publishing.publications)
     }
 }
