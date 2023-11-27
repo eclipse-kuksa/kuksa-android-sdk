@@ -67,3 +67,14 @@ afterEvaluate {
         sign(publishing.publications)
     }
 }
+
+gradle.taskGraph.whenReady {
+    tasks.withType(Sign::class) {
+        var isPublishingToMavenLocal = false
+        allTasks.forEach {
+            isPublishingToMavenLocal = isPublishingToMavenLocal || "publishToMavenLocal" in it.name
+        }
+
+        onlyIf { !isPublishingToMavenLocal }
+    }
+}
