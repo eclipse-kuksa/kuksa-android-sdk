@@ -29,6 +29,10 @@ interface PublishPluginExtension {
 
 val extension = project.extensions.create<PublishPluginExtension>("publish")
 
+ext["signing.gnupg.executable"] = "gpg"
+ext["signing.gnupg.keyName"] = System.getenv("ORG_GPG_PRIVATE_KEY")
+ext["signing.gnupg.passphrase"] = System.getenv("ORG_GPG_PASSPHRASE")
+
 afterEvaluate {
     publishing {
         repositories {
