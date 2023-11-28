@@ -29,11 +29,6 @@ interface PublishPluginExtension {
 
 val extension = project.extensions.create<PublishPluginExtension>("publish")
 
-// configure GPG -> https://docs.gradle.org/current/userguide/signing_plugin.html#example_configure_the_gnupgsignatory
-ext["signing.gnupg.executable"] = "gpg"
-ext["signing.gnupg.keyName"] = System.getenv("ORG_GPG_PRIVATE_KEY")
-ext["signing.gnupg.passphrase"] = System.getenv("ORG_GPG_PASSPHRASE")
-
 afterEvaluate {
     publishing {
         repositories {
@@ -79,7 +74,16 @@ afterEvaluate {
     }
 
     signing {
-        useGpgCmd()
+        val keyId = System.getenv("ORG_GPG_KEY_ID")
+        val privateKey = System.getenv("ORG_GPG_PRIVATE_KEY")
+        val passphrase = System.getenv("ORG_GPG_PASSPHRASE")
+
+        useInMemoryPgpKeys(
+            keyId,
+            privateKey,
+            passphrase,
+        )
+
         sign(publishing.publications)
     }
 }
