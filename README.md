@@ -26,21 +26,9 @@ Snapshot builds are also available (but of course less stable): [Package view](h
 See the [quickstart guide](https://github.com/eclipse-kuksa/kuksa-android-sdk/tree/main/docs/QUICKSTART.md) for 
 additional integration options.
 
-### GitHub packages
+### Maven Central
 
-The KUKSA SDK is currently uploaded to [GitHub packages](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry)
-where an [authentication](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#authenticating-to-github-packages)
-is needed to download the dependency.
-
-```
-maven {
-    url = uri("https://maven.pkg.github.com/eclipse-kuksa/kuksa-android-sdk")
-    credentials {
-        username = <USERNAME>
-        password = <GITHUB_TOKEN>
-    }
-}
-```
+The KUKSA SDK is currently uploaded to [Maven Central](https://central.sonatype.com/search?q=org.eclipse.kuksa).
 
 ## Usage
 
