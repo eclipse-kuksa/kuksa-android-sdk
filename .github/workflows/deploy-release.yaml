@@ -28,6 +28,7 @@ jobs:
 
       - name: Publish Library
         env:
+          ORG_GPG_KEY_ID: ${{ secrets.ORG_GPG_KEY_ID }}
           ORG_GPG_PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
           ORG_GPG_PRIVATE_KEY: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
           ORG_OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
