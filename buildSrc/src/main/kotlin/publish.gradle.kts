@@ -74,7 +74,10 @@ afterEvaluate {
     }
 
     signing {
-        val keyId = System.getenv("ORG_GPG_KEY_ID")
+        var keyId: String? = System.getenv("ORG_GPG_KEY_ID")
+        if (keyId != null && keyId.length > 8) {
+            keyId = keyId.takeLast(8)
+        }
         val privateKey = System.getenv("ORG_GPG_PRIVATE_KEY")
         val passphrase = System.getenv("ORG_GPG_PASSPHRASE")
 
