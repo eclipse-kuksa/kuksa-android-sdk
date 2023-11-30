@@ -20,6 +20,7 @@
 plugins {
     kotlin("jvm")
     publish
+    alias(libs.plugins.dokka)
 }
 
 group = "org.eclipse.kuksa"
@@ -55,4 +56,15 @@ configure<Publish_gradle.PublishPluginExtension> {
     mavenPublicationName = "release"
     componentName = "java"
     description = "Vehicle Signal Specification (VSS) Code Generator for the KUKSA SDK"
+}
+
+tasks.register("javadocJar", Jar::class) {
+    dependsOn("dokkaHtml")
+    from("$buildDir/dokka/html")
+    archiveClassifier.set("javadoc")
+}
+
+java {
+    withJavadocJar() // needs to be called after tasks.register("javadocJar")
+    withSourcesJar()
 }

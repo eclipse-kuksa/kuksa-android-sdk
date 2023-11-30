@@ -70,3 +70,4 @@ detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-form
 grpc-protoc-java-gen = { group = "io.grpc", name = "protoc-gen-grpc-java", version.ref = "grpc" }
 
 [plugins]
+dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
