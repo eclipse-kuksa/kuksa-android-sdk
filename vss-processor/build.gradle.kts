@@ -54,4 +54,5 @@ tasks.withType<Test>().configureEach {
 configure<Publish_gradle.PublishPluginExtension> {
     mavenPublicationName = "release"
     componentName = "java"
+    description = "Vehicle Signal Specification (VSS) Code Generator for the KUKSA SDK"
 }

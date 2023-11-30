@@ -89,6 +89,7 @@ dependencies {
 configure<Publish_gradle.PublishPluginExtension> {
     mavenPublicationName = "release"
     componentName = "release"
+    description = "Android Connectivity Library for the KUKSA Databroker"
 }
 
 protobuf {
