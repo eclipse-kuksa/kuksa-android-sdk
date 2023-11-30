@@ -36,7 +36,7 @@ afterEvaluate {
             maven {
                 name = "OSSRHRelease"
 
-                url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
                 credentials {
                     username = System.getenv("ORG_OSSRH_USERNAME")
                     password = System.getenv("ORG_OSSRH_PASSWORD")
@@ -45,7 +45,7 @@ afterEvaluate {
             maven {
                 name = "OSSRHSnapshot"
 
-                url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
                 credentials {
                     username = System.getenv("ORG_OSSRH_USERNAME")
                     password = System.getenv("ORG_OSSRH_PASSWORD")
