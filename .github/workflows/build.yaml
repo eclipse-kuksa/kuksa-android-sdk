@@ -11,6 +11,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: "Run Databroker"
+        run: docker run --pull=always --rm --publish 55556:55556/tcp --detach ghcr.io/eclipse/kuksa.val/databroker:master --port 55556 --insecure
+
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
@@ -26,4 +29,4 @@ jobs:
         run: ./gradlew ktlintCheck detekt
 
       - name: Run 'test' with Gradle Wrapper
-        run: ./gradlew test -Dkotest.tags="!Integration"
+        run: ./gradlew test -Dkotest.tags="!Secure"
