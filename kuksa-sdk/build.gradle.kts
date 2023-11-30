@@ -64,6 +64,12 @@ android {
             }
         }
     }
+    publishing {
+        singleVariant("release") {
+            withJavadocJar()
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
@@ -89,6 +95,7 @@ dependencies {
 configure<Publish_gradle.PublishPluginExtension> {
     mavenPublicationName = "release"
     componentName = "release"
+    description = "Android Connectivity Library for the KUKSA Databroker"
 }
 
 protobuf {

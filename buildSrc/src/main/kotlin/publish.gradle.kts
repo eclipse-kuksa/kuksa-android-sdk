@@ -25,6 +25,7 @@ plugins {
 interface PublishPluginExtension {
     val mavenPublicationName: Property<String>
     val componentName: Property<String>
+    val description: Property<String>
 }
 
 val extension = project.extensions.create<PublishPluginExtension>("publish")
@@ -52,15 +53,37 @@ afterEvaluate {
             }
         }
         publications {
-            register<MavenPublication>("${extension.mavenPublicationName.get()}") {
-                from(components["${extension.componentName.get()}"])
+            register<MavenPublication>(extension.mavenPublicationName.get()) {
+                from(components[extension.componentName.get()])
 
                 pom {
-                    url.set("https://github.com/eclipse-kuksa/kuksa-android-sdk")
+                    name = "${project.group}:${project.name}"
+                    description = extension.description.get()
+                    url = "https://github.com/eclipse-kuksa/kuksa-android-sdk"
                     licenses {
                         license {
                             name.set("The Apache Software License, Version 2.0")
                             url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+                    developers {
+                        developer {
+                            name = "Mark Hüsers"
+                            email = "mark.huesers@etas.com"
+                            organization = "ETAS GmbH"
+                            organizationUrl = "https://www.etas.com"
+                        }
+                        developer {
+                            name = "Sebastian Schildt"
+                            email = "sebastian.schildt@etas.com"
+                            organization = "ETAS GmbH"
+                            organizationUrl = "https://www.etas.com"
+                        }
+                        developer {
+                            name = "Andre Weber"
+                            email = "andre.weber3@etas.com"
+                            organization = "ETAS GmbH"
+                            organizationUrl = "https://www.etas.com"
                         }
                     }
                     scm {
