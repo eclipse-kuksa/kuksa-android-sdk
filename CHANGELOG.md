@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.2](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.1.1...release/v0.1.2) (2023-12-04)
+
+
+### Features
+
+* Publish to OSSRH / MavenCentral ([4294f7c](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/4294f7cf1754695489b7360fbc610bc1da4caeea)), closes [#46](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/46)
+* Replace "Check-Dash" GitHub Action with Kuksa Shared Action ([f7a3d92](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/f7a3d926240cfabe392eec33d6266873079e4337)), closes [#37](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/37)
+
+
+### Bug Fixes
+
+* Fix exception on empty VssDefinition asset file ([5153077](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/5153077d7331fd9f808cf4fa69cf5b74e8508833)), closes [#43](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/43)
+
+
+### Documentation
+
+* Add Overview to README ([0fbb0fc](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/0fbb0fc52afa895f9ecb651e18591408b7c1a631))
+* Add Quickstart guide ([9fabe34](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/9fabe3420db149b0c35823086734ba020d5c122c))
+* Replace GitHub Packages with Maven Central ([895e65e](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/895e65ed901ebe9ca36952af64c1a19c7bc62ce8))
+
 ## [0.1.1](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/v0.1.0...release/v0.1.1) (2023-11-14)
 
 
