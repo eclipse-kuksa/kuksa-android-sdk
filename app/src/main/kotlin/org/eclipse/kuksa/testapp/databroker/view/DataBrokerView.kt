@@ -66,6 +66,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -73,10 +74,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
+import org.eclipse.kuksa.testapp.R
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
@@ -149,46 +153,84 @@ private fun TopBar(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
         actions = {
-            OverflowMenu {
-                Row(
-                    modifier = Modifier
-                        .clickable(
-                            enabled = connectionViewModel.isDisconnected,
-                        ) {
-                            val newValue = !topAppBarViewModel.isCompatibilityModeEnabled
-                            topAppBarViewModel.isCompatibilityModeEnabled = newValue
-                        }
-                        .padding(horizontal = 16.dp),
-                ) {
-                    Checkbox(
-                        checked = topAppBarViewModel.isCompatibilityModeEnabled,
-                        onCheckedChange = null,
-                        enabled = connectionViewModel.isDisconnected,
-                    )
-                    Text(text = "Java Compatibility Mode", modifier = Modifier.padding(start = 16.dp))
-                }
-                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-                Row(
-                    modifier = Modifier
-                        .clickable {
-                            val newMode = if (!topAppBarViewModel.isSpecificationModeEnabled) {
-                                DataBrokerMode.SPECIFICATION
-                            } else {
-                                DataBrokerMode.VSS_PATH
-                            }
-                            topAppBarViewModel.updateDataBrokerMode(newMode)
-                        }
-                        .padding(horizontal = 16.dp),
-                ) {
-                    Checkbox(
-                        checked = topAppBarViewModel.isSpecificationModeEnabled,
-                        onCheckedChange = null,
-                    )
-                    Text(text = "Specification Mode", modifier = Modifier.padding(start = 16.dp))
-                }
-            }
+            ConnectionStatusIcon(connectionViewModel)
+            HamburgerMenu(connectionViewModel, topAppBarViewModel)
         },
     )
+}
+
+@Composable
+private fun HamburgerMenu(
+    connectionViewModel: ConnectionViewModel,
+    topAppBarViewModel: TopAppBarViewModel,
+) {
+    OverflowMenu {
+        Row(
+            modifier = Modifier
+                .clickable(
+                    enabled = connectionViewModel.isDisconnected,
+                ) {
+                    val newValue = !topAppBarViewModel.isCompatibilityModeEnabled
+                    topAppBarViewModel.isCompatibilityModeEnabled = newValue
+                }
+                .padding(horizontal = 16.dp),
+        ) {
+            Checkbox(
+                checked = topAppBarViewModel.isCompatibilityModeEnabled,
+                onCheckedChange = null,
+                enabled = connectionViewModel.isDisconnected,
+            )
+            Text(
+                text = "Java Compatibility Mode",
+                modifier = Modifier.padding(start = 16.dp),
+            )
+        }
+        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
+        Row(
+            modifier = Modifier
+                .clickable {
+                    val newMode = if (!topAppBarViewModel.isSpecificationModeEnabled) {
+                        DataBrokerMode.SPECIFICATION
+                    } else {
+                        DataBrokerMode.VSS_PATH
+                    }
+                    topAppBarViewModel.updateDataBrokerMode(newMode)
+                }
+                .padding(horizontal = 16.dp),
+        ) {
+            Checkbox(
+                checked = topAppBarViewModel.isSpecificationModeEnabled,
+                onCheckedChange = null,
+            )
+            Text(text = "Specification Mode", modifier = Modifier.padding(start = 16.dp))
+        }
+    }
+}
+
+@Composable
+private fun ConnectionStatusIcon(
+    connectionViewModel: ConnectionViewModel,
+) {
+    val modifier: Modifier = Modifier
+    if (connectionViewModel.isConnected) {
+        Icon(
+            painter = painterResource(id = R.drawable.round_power_24),
+            contentDescription = "Disconnect",
+            modifier = modifier.clickable { connectionViewModel.onDisconnect() },
+        )
+    } else {
+        Icon(
+            painter = painterResource(id = R.drawable.round_power_off_24),
+            contentDescription = "Connect",
+            modifier = modifier.clickable {
+                val coroutineScope = CoroutineScope(Dispatchers.Default)
+                coroutineScope.launch {
+                    val connectionInfo = connectionViewModel.connectionInfoFlow.first()
+                    connectionViewModel.onConnect(connectionInfo)
+                }
+            },
+        )
+    }
 }
 
 @Composable

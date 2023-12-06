@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
+import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.RememberCountdown
 import org.eclipse.kuksa.testapp.extension.fetchFileName
@@ -71,7 +71,9 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
         mutableStateOf(connectionInfoState.value)
     }
 
-    Headline("Connection")
+    if (!viewModel.isConnected) {
+        Headline("Connection")
+    }
     Column {
         AnimatedVisibility(visible = viewModel.isDisconnected) {
             Column {
@@ -223,13 +225,9 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                             Text(text = "Connecting... ($timeoutSeconds)", textAlign = TextAlign.Center)
                         }
 
-                    ConnectionViewState.CONNECTED ->
-                        Button(
-                            onClick = { viewModel.onDisconnect() },
-                            modifier = Modifier.requiredWidth(MinimumButtonWidth),
-                        ) {
-                            Text(text = "Disconnect")
-                        }
+                    ConnectionViewState.CONNECTED -> {
+                        // intentionally left empty
+                    }
                 }
             }
         }
@@ -238,7 +236,16 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
 
 @Preview
 @Composable
-fun DataBrokerConnectionPreview() {
+fun DataBrokerConnectionPreview_Disconnected() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
     DataBrokerConnection(viewModel = ConnectionViewModel(connectionInfoRepository))
+}
+
+@Preview
+@Composable
+fun DataBrokerConnectionPreview_Connected() {
+    val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
+    val viewModel = ConnectionViewModel(connectionInfoRepository)
+    viewModel.updateConnectionState(ConnectionViewState.CONNECTED)
+    DataBrokerConnection(viewModel = viewModel)
 }
