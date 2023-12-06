@@ -162,6 +162,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
 
         vssPropertiesViewModel.onGetProperty = { property: Property ->
+            fetchPropertyFieldType(property)
             fetchProperty(property)
         }
 
@@ -212,6 +213,26 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         dataBrokerEngine.unregisterDisconnectListener(onDisconnectListener)
     }
 
+    private fun fetchPropertyFieldType(property: Property) {
+        dataBrokerEngine.fetch(
+            property.copy(fields = listOf(Field.FIELD_METADATA)),
+            object : CoroutineCallback<GetResponse>() {
+                override fun onSuccess(result: GetResponse?) {
+                    val automaticValueType = result?.metadata?.valueType ?: Datapoint.ValueCase.VALUE_NOT_SET
+                    Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
+
+                    val vssProperties = vssPropertiesViewModel.vssProperties
+                        .copy(valueType = automaticValueType)
+                    vssPropertiesViewModel.updateVssProperties(vssProperties)
+                }
+
+                override fun onError(error: Throwable) {
+                    // intentionally ignored
+                }
+            },
+        )
+    }
+
     private fun fetchProperty(property: Property) {
         Log.d(TAG, "Fetch property: $property")
 
@@ -219,9 +240,6 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             property,
             object : CoroutineCallback<GetResponse>() {
                 override fun onSuccess(result: GetResponse?) {
-                    val automaticValueType = result?.metadata?.valueType ?: Datapoint.ValueCase.VALUE_NOT_SET
-                    Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
-
                     val errorsList = result?.errorsList
                     errorsList?.forEach {
                         outputViewModel.appendOutput(it.toString())
@@ -229,9 +247,6 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                         return
                     }
 
-                    val vssProperties = vssPropertiesViewModel.vssProperties
-                        .copy(valueType = automaticValueType)
-                    vssPropertiesViewModel.updateVssProperties(vssProperties)
 
                     outputViewModel.appendOutput(result.toString())
                 }

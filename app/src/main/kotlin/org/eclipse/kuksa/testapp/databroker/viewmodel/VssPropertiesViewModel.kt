@@ -48,14 +48,18 @@ class VSSPropertiesViewModel : ViewModel() {
         private set
 
     val valueTypes: List<ValueCase> = ValueCase.values().toList()
-    val fieldTypes: List<Field> = listOf(Field.FIELD_VALUE, Field.FIELD_ACTUATOR_TARGET)
+    val fieldTypes: List<Field> = listOf(
+        Field.FIELD_VALUE,
+        Field.FIELD_ACTUATOR_TARGET,
+        Field.FIELD_METADATA,
+    )
 
     val datapoint: Datapoint
         get() = vssProperties.valueType.createDatapoint(vssProperties.value)
 
     // Meta data are always part of the properties
     val property: Property
-        get() = Property(vssProperties.vssPath, listOf(vssProperties.fieldType, Field.FIELD_METADATA))
+        get() = Property(vssProperties.vssPath, listOf(vssProperties.fieldType))
 
     fun updateVssProperties(vssProperties: VSSProperties = VSSProperties()) {
         this.vssProperties = vssProperties
