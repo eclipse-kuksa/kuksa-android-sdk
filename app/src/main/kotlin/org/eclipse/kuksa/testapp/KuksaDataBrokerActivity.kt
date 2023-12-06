@@ -247,8 +247,14 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                         return
                     }
 
+                    result?.entriesList?.withIndex()?.forEach {
+                        val dataEntry = it.value
+                        val index = it.index
 
-                    outputViewModel.appendOutput(result.toString())
+                        val text = dataEntry.toString().substringAfter("\n")
+                        val withTimestamp = index == 0
+                        outputViewModel.appendOutput(text, withTimestamp)
+                    }
                 }
 
                 override fun onError(error: Throwable) {

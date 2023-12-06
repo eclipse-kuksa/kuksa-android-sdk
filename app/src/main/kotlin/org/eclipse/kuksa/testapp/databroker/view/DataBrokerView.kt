@@ -392,7 +392,7 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
                         .fillMaxHeight()
                         .fillMaxWidth()
                         .padding(start = DefaultElementPadding, end = DefaultElementPadding),
-                    text = outputElement,
+                    text = "\n" + outputElement,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Start,
                     onTextLayout = {
