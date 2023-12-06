@@ -295,13 +295,8 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
 
     Column {
         Headline(name = "Properties")
-        val suggestions = remember {
-            val vssVehicle = VssVehicle()
-            val heritage = vssVehicle.heritage
-            heritage.map { it.vssPath }
-        }
         SuggestionTextView(
-            suggestions = suggestions,
+            suggestions = viewModel.suggestions,
             value = viewModel.vssProperties.vssPath,
             onValueChanged = {
                 val newVssProperties = viewModel.vssProperties.copy(

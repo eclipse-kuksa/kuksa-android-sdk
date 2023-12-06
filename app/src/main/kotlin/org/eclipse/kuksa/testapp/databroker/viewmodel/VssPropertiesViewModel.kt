@@ -50,6 +50,8 @@ class VSSPropertiesViewModel : ViewModel() {
     val valueTypes: List<ValueCase> = ValueCase.values().toList()
     val fieldTypes: List<Field> = listOf(Field.FIELD_VALUE, Field.FIELD_ACTUATOR_TARGET)
 
+    var suggestions: Collection<String> by mutableStateOf(listOf())
+
     val datapoint: Datapoint
         get() = vssProperties.valueType.createDatapoint(vssProperties.value)
 
