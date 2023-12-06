@@ -29,11 +29,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
@@ -54,12 +54,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import org.eclipse.kuksa.testapp.R
 
 @Composable
 fun <T : Any> SuggestionTextView(
@@ -67,6 +69,7 @@ fun <T : Any> SuggestionTextView(
     adapter: SuggestionAdapter<T> = DefaultSuggestionAdapter(),
     value: String = "",
     onItemSelected: ((T?) -> Unit)? = null,
+    onValueChanged: ((String) -> Unit)? = null,
     label: @Composable (() -> Unit)? = null,
     singleLine: Boolean = false,
     modifier: Modifier,
@@ -117,6 +120,7 @@ fun <T : Any> SuggestionTextView(
                     onValueChange = {
                         text = it
                         expanded = true
+                        onValueChanged?.invoke(it)
                     },
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -127,24 +131,47 @@ fun <T : Any> SuggestionTextView(
                         color = Color.Black,
                         fontSize = 16.sp,
                     ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            expanded = false
+                            focusManager.clearFocus()
+                        },
+                    ),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Done,
                     ),
                     singleLine = singleLine,
                     trailingIcon = {
-                        if (text.isNotEmpty()) {
-                            IconButton(onClick = {
-                                text = ""
-                                expanded = false
-                                onItemSelected?.invoke(null)
-                            }) {
-                                Icon(
-                                    modifier = Modifier.size(24.dp),
-                                    imageVector = Icons.Rounded.Clear,
-                                    contentDescription = "clear",
-                                    tint = Color.Black,
-                                )
+                        Row {
+                            if (text.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    text = ""
+                                    expanded = false
+                                    onValueChanged?.invoke(text)
+                                    onItemSelected?.invoke(null)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Clear,
+                                        contentDescription = "clear",
+                                        tint = Color.Black,
+                                    )
+                                }
+                            }
+                            if (suggestions.isNotEmpty()) {
+                                IconButton(onClick = { expanded = !expanded }) {
+                                    val drawableRes = if (expanded) {
+                                        R.drawable.baseline_arrow_drop_up_24
+                                    } else {
+                                        R.drawable.baseline_arrow_drop_down_24
+                                    }
+
+                                    Icon(
+                                        painter = painterResource(id = drawableRes),
+                                        contentDescription = "suggestions",
+                                        tint = Color.Black,
+                                    )
+                                }
                             }
                         }
                     },
@@ -154,7 +181,7 @@ fun <T : Any> SuggestionTextView(
             AnimatedVisibility(visible = expanded) {
                 Card(
                     modifier = Modifier
-                        .padding(horizontal = 5.dp)
+                        .padding(5.dp)
                         .width(textFieldSize.width.dp),
                     elevation = CardDefaults.elevatedCardElevation(),
                     shape = RoundedCornerShape(10.dp),
@@ -174,6 +201,7 @@ fun <T : Any> SuggestionTextView(
                                 text = adapter.toString(item)
                                 expanded = false
                                 focusManager.clearFocus()
+                                onValueChanged?.invoke(text)
                                 onItemSelected?.invoke(it)
                             }
                         }

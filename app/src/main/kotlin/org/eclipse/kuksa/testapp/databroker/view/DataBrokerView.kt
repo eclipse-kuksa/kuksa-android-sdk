@@ -303,10 +303,9 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
         SuggestionTextView(
             suggestions = suggestions,
             value = viewModel.vssProperties.vssPath,
-            onItemSelected = {
-                val vssPath = it ?: "Vehicle"
+            onValueChanged = {
                 val newVssProperties = viewModel.vssProperties.copy(
-                    vssPath = vssPath,
+                    vssPath = it,
                     valueType = ValueCase.VALUE_NOT_SET,
                 )
                 viewModel.updateVssProperties(newVssProperties)
