@@ -25,6 +25,7 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.delay
 import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
@@ -48,7 +49,8 @@ class DataBrokerSubscriberTest : BehaviorSpec({
         connector.connect()
 
         and("An Instance of DataBrokerSubscriber") {
-            val databrokerTransporter = DataBrokerTransporter(dataBrokerConnectorProvider.managedChannel)
+            val databrokerTransporter =
+                DataBrokerTransporter(dataBrokerConnectorProvider.managedChannel)
             val classUnderTest = DataBrokerSubscriber(databrokerTransporter)
 
             `when`("Subscribing using VSS_PATH to Vehicle.Speed with FIELD_VALUE") {
@@ -61,15 +63,13 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     databrokerTransporter.updateRandomFloatValue(vssPath)
 
                     then("The PropertyListener is notified about the change") {
-                        verify(timeout = 100L) {
+                        verify(timeout = 100L, exactly = 2) {
                             propertyListener.onPropertyChanged(vssPath, fieldValue, any())
                         }
                     }
                 }
 
                 `when`("Subscribing the same PropertyListener to a different vssPath") {
-                    clearMocks(propertyListener)
-
                     val otherVssPath = "Vehicle.ADAS.CruiseControl.SpeedSet"
                     classUnderTest.subscribe(otherVssPath, fieldValue, propertyListener)
 
@@ -78,10 +78,10 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                         databrokerTransporter.updateRandomFloatValue(otherVssPath)
 
                         then("The Observer is notified about both changes") {
-                            verify(timeout = 100L) {
+                            verify(timeout = 100L, exactly = 3) {
                                 propertyListener.onPropertyChanged(vssPath, fieldValue, any())
                             }
-                            verify(timeout = 100L) {
+                            verify(timeout = 100L, exactly = 2) {
                                 propertyListener.onPropertyChanged(otherVssPath, fieldValue, any())
                             }
                         }
@@ -89,8 +89,6 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 }
 
                 `when`("Subscribing multiple (different) PropertyListener to $vssPath") {
-                    clearMocks(propertyListener)
-
                     val propertyListenerMocks = mutableListOf<PropertyListener>()
                     repeat(10) {
                         val otherPropertyListenerMock = mockk<PropertyListener>(relaxed = true)
@@ -102,11 +100,11 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     and("When the FIELD_VALUE of Vehicle.Speed is updated") {
                         val randomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
-                        then("The PropertyListener is only notified once") {
+                        then("Each PropertyListener is only notified once") {
                             propertyListenerMocks.forEach { propertyListenerMock ->
                                 val dataEntries = mutableListOf<DataEntry>()
 
-                                verify(timeout = 100L) {
+                                verify(timeout = 100L, exactly = 2) {
                                     propertyListenerMock.onPropertyChanged(vssPath, fieldValue, capture(dataEntries))
                                 }
 
@@ -123,9 +121,10 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
                     and("When the FIELD_VALUE of Vehicle.Speed is updated") {
                         databrokerTransporter.updateRandomFloatValue(vssPath)
+                        delay(100)
 
                         then("The PropertyListener is not notified") {
-                            verify(timeout = 100L, exactly = 0) {
+                            verify(exactly = 0) {
                                 propertyListener.onPropertyChanged(vssPath, fieldValue, any())
                             }
                         }
@@ -146,7 +145,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     then("The PropertyListener is only notified once") {
                         val dataEntries = mutableListOf<DataEntry>()
 
-                        verify(timeout = 100L) {
+                        verify(timeout = 100L, exactly = 2) {
                             propertyListenerMock.onPropertyChanged(vssPath, fieldValue, capture(dataEntries))
                         }
 
@@ -159,30 +158,54 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             val specification = VssDriver.VssHeartRate()
 
             `when`("Subscribing using VssSpecification to Vehicle.Driver.HeartRate with Field FIELD_VALUE") {
-                val specificationObserverMock = mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
-                classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
+                val specificationObserverMock =
+                    mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
+                classUnderTest.subscribe(
+                    specification,
+                    Types.Field.FIELD_VALUE,
+                    specificationObserverMock,
+                )
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
-                    databrokerTransporter.updateRandomFloatValue(specification.vssPath)
+                    val randomIntValue =
+                        databrokerTransporter.updateRandomUint32Value(specification.vssPath)
 
                     then("The Observer should be triggered") {
-                        verify(timeout = 100) { specificationObserverMock.onSpecificationChanged(any()) }
+                        val vssHeartRates = mutableListOf<VssDriver.VssHeartRate>()
+                        verify(timeout = 100, exactly = 2) {
+                            specificationObserverMock.onSpecificationChanged(capture(vssHeartRates))
+                        }
+
+                        val count = vssHeartRates.count { it.value == randomIntValue }
+                        count shouldBe 1
                     }
                 }
             }
 
             `when`("Subscribing the same SpecificationObserver twice to Vehicle.Driver.HeartRate") {
-                val specificationObserverMock = mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
-                classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
-                classUnderTest.subscribe(specification, Types.Field.FIELD_VALUE, specificationObserverMock)
+                val specificationObserverMock =
+                    mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
+                classUnderTest.subscribe(
+                    specification,
+                    Types.Field.FIELD_VALUE,
+                    specificationObserverMock,
+                )
+                classUnderTest.subscribe(
+                    specification,
+                    Types.Field.FIELD_VALUE,
+                    specificationObserverMock,
+                )
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
-                    val randomIntValue = databrokerTransporter.updateRandomUint32Value(specification.vssPath)
+                    val randomIntValue =
+                        databrokerTransporter.updateRandomUint32Value(specification.vssPath)
 
                     then("The Observer is only notified once") {
                         val heartRates = mutableListOf<VssDriver.VssHeartRate>()
 
-                        verify(timeout = 100) { specificationObserverMock.onSpecificationChanged(capture(heartRates)) }
+                        verify(timeout = 100, exactly = 2) {
+                            specificationObserverMock.onSpecificationChanged(capture(heartRates))
+                        }
 
                         val count = heartRates.count { it.value == randomIntValue }
                         count shouldBe 1

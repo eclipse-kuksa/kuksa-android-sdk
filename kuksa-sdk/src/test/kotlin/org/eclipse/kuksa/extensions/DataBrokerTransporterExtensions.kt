@@ -24,14 +24,19 @@ import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.proto.v1.Types
 import kotlin.random.Random
 
-internal suspend fun DataBrokerTransporter.updateRandomFloatValue(vssPath: String, maxValue: Int = 300): Float {
+internal suspend fun DataBrokerTransporter.updateRandomFloatValue(
+    vssPath: String,
+    maxValue: Int = 300,
+): Float {
     val random = Random(System.nanoTime())
     val randomValue = random.nextInt(maxValue)
     val randomFloat = randomValue.toFloat()
     val updatedDatapoint = Types.Datapoint.newBuilder().setFloat(randomFloat).build()
 
+    val fields = listOf(Types.Field.FIELD_VALUE)
+
     try {
-        update(vssPath, listOf(Types.Field.FIELD_VALUE), updatedDatapoint)
+        update(vssPath, fields, updatedDatapoint)
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomFloat failed: $e")
     }
@@ -39,7 +44,10 @@ internal suspend fun DataBrokerTransporter.updateRandomFloatValue(vssPath: Strin
     return randomFloat
 }
 
-internal suspend fun DataBrokerTransporter.updateRandomUint32Value(vssPath: String, maxValue: Int = 300): Int {
+internal suspend fun DataBrokerTransporter.updateRandomUint32Value(
+    vssPath: String,
+    maxValue: Int = 300,
+): Int {
     val random = Random(System.nanoTime())
     val randomValue = random.nextInt(maxValue)
     val updatedDatapoint = Types.Datapoint.newBuilder().setUint32(randomValue).build()
