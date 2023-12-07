@@ -50,7 +50,7 @@ internal class Subscription(
 
                 for (entryUpdate in lastSubscribeResponse.updatesList) {
                     val entry = entryUpdate.entry
-                    observer.onPropertyChanged(vssPath, field, entry)
+                    observer.onPropertyChanged(entry.path, field, entry)
                 }
             }
         },

@@ -153,7 +153,7 @@ internal class DataBrokerTransporter(
                     val entry = entryUpdate.entry
 
                     subscription.listeners.forEach { observer ->
-                        observer.onPropertyChanged(vssPath, field, entry)
+                        observer.onPropertyChanged(entry.path, field, entry)
                     }
                 }
 
