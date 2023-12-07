@@ -159,10 +159,10 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 dataBrokerConnection.subscribe(specification, listener = specificationListener)
 
                 then("The #onSpecificationChanged method is triggered") {
-                    verify(
-                        timeout = 100L,
-                        exactly = 1,
-                    ) { specificationListener.onSpecificationChanged(any()) }
+                    val capturingList = mutableListOf<VssDriver>()
+                    verify(timeout = 100L, exactly = 1) {
+                        specificationListener.onSpecificationChanged(capture(capturingList))
+                    }
                 }
 
                 and("The initial value is different from the default for a child") {
