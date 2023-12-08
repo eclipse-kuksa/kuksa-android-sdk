@@ -22,12 +22,13 @@ jobs:
         run: ./gradlew setSnapshotVersion # Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
 
       - name: Build SDK TestApp
-        uses: eclipse-kuksa/kuksa-android-companion/.github/actions/create-release-apk
+        uses: ./.github/actions/create-release-apk
         with:
           keystore: ${{ secrets.KEYSTORE_DEBUG }}
           key_alias:  ${{ secrets.SIGNING_KEY_ALIAS }}
           key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           store_password: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          gradle_task: app:assembleRelease
 
       - name: Archive .apk file
         uses: actions/upload-artifact@v3
