@@ -1,0 +1,50 @@
+name: Build Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Update Version
+        run: npm run bump-release # Updates the semantic version depending on the last commits e.g. feature / bugfix
+
+      - name: Set Snapshot Version
+        run: ./gradlew setSnapshotVersion # Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
+
+      - name: Build SDK TestApp
+        uses: eclipse-kuksa/kuksa-android-companion/.github/actions/create-release-apk
+        with:
+          keystore: ${{ secrets.KEYSTORE_DEBUG }}
+          key_alias:  ${{ secrets.SIGNING_KEY_ALIAS }}
+          key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          store_password: ${{ secrets.SIGNING_STORE_PASSWORD }}
+
+      - name: Archive .apk file
+        uses: actions/upload-artifact@v3
+        with:
+          name: kuksa_sdk_testapp.apk
+          path: app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Archive changelog
+        uses: actions/upload-artifact@v3
+        with:
+          name: CHANGELOG.md
+          path: CHANGELOG.md
+          retention-days: 14
