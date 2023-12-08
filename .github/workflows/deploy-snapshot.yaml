@@ -1,6 +1,6 @@
-name: deploy-snapshot
+name: Deploy Snapshot SDK
 
-concurrency: production
+concurrency: snapshot
 
 on:
   push:
@@ -36,4 +36,4 @@ jobs:
           ORG_GPG_PRIVATE_KEY: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
           ORG_OSSRH_PASSWORD: ${{ secrets.ORG_OSSRH_PASSWORD }}
           ORG_OSSRH_USERNAME: ${{ secrets.ORG_OSSRH_USERNAME }}
-        run: ./gradlew --stacktrace publishAllPublicationsToOSSRHSnapshotRepository
+        run: ./gradlew publishAllPublicationsToOSSRHSnapshotRepository

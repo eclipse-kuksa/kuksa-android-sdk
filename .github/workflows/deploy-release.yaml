@@ -1,4 +1,4 @@
-name: deploy-release
+name: Deploy Release SDK
 
 concurrency: production
 

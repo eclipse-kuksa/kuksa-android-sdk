@@ -1,4 +1,4 @@
-name: dash
+name: Dash License Check
 
 on:
   pull_request
@@ -7,7 +7,6 @@ jobs:
   check-dash:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v3
 
