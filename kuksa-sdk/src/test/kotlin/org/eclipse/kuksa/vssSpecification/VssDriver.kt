@@ -23,137 +23,268 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import kotlin.reflect.KClass
 
-data class VssVehicle(
-    val driver: VssDriver = VssDriver(),
-    val passenger: VssPassenger = VssPassenger(),
-    val body: VssBody = VssBody(),
-    override val uuid: String = "Vehicle",
-    override val vssPath: String = "Vehicle",
-    override val description: String = "High-level vehicle data.",
-    override val type: String = "branch",
-    override val comment: String = "",
-) : VssSpecification {
-    override val children: Set<VssSpecification>
-        get() = setOf(driver, passenger, body)
-}
-
-data class VssBody(
-    override val uuid: String = "Body",
-    override val vssPath: String = "Vehicle.Body",
-    override val description: String = "All body components.",
-    override val type: String = "branch",
-    override val comment: String = "",
-) : VssSpecification {
-    override val parentClass: KClass<*>
-        get() = VssVehicle::class
-}
-
-data class VssDriver(
+data class VssDriver @JvmOverloads constructor(
+    val attentiveProbability: VssAttentiveProbability = VssAttentiveProbability(),
+    val distractionLevel: VssDistractionLevel = VssDistractionLevel(),
+    val fatigueLevel: VssFatigueLevel = VssFatigueLevel(),
     val heartRate: VssHeartRate = VssHeartRate(),
+    val identifier: VssIdentifier = VssIdentifier(),
     val isEyesOnRoad: VssIsEyesOnRoad = VssIsEyesOnRoad(),
-    override val uuid: String = "Driver",
-    override val vssPath: String = "Vehicle.Driver",
-    override val description: String = "Driver data.",
-    override val type: String = "branch",
-    override val comment: String = "",
+    val isHandsOnWheel: VssIsHandsOnWheel = VssIsHandsOnWheel(),
 ) : VssSpecification {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() = "Driver data."
+
+    override val type: String
+        get() = "branch"
+
+    override val uuid: String
+        get() = "1cac57e7b7e756dc8a154eaacbce6426"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver"
+
     override val children: Set<VssSpecification>
-        get() = setOf(heartRate, isEyesOnRoad)
-    override val parentClass: KClass<*>
-        get() = VssVehicle::class
+        get() = setOf(
+            attentiveProbability,
+            distractionLevel,
+            fatigueLevel,
+            heartRate,
+            identifier,
+            isEyesOnRoad,
+            isHandsOnWheel,
+        )
 
-    data class VssHeartRate(
-        override val uuid: String = "Driver HeartRate",
-        override val vssPath: String = "Vehicle.Driver.HeartRate",
-        override val description: String = "Heart rate of the driver.",
-        override val type: String = "sensor",
-        override val comment: String = "",
-        override val value: Int = 100,
+    override val parentClass: KClass<*>?
+        get() = null
+
+    data class VssHeartRate @JvmOverloads constructor(
+        override val `value`: Int = 0,
     ) : VssProperty<Int> {
-        override val parentClass: KClass<*>
-            get() = VssDriver::class
-    }
+        override val comment: String
+            get() = ""
 
-    data class VssIsEyesOnRoad(
-        override val uuid: String = "Driver IsEyesOnRoad",
-        override val vssPath: String = "Vehicle.Driver.IsEyesOnRoad",
-        override val description: String = "Has driver the eyes on road or not?",
-        override val type: String = "sensor",
-        override val comment: String = "",
-        override val value: Boolean = true,
-    ) : VssProperty<Boolean> {
+        override val description: String
+            get() = "Heart rate of the driver."
+
+        override val type: String
+            get() = "sensor"
+
+        override val uuid: String
+            get() = "d71516905f785c4da867a2f86e774d93"
+
+        override val vssPath: String
+            get() = "Vehicle.Driver.HeartRate"
+
+        override val children: Set<VssSpecification>
+            get() = setOf()
+
         override val parentClass: KClass<*>
-            get() = VssDriver::class
+            get() = VssVehicle::class
     }
 }
 
-data class VssPassenger(
-    val heartRate: VssHeartRate = VssHeartRate(),
-    override val uuid: String = "Passenger",
-    override val vssPath: String = "Vehicle.Passenger",
-    override val description: String = "Passenger data",
-    override val type: String = "branch",
-    override val comment: String = "",
-) : VssSpecification {
+data class VssAttentiveProbability @JvmOverloads constructor(
+    override val `value`: Float = 0f,
+) : VssProperty<Float> {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() = "Probability of attentiveness of the driver."
+
+    override val type: String
+        get() = "sensor"
+
+    override val uuid: String
+        get() = "fcd202467afb533fbbf9e7da89cc1cee"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver.AttentiveProbability"
+
     override val children: Set<VssSpecification>
-        get() = setOf(heartRate)
+        get() = setOf()
+
     override val parentClass: KClass<*>
         get() = VssVehicle::class
-
-    data class VssHeartRate(
-        override val uuid: String = "Passenger HeartRate",
-        override val vssPath: String = "Vehicle.Passenger.HeartRate",
-        override val description: String = "Heart rate of the Passenger.",
-        override val type: String = "sensor",
-        override val comment: String = "",
-        override val value: Int = 80,
-    ) : VssProperty<Int> {
-        override val parentClass: KClass<*>
-            get() = VssPassenger::class
-    }
 }
 
-data class VssValueInt(
-    override val uuid: String = "Value",
-    override val vssPath: String = "Value",
-    override val description: String = "",
-    override val type: String = "sensor",
-    override val comment: String = "",
-    override val value: Int = 0,
-) : VssProperty<Int>
+data class VssDistractionLevel @JvmOverloads constructor(
+    override val `value`: Float = 0f,
+) : VssProperty<Float> {
+    override val comment: String
+        get() = ""
 
-data class VssValueFloat(
-    override val uuid: String = "Value",
-    override val vssPath: String = "Value",
-    override val description: String = "",
-    override val type: String = "sensor",
-    override val comment: String = "",
-    override val value: Float = 0f,
-) : VssProperty<Float>
+    override val description: String
+        get() = "Distraction level of the driver"
 
-data class VssValueDouble(
-    override val uuid: String = "Value",
-    override val vssPath: String = "Value",
-    override val description: String = "",
-    override val type: String = "sensor",
-    override val comment: String = "",
-    override val value: Double = 0.0,
-) : VssProperty<Double>
+    override val type: String
+        get() = "sensor"
 
-data class VssValueLong(
-    override val uuid: String = "Value",
-    override val vssPath: String = "Value",
-    override val description: String = "",
-    override val type: String = "sensor",
-    override val comment: String = "",
-    override val value: Long = 0L,
-) : VssProperty<Long>
+    override val uuid: String
+        get() = "cb35ec0b924e58979e1469146d65c3fa"
 
-data class VssInvalid(
-    override val uuid: String = "Invalid",
-    override val vssPath: String = "Invalid",
-    override val description: String = "",
-    override val type: String = "",
-    override val comment: String = "",
-    override val value: Exception = Exception(),
-) : VssProperty<Exception>
+    override val vssPath: String
+        get() = "Vehicle.Driver.DistractionLevel"
+
+    override val children: Set<VssSpecification>
+        get() = setOf()
+
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+}
+
+data class VssFatigueLevel @JvmOverloads constructor(
+    override val `value`: Float = 0f,
+) : VssProperty<Float> {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() = "Fatigue level of the driver"
+
+    override val type: String
+        get() = "sensor"
+
+    override val uuid: String
+        get() = "49b1626295705a79ae20d8a270c48b6b"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver.FatigueLevel"
+
+    override val children: Set<VssSpecification>
+        get() = setOf()
+
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+}
+
+data class VssIdentifier @JvmOverloads constructor(
+    val issuer: VssIssuer = VssIssuer(),
+    val subject: VssSubject = VssSubject(),
+) : VssSpecification {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() = "Identifier attributes based on OAuth 2.0."
+
+    override val type: String
+        get() = "branch"
+
+    override val uuid: String
+        get() = "89705397069c5ec58d607318f2ff0ea8"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver.Identifier"
+
+    override val children: Set<VssSpecification>
+        get() = setOf(issuer, subject)
+
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+}
+
+data class VssIssuer @JvmOverloads constructor(
+    override val `value`: String = "",
+) : VssProperty<String> {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() =
+            "Unique Issuer for the authentication of the occupant e.g. https://accounts.funcorp.com."
+
+    override val type: String
+        get() = "sensor"
+
+    override val uuid: String
+        get() = "ee7988d26d7156d2a030ecc506ea97e7"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver.Identifier.Issuer"
+
+    override val children: Set<VssSpecification>
+        get() = setOf()
+
+    override val parentClass: KClass<*>
+        get() = VssIdentifier::class
+}
+
+data class VssSubject @JvmOverloads constructor(
+    override val `value`: String = "",
+) : VssProperty<String> {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() = "Subject for the authentication of the occupant e.g. UserID 7331677."
+
+    override val type: String
+        get() = "sensor"
+
+    override val uuid: String
+        get() = "b41ec688af265f10824bc9635989ac55"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver.Identifier.Subject"
+
+    override val children: Set<VssSpecification>
+        get() = setOf()
+
+    override val parentClass: KClass<*>
+        get() = VssIdentifier::class
+}
+
+data class VssIsEyesOnRoad @JvmOverloads constructor(
+    override val `value`: Boolean = false,
+) : VssProperty<Boolean> {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() = "Has driver the eyes on road or not?"
+
+    override val type: String
+        get() = "sensor"
+
+    override val uuid: String
+        get() = "625e5009f1145aa0b797ee6c335ca2fe"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver.IsEyesOnRoad"
+
+    override val children: Set<VssSpecification>
+        get() = setOf()
+
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+}
+
+data class VssIsHandsOnWheel @JvmOverloads constructor(
+    override val `value`: Boolean = false,
+) : VssProperty<Boolean> {
+    override val comment: String
+        get() = ""
+
+    override val description: String
+        get() = "Are the driver's hands on the steering wheel or not?"
+
+    override val type: String
+        get() = "sensor"
+
+    override val uuid: String
+        get() = "90d7dc2c408c528d941829ff88075f24"
+
+    override val vssPath: String
+        get() = "Vehicle.Driver.IsHandsOnWheel"
+
+    override val children: Set<VssSpecification>
+        get() = setOf()
+
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
+}

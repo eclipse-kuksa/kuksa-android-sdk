@@ -35,7 +35,6 @@ internal class SpecificationPropertyListener<T : VssSpecification>(
     vssPaths: Collection<String>,
     private val listener: VssSpecificationListener<T>,
 ) : PropertyListener {
-    // TODO: Remove as soon as the server supports subscribing to vssPaths which are not VssProperties
     // Reduces the load on the observer for big VssSpecifications. We wait for the initial update
     // of all VssProperties before notifying the observer about the first batch
     private val initialSubscriptionUpdates = vssPaths.associateWith { false }.toMutableMap()
