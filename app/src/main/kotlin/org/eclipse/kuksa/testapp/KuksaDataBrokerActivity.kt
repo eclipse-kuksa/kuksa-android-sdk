@@ -58,6 +58,7 @@ import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssSpecification
+import java.util.TreeSet
 
 @VssDefinition("vss_rel_4.0.yaml")
 class KuksaDataBrokerActivity : ComponentActivity() {
@@ -75,6 +76,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         override fun onSuccess(result: DataBrokerConnection?) {
             outputViewModel.appendOutput("Connection to DataBroker successful established")
             connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTED)
+
+            loadVssPathSuggestions()
         }
 
         override fun onError(error: Throwable) {
@@ -278,6 +281,37 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
                 override fun onError(error: Throwable) {
                     outputViewModel.appendOutput("Could not fetch specification: ${error.message}")
+                }
+            },
+        )
+    }
+
+    private fun loadVssPathSuggestions() {
+        val property = Property("Vehicle", listOf(Field.FIELD_VALUE))
+
+        dataBrokerEngine.fetch(
+            property,
+            object : CoroutineCallback<GetResponse>() {
+                override fun onSuccess(result: GetResponse?) {
+                    val entriesList = result?.entriesList
+                    val paths = entriesList?.map { it.path } ?: emptyList()
+
+                    val pathSet = TreeSet<String>()
+                    paths.forEach {
+                        pathSet.add(it)
+
+                        var value = it
+                        while (value.indexOf(".") > -1) {
+                            value = value.substringBeforeLast(".")
+                            pathSet.add(value)
+                        }
+                    }
+
+                    vssPropertiesViewModel.suggestions = pathSet
+                }
+
+                override fun onError(error: Throwable) {
+                    outputViewModel.appendOutput(error.toString())
                 }
             },
         )
