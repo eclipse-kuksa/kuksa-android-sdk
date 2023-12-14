@@ -1,3 +1,5 @@
+import org.eclipse.kuksa.property.PropertiesLoader
+
 /*
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
@@ -59,6 +61,24 @@ android {
             useSupportLibrary = true
         }
     }
+    signingConfigs {
+        create("release") {
+            val propertiesLoader = PropertiesLoader()
+            val localProperties = propertiesLoader.load("$rootDir/local.properties")
+
+            val keystorePath = System.getenv("KEYSTORE_PATH") ?: localProperties?.getProperty("release.keystore.path")
+            println("Defined keystore path: $keystorePath")
+            if (keystorePath == null) return@create
+
+            storeFile = File(keystorePath)
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+                ?: localProperties?.getProperty("release.keystore.key.alias")
+            keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+                ?: localProperties?.getProperty("release.keystore.key.password")
+            storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+                ?: localProperties?.getProperty("release.keystore.store.password")
+        }
+    }
     buildTypes {
         // for local builds, used to find shrinking issues
         val isMinify = project.hasProperty("minify")
@@ -74,6 +94,10 @@ android {
                     "proguard-rules.pro",
                 )
             }
+        }
+
+        release {
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     namespace = "org.eclipse.kuksa.testapp"

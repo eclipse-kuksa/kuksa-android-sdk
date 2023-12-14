@@ -1,4 +1,4 @@
-name: build
+name: Validate Pull Request
 
 on:
   pull_request
@@ -7,23 +7,17 @@ jobs:
   build-project:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: "Run Docker Container of Databroker in detached mode"
         run: docker run --pull=always --rm --publish 55556:55556/tcp --detach --name databroker ghcr.io/eclipse/kuksa.val/databroker:master --port 55556 --insecure
 
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+      - name: Setup Project
+        uses: ./.github/actions/setup-project
 
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Run 'assemble' with Gradle Wrapper
-        run: ./gradlew assemble
+      - name: Run 'assembleDebug' with Gradle Wrapper
+        run: ./gradlew assembleDebug
 
       - name: Run 'lint' with Gradle Wrapper
         run: ./gradlew ktlintCheck detekt
