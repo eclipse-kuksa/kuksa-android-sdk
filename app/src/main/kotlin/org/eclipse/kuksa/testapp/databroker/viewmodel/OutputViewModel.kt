@@ -39,33 +39,21 @@ class OutputViewModel : ViewModel() {
     var output: List<String> by mutableStateOf(listOf())
         private set
 
-    fun appendOutput(text: String) {
+    fun appendOutput(text: String, withTimestamp: Boolean = true) {
         viewModelScope.launch {
             withContext(Dispatchers.Main) {
-                val sanitizedText = sanitizeString(text)
-
-                val emptyLines = if (logEntries.isEmpty()) "\n" else "\n\n"
                 val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
                 val date = LocalDateTime.now().format(dateFormatter)
-                logEntries += "$emptyLines- $date\n $sanitizedText"
+                var msg = ""
+                if (withTimestamp) {
+                    msg += "$date\n"
+                }
+                msg += text
+                logEntries += msg
 
                 output = logEntries.toList()
             }
         }
-    }
-
-    // fixes a crash when outputting VssPath(Vehicle). The ScrollBar can't handle input with more than 3971 line breaks
-    private fun sanitizeString(text: String): String {
-        var sanitizedText = text
-        val isTextTooLong = sanitizedText.length >= MAX_LENGTH_LOG_ENTRY
-        if (isTextTooLong) {
-            sanitizedText = sanitizedText.substring(0, MAX_LENGTH_LOG_ENTRY) + "…"
-            sanitizedText += System.lineSeparator()
-            sanitizedText += System.lineSeparator()
-            sanitizedText += "Text is too long and was truncated"
-        }
-
-        return sanitizedText
     }
 
     fun clear() {
@@ -76,9 +64,5 @@ class OutputViewModel : ViewModel() {
                 output = logEntries.toList()
             }
         }
-    }
-
-    private companion object {
-        private const val MAX_LENGTH_LOG_ENTRY = 90_000
     }
 }
