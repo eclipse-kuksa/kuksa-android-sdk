@@ -1,6 +1,7 @@
-<?xml version="1.0" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
-  <CurrentIssues>
-  </CurrentIssues>
+  <ManuallySuppressedIssues>
+    <ID>EmptyFunctionBlock:VssProcessorPlugin.kt$VssProcessorPlugin${ }</ID>
+  </ManuallySuppressedIssues>
+  <CurrentIssues/>
 </SmellBaseline>

@@ -1,3 +1,6 @@
+import com.google.devtools.ksp.gradle.KspTask
+import org.eclipse.kuksa.vssprocessor.plugin.ProvideVssDefinitionTask
+
 /*
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
@@ -20,6 +23,7 @@
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
+    id("org.eclipse.kuksa.vss-processor-plugin")
     kotlin("android")
 }
 
@@ -52,6 +56,15 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+tasks.register<ProvideVssDefinitionTask>("ProvideVssDefinition") {
+    val vssDefinitionFilePath = "$projectDir/src/main/assets/vss_rel_4.0.yaml"
+    vssDefinitionFile = File(vssDefinitionFilePath)
+}
+
+tasks.withType<KspTask> {
+    dependsOn(tasks.withType<ProvideVssDefinitionTask>())
 }
 
 dependencies {

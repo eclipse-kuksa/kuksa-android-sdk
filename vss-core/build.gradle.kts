@@ -21,7 +21,6 @@
 
 plugins {
     kotlin("jvm")
-    `maven-publish`
     publish
     alias(libs.plugins.dokka)
 }

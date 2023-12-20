@@ -18,6 +18,8 @@
  */
 
 pluginManagement {
+    includeBuild("vss-processor-plugin")
+
     repositories {
         gradlePluginPortal()
         google()
@@ -26,6 +28,7 @@ pluginManagement {
 
     plugins {
         id("com.google.devtools.ksp") version "1.9.0-1.0.11"
+        id("org.eclipse.kuksa.vss-processor-plugin") version "0.1.2"
         kotlin("jvm") version "1.9.0-1.0.11"
         kotlin("plugin.serialization") version "1.9.0"
     }
@@ -39,6 +42,8 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
+rootProject.name = "kuksa-android-sdk"
 
 include(":app")
 include(":kuksa-sdk")

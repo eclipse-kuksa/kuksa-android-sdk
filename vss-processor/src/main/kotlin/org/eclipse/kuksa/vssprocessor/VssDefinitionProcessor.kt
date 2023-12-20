@@ -82,11 +82,11 @@ class VssDefinitionProcessor(
             )
 
             val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).firstOrNull() ?: return
-            val vssDefinitionPath = vssDefinition.vssDefinitionPath
+            val vssDefinitionPath = vssDefinition.vssDefinitionName
 
             val definitionFile = loadAssetFile(vssDefinitionPath)
             if (definitionFile == null || !definitionFile.exists()) {
-                logger.info("No VSS definition file was found!")
+                logger.error("No VSS definition file was found! Is the plugin correctly configured?")
                 return
             }
 
@@ -100,11 +100,11 @@ class VssDefinitionProcessor(
         private fun loadAssetFile(fileName: String): File? {
             val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return null
             val generationPath = generatedFile.absolutePath
-            val buildPath = generationPath.replaceAfterLast(buildDir, "")
-            val assetsFilePath = buildPath + fileSeparator + assetsDir
-            val assetsFolder = File(assetsFilePath)
+            val buildPath = generationPath.replaceAfter(BUILD_FOLDER_NAME, "")
+            val kspInputFilePath = "$buildPath/$KSP_INPUT_BUILD_DIRECTORY"
+            val kspInputFolder = File(kspInputFilePath)
 
-            return assetsFolder.walk().firstOrNull { it.name == fileName }
+            return kspInputFolder.walk().firstOrNull { it.name == fileName }
         }
 
         private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssSpecificationSpecModel>) {
@@ -140,6 +140,8 @@ class VssDefinitionProcessor(
     private companion object {
         private const val PACKAGE_NAME = "org.eclipse.kuksa.vss"
         private const val FILE_NAME_PROCESSOR_POSTFIX = "Processor"
+        private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput/"
+        private const val BUILD_FOLDER_NAME = "build/"
 
         private val fileSeparator = File.separator
         private val assetsDir = "intermediates" + fileSeparator + "assets" + fileSeparator

@@ -1,5 +1,3 @@
-import org.eclipse.kuksa.property.PropertiesLoader
-
 /*
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
@@ -19,9 +17,16 @@ import org.eclipse.kuksa.property.PropertiesLoader
  *
  */
 
+@file:Suppress("UnstableApiUsage")
+
+import com.google.devtools.ksp.gradle.KspTask
+import org.eclipse.kuksa.property.PropertiesLoader
+import org.eclipse.kuksa.vssprocessor.plugin.ProvideVssDefinitionTask
+
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
+    id("org.eclipse.kuksa.vss-processor-plugin")
     kotlin("plugin.serialization")
     kotlin("android")
 }
@@ -119,6 +124,15 @@ android {
             }
         }
     }
+}
+
+tasks.register<ProvideVssDefinitionTask>("ProvideVssDefinition") {
+    val vssDefinitionFilePath = "$projectDir/src/main/assets/vss_rel_4.0.yaml"
+    vssDefinitionFile = File(vssDefinitionFilePath)
+}
+
+tasks.withType<KspTask> {
+    dependsOn(tasks.withType<ProvideVssDefinitionTask>())
 }
 
 tasks.withType<Test>().configureEach {
