@@ -75,9 +75,7 @@ internal class SpecificationPropertyListener<T : VssSpecification>(
 
         other as SpecificationPropertyListener<*>
 
-        if (listener != other.listener) return false
-
-        return true
+        return listener == other.listener
     }
 
     override fun hashCode(): Int {
