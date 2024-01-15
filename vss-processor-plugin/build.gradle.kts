@@ -26,8 +26,8 @@ repositories {
 plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
-    `maven-publish`
-//    publish
+    publish
+    version
 }
 
 gradlePlugin {
@@ -40,16 +40,16 @@ gradlePlugin {
 }
 
 group = "org.eclipse.kuksa"
-version = "0.1.2"
+version = rootProject.extra["projectVersion"].toString()
 
 dependencies {
     implementation(kotlin("stdlib"))
 }
 
-//configure<Publish_gradle.PublishPluginExtension> {
-//    mavenPublicationName = "release"
-//    componentName = "java"
-//    description = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK"
-//}
+configure<Publish_gradle.PublishPluginExtension> {
+    mavenPublicationName = "release"
+    componentName = "java"
+    description = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK"
+}
 
 

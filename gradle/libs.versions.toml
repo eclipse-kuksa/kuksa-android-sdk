@@ -1,6 +1,6 @@
 [versions]
 activityKtx = "1.8.0"
-androidGradlePlugin = "8.2.0" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
+androidGradlePlugin = "8.2.2" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
 datastore = "1.0.0"
 constraintlayoutCompose = "1.0.1"
 datastorePreferences = "1.0.0"

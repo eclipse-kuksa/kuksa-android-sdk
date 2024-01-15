@@ -60,7 +60,8 @@ android {
 
 tasks.register<ProvideVssDefinitionTask>("ProvideVssDefinition") {
     val vssDefinitionFilePath = "$projectDir/src/main/assets/vss_rel_4.0.yaml"
-    vssDefinitionFile = File(vssDefinitionFilePath)
+    val regularFile = RegularFile { File(vssDefinitionFilePath) }
+    vssDefinitionFile.add(regularFile)
 }
 
 tasks.withType<KspTask> {

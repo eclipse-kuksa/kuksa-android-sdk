@@ -21,33 +21,49 @@ package org.eclipse.kuksa.vssprocessor.plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
 class VssProcessorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
+        // Configuration done by the custom task
     }
 }
 
+/**
+ * This task takes a list of files and copies them into an input folder for the KSP VSS Processor. This is necessary
+ * because the Symbol Processor does not have access to the android assets folder.
+ */
 abstract class ProvideVssDefinitionTask : DefaultTask() {
 
-    @get:InputFile
-    abstract val vssDefinitionFile: RegularFileProperty
+    @get:InputFiles
+    abstract val vssDefinitionFile: ListProperty<RegularFile>
 
     @TaskAction
     fun provideFile() {
-        val vssDefinitionInputFile = vssDefinitionFile.get().asFile
         val buildDirPath = project.buildDir.absolutePath
-        val vssDefinitionBuildFile = File("$buildDirPath/$KSP_INPUT_BUILD_DIRECTORY/${vssDefinitionInputFile.name}")
+        vssDefinitionFile.get().forEach { file ->
+            val vssDefinitionInputFile = file.asFile
+            val vssDefinitionBuildFile = File(
+                "$buildDirPath$fileSeparator" +
+                    "$KSP_INPUT_BUILD_DIRECTORY$fileSeparator" +
+                    vssDefinitionInputFile.name,
+            )
 
-        println("Found VSS definition input file: ${vssDefinitionInputFile.name}, copying to: $vssDefinitionBuildFile")
+            println(
+                "Found VSS definition input file: ${vssDefinitionInputFile.name}, copying to: $vssDefinitionBuildFile",
+            )
 
-        vssDefinitionInputFile.copyTo(vssDefinitionBuildFile, true)
+            vssDefinitionInputFile.copyTo(vssDefinitionBuildFile, true)
+        }
     }
 
     companion object {
-        private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput/"
+        private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput"
+
+        private val fileSeparator = File.separator
     }
 }
