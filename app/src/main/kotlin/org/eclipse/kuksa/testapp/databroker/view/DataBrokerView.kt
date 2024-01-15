@@ -67,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -76,7 +77,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
@@ -88,6 +88,7 @@ import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
+import java.time.format.DateTimeFormatter
 
 val DefaultEdgePadding = 25.dp
 val DefaultElementPadding = 10.dp
@@ -377,7 +378,7 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
     val shape = RoundedCornerShape(20.dp, 20.dp, 0.dp, 0.dp)
     val scrollState = rememberScrollState(0)
 
-    val output = viewModel.output
+    val outputEntries = viewModel.output
 
     Surface(
         modifier = modifier.height(500.dp),
@@ -385,25 +386,45 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
         shape = shape,
     ) {
         Column(modifier = Modifier.verticalScroll(scrollState)) {
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
             Headline(name = "Output", color = Color.White)
-            output.forEach { outputElement ->
-                Text(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                        .padding(start = DefaultElementPadding, end = DefaultElementPadding),
-                    text = "\n" + outputElement,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Start,
-                    onTextLayout = {
-                        scope.launch {
-                            scrollState.animateScrollTo(scrollState.maxValue)
-                        }
-                    },
-                )
+            outputEntries.forEach { outputEntry ->
+                val date = outputEntry.localDateTime.format(dateFormatter)
+                val newLine = System.lineSeparator()
+
+                val onTextLayout: ((TextLayoutResult) -> Unit) = {
+                    scope.launch {
+                        scrollState.animateScrollTo(scrollState.maxValue)
+                    }
+                }
+
+                val logTextModifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth()
+                    .padding(start = DefaultElementPadding, end = DefaultElementPadding)
+
+                OutputText(date, logTextModifier, onTextLayout)
+                outputEntry.messages.forEach {
+                    OutputText(it + newLine, logTextModifier, onTextLayout)
+                }
             }
         }
     }
+}
+
+@Composable
+private fun OutputText(
+    text: String,
+    modifier: Modifier = Modifier,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+) {
+    Text(
+        modifier = modifier,
+        text = text,
+        fontSize = 14.sp,
+        textAlign = TextAlign.Start,
+        onTextLayout = onTextLayout,
+    )
 }
 
 @Preview(showBackground = true)

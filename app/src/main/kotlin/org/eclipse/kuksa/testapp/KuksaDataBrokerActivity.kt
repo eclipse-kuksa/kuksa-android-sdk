@@ -34,11 +34,12 @@ import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
-import org.eclipse.kuksa.extension.metadata
+import org.eclipse.kuksa.extension.entriesMetadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
+import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.DataEntry
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Field
@@ -49,6 +50,7 @@ import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.view.DataBrokerView
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
+import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputEntry
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
@@ -73,12 +75,12 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
     private val dataBrokerConnectionCallback = object : CoroutineCallback<DataBrokerConnection>() {
         override fun onSuccess(result: DataBrokerConnection?) {
-            outputViewModel.appendOutput("Connection to DataBroker successful established")
+            outputViewModel.addOutputEntry("Connection to DataBroker successful established")
             connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTED)
         }
 
         override fun onError(error: Throwable) {
-            outputViewModel.appendOutput("Connection to DataBroker failed: ${error.message}")
+            outputViewModel.addOutputEntry("Connection to DataBroker failed: ${error.message}")
             connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
         }
     }
@@ -86,27 +88,27 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     private val onDisconnectListener = DisconnectListener {
         connectionViewModel.updateConnectionState(ConnectionViewState.DISCONNECTED)
         outputViewModel.clear()
-        outputViewModel.appendOutput("DataBroker disconnected")
+        outputViewModel.addOutputEntry("DataBroker disconnected")
     }
 
     private val propertyListener = object : PropertyListener {
         override fun onPropertyChanged(vssPath: String, field: Field, updatedValue: DataEntry) {
             Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, field = $field, changedValue = $updatedValue")
-            outputViewModel.appendOutput("Updated value: $updatedValue")
+            outputViewModel.addOutputEntry("Updated value: $updatedValue")
         }
 
         override fun onError(throwable: Throwable) {
-            outputViewModel.appendOutput("${throwable.message}")
+            outputViewModel.addOutputEntry("${throwable.message}")
         }
     }
 
     private val specificationListener = object : VssSpecificationListener<VssSpecification> {
         override fun onSpecificationChanged(vssSpecification: VssSpecification) {
-            outputViewModel.appendOutput("Updated specification: $vssSpecification")
+            outputViewModel.addOutputEntry("Updated specification: $vssSpecification")
         }
 
         override fun onError(throwable: Throwable) {
-            outputViewModel.appendOutput("Updated specification: ${throwable.message}")
+            outputViewModel.addOutputEntry("Updated specification: ${throwable.message}")
         }
     }
 
@@ -150,7 +152,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 kotlinDataBrokerEngine
             }
             val enabledState = if (isCompatibilityModeEnabled) "enabled" else "disabled"
-            outputViewModel.appendOutput("Java Compatibility Mode $enabledState")
+            outputViewModel.addOutputEntry("Java Compatibility Mode $enabledState")
         }
 
         connectionViewModel.onConnect = { connectionInfo ->
@@ -200,7 +202,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     private fun connect(connectionInfo: ConnectionInfo) {
         Log.d(TAG, "Connecting to DataBroker: $connectionInfo")
 
-        outputViewModel.appendOutput("Connecting to data broker - Please wait")
+        outputViewModel.addOutputEntry("Connecting to data broker - Please wait")
         connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTING)
 
         dataBrokerEngine.registerDisconnectListener(onDisconnectListener)
@@ -214,11 +216,19 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     }
 
     private fun fetchPropertyFieldType(property: Property) {
+        val propertyWithMetaData = property.copy(fields = listOf(Field.FIELD_METADATA))
+
         dataBrokerEngine.fetch(
-            property.copy(fields = listOf(Field.FIELD_METADATA)),
+            propertyWithMetaData,
             object : CoroutineCallback<GetResponse>() {
                 override fun onSuccess(result: GetResponse?) {
-                    val automaticValueType = result?.metadata?.valueType ?: Datapoint.ValueCase.VALUE_NOT_SET
+                    val entriesMetadata = result?.entriesMetadata ?: emptyList()
+                    val automaticValueType = if (entriesMetadata.size == 1) {
+                        entriesMetadata.first().valueType
+                    } else {
+                        Types.Datapoint.ValueCase.VALUE_NOT_SET
+                    }
+
                     Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
 
                     val vssProperties = vssPropertiesViewModel.vssProperties
@@ -227,7 +237,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 }
 
                 override fun onError(error: Throwable) {
-                    // intentionally ignored
+                    Log.w(TAG, "Could not resolve type of value for $property")
                 }
             },
         )
@@ -242,23 +252,23 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 override fun onSuccess(result: GetResponse?) {
                     val errorsList = result?.errorsList
                     errorsList?.forEach {
-                        outputViewModel.appendOutput(it.toString())
+                        outputViewModel.addOutputEntry(it.toString())
 
                         return
                     }
 
+                    val outputEntry = OutputEntry()
                     result?.entriesList?.withIndex()?.forEach {
                         val dataEntry = it.value
-                        val index = it.index
-
                         val text = dataEntry.toString().substringAfter("\n")
-                        val withTimestamp = index == 0
-                        outputViewModel.appendOutput(text, withTimestamp)
+
+                        outputEntry.addMessage(text)
                     }
+                    outputViewModel.addOutputEntry(outputEntry)
                 }
 
                 override fun onError(error: Throwable) {
-                    outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
+                    outputViewModel.addOutputEntry("Connection to data broker failed: ${error.message}")
                 }
             },
         )
@@ -274,15 +284,15 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 override fun onSuccess(result: KuksaValV1.SetResponse?) {
                     val errorsList = result?.errorsList
                     errorsList?.forEach {
-                        outputViewModel.appendOutput(it.toString())
+                        outputViewModel.addOutputEntry(it.toString())
                         return
                     }
 
-                    outputViewModel.appendOutput(result.toString())
+                    outputViewModel.addOutputEntry(result.toString())
                 }
 
                 override fun onError(error: Throwable) {
-                    outputViewModel.appendOutput("Connection to data broker failed: ${error.message}")
+                    outputViewModel.addOutputEntry("Connection to data broker failed: ${error.message}")
                 }
             },
         )
@@ -294,11 +304,11 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             object : CoroutineCallback<VssSpecification>() {
                 override fun onSuccess(result: VssSpecification?) {
                     Log.d(TAG, "Fetched specification: $result")
-                    outputViewModel.appendOutput("Fetched specification: $result")
+                    outputViewModel.addOutputEntry("Fetched specification: $result")
                 }
 
                 override fun onError(error: Throwable) {
-                    outputViewModel.appendOutput("Could not fetch specification: ${error.message}")
+                    outputViewModel.addOutputEntry("Could not fetch specification: ${error.message}")
                 }
             },
         )

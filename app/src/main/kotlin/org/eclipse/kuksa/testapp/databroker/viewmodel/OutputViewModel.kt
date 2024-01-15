@@ -29,29 +29,28 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.testapp.collection.MaxElementSet
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 private const val MAX_NUMBER_LOG_ENTRIES = 100
 
 class OutputViewModel : ViewModel() {
-    private val logEntries = MaxElementSet<String>(MAX_NUMBER_LOG_ENTRIES)
+    private val outputEntries = MaxElementSet<OutputEntry>(MAX_NUMBER_LOG_ENTRIES)
 
-    var output: List<String> by mutableStateOf(listOf())
+    var output: List<OutputEntry> by mutableStateOf(listOf())
         private set
 
-    fun appendOutput(text: String, withTimestamp: Boolean = true) {
+    fun addOutputEntry(message: String) {
+        val messages = listOf(message)
+        val outputEntry = OutputEntry(messages = messages)
+
+        addOutputEntry(outputEntry)
+    }
+
+    fun addOutputEntry(outputEntry: OutputEntry) {
         viewModelScope.launch {
             withContext(Dispatchers.Main) {
-                val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
-                val date = LocalDateTime.now().format(dateFormatter)
-                var msg = ""
-                if (withTimestamp) {
-                    msg += "$date\n"
-                }
-                msg += text
-                logEntries += msg
+                outputEntries.add(outputEntry)
 
-                output = logEntries.toList()
+                output = outputEntries.toList()
             }
         }
     }
@@ -59,10 +58,23 @@ class OutputViewModel : ViewModel() {
     fun clear() {
         viewModelScope.launch {
             withContext(Dispatchers.Main) {
-                logEntries.clear()
+                outputEntries.clear()
 
-                output = logEntries.toList()
+                output = outputEntries.toList()
             }
         }
+    }
+}
+
+class OutputEntry(
+    val localDateTime: LocalDateTime = LocalDateTime.now(),
+    messages: List<String> = mutableListOf(),
+) {
+    private var _messages: MutableList<String> = messages.toMutableList()
+    val messages: List<String>
+        get() = _messages
+
+    fun addMessage(message: String) {
+        _messages.add(message)
     }
 }
