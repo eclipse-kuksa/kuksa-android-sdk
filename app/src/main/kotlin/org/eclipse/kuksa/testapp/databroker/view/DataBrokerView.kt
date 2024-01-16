@@ -19,7 +19,6 @@
 
 package org.eclipse.kuksa.testapp.databroker.view
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -119,19 +118,14 @@ fun DataBrokerView(
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
-                val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 if (!connectionViewModel.isConnected) {
                     DataBrokerConnection(connectionViewModel)
                 }
+                val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 if (connectionViewModel.isConnected) {
-                    AnimatedContent(
-                        targetState = dataBrokerMode,
-                        label = "DataBrokerModeAnimation",
-                    ) { mode ->
-                        when (mode) {
-                            DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
-                            DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssSpecificationsViewModel)
-                        }
+                    when (dataBrokerMode) {
+                        DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
+                        DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssSpecificationsViewModel)
                     }
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
