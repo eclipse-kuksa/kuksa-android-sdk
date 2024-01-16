@@ -294,20 +294,10 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             object : CoroutineCallback<GetResponse>() {
                 override fun onSuccess(result: GetResponse?) {
                     val entriesList = result?.entriesList
-                    val paths = entriesList?.map { it.path } ?: emptyList()
+                    val vssPaths = entriesList?.map { it.path } ?: emptyList()
 
-                    val pathSet = TreeSet<String>()
-                    paths.forEach {
-                        pathSet.add(it)
-
-                        var value = it
-                        while (value.indexOf(".") > -1) {
-                            value = value.substringBeforeLast(".")
-                            pathSet.add(value)
-                        }
-                    }
-
-                    vssPropertiesViewModel.suggestions = pathSet
+                    val vssPathHierarchySet = createVssPathHierarchy(vssPaths)
+                    vssPropertiesViewModel.suggestions = vssPathHierarchySet
                 }
 
                 override fun onError(error: Throwable) {
@@ -315,5 +305,21 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 }
             },
         )
+    }
+
+    private fun createVssPathHierarchy(paths: List<String>): TreeSet<String> {
+        val pathSet = TreeSet<String>()
+
+        paths.forEach {
+            pathSet.add(it)
+
+            var value = it
+            while (value.indexOf(".") > -1) {
+                value = value.substringBeforeLast(".")
+                pathSet.add(value)
+            }
+        }
+
+        return pathSet
     }
 }

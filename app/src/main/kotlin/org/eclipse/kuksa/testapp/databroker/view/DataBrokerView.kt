@@ -347,8 +347,7 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
                     .clickable {
                         expanded = true
                     },
-
-                )
+            )
             Box(modifier = Modifier.requiredHeight(23.dp)) {
                 DropdownMenu(
                     expanded = expanded,
