@@ -181,10 +181,10 @@ fun <T : Any> SuggestionTextView(
             AnimatedVisibility(visible = expanded) {
                 Card(
                     modifier = Modifier
-                        .padding(5.dp)
+                        .padding(top = 5.dp)
                         .width(textFieldSize.width.dp),
                     elevation = CardDefaults.elevatedCardElevation(),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp),
                 ) {
                     LazyColumn(
                         modifier = Modifier.heightIn(max = 150.dp),

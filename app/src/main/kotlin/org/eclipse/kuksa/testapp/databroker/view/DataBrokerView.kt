@@ -91,8 +91,8 @@ import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.heritage
 
+val SettingsMenuPadding = 16.dp
 val DefaultEdgePadding = 25.dp
 val DefaultElementPadding = 10.dp
 val MinimumButtonWidth = 150.dp
@@ -120,7 +120,9 @@ fun DataBrokerView(
         ) {
             Column {
                 val dataBrokerMode = topAppBarViewModel.dataBrokerMode
-                DataBrokerConnection(connectionViewModel)
+                if (!connectionViewModel.isConnected) {
+                    DataBrokerConnection(connectionViewModel)
+                }
                 if (connectionViewModel.isConnected) {
                     AnimatedContent(
                         targetState = dataBrokerMode,
@@ -154,13 +156,13 @@ private fun TopBar(
         ),
         actions = {
             ConnectionStatusIcon(connectionViewModel)
-            HamburgerMenu(connectionViewModel, topAppBarViewModel)
+            SettingsMenu(connectionViewModel, topAppBarViewModel)
         },
     )
 }
 
 @Composable
-private fun HamburgerMenu(
+private fun SettingsMenu(
     connectionViewModel: ConnectionViewModel,
     topAppBarViewModel: TopAppBarViewModel,
 ) {
@@ -173,7 +175,7 @@ private fun HamburgerMenu(
                     val newValue = !topAppBarViewModel.isCompatibilityModeEnabled
                     topAppBarViewModel.isCompatibilityModeEnabled = newValue
                 }
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = SettingsMenuPadding),
         ) {
             Checkbox(
                 checked = topAppBarViewModel.isCompatibilityModeEnabled,
@@ -182,7 +184,7 @@ private fun HamburgerMenu(
             )
             Text(
                 text = "Java Compatibility Mode",
-                modifier = Modifier.padding(start = 16.dp),
+                modifier = Modifier.padding(start = SettingsMenuPadding),
             )
         }
         Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
@@ -196,13 +198,13 @@ private fun HamburgerMenu(
                     }
                     topAppBarViewModel.updateDataBrokerMode(newMode)
                 }
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = SettingsMenuPadding),
         ) {
             Checkbox(
                 checked = topAppBarViewModel.isSpecificationModeEnabled,
                 onCheckedChange = null,
             )
-            Text(text = "Specification Mode", modifier = Modifier.padding(start = 16.dp))
+            Text(text = "Specification Mode", modifier = Modifier.padding(start = SettingsMenuPadding))
         }
     }
 }
@@ -216,13 +218,15 @@ private fun ConnectionStatusIcon(
         Icon(
             painter = painterResource(id = R.drawable.round_power_24),
             contentDescription = "Disconnect",
-            modifier = modifier.clickable { connectionViewModel.onDisconnect() },
+            modifier = modifier.clickable(enabled = connectionViewModel.isConnected) {
+                connectionViewModel.onDisconnect()
+            },
         )
     } else {
         Icon(
             painter = painterResource(id = R.drawable.round_power_off_24),
             contentDescription = "Connect",
-            modifier = modifier.clickable {
+            modifier = modifier.clickable(enabled = connectionViewModel.isDisconnected) {
                 val coroutineScope = CoroutineScope(Dispatchers.Default)
                 coroutineScope.launch {
                     val connectionInfo = connectionViewModel.connectionInfoFlow.first()
@@ -240,13 +244,13 @@ fun DataBrokerSpecifications(viewModel: VssSpecificationsViewModel) {
 
         val adapter = object : SuggestionAdapter<VssSpecification> {
             override fun toString(item: VssSpecification): String {
-                return item.vssPath.substringAfter(".")
+                return item.vssPath
             }
         }
 
-        val suggestions = VssVehicle().heritage
         SuggestionTextView(
-            suggestions = suggestions,
+            value = "Vehicle",
+            suggestions = viewModel.specifications,
             adapter = adapter,
             onItemSelected = {
                 val specification = it ?: VssVehicle()
@@ -344,7 +348,7 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
                         expanded = true
                     },
 
-            )
+                )
             Box(modifier = Modifier.requiredHeight(23.dp)) {
                 DropdownMenu(
                     expanded = expanded,
@@ -359,8 +363,7 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
                             onClick = {
                                 expanded = false
 
-                                val newVssProperties =
-                                    viewModel.vssProperties.copy(valueType = it)
+                                val newVssProperties = viewModel.vssProperties.copy(valueType = it)
                                 viewModel.updateVssProperties(newVssProperties)
                             },
                         )

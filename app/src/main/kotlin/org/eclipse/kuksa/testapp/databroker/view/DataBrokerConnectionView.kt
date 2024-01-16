@@ -71,10 +71,9 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
         mutableStateOf(connectionInfoState.value)
     }
 
-    if (!viewModel.isConnected) {
-        Headline("Connection")
-    }
     Column {
+        Headline("Connection")
+
         AnimatedVisibility(visible = viewModel.isDisconnected) {
             Column {
                 Row(
@@ -243,9 +242,9 @@ fun DataBrokerConnectionPreview_Disconnected() {
 
 @Preview
 @Composable
-fun DataBrokerConnectionPreview_Connected() {
+fun DataBrokerConnectionPreview_Connecting() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
     val viewModel = ConnectionViewModel(connectionInfoRepository)
-    viewModel.updateConnectionState(ConnectionViewState.CONNECTED)
+    viewModel.updateConnectionState(ConnectionViewState.CONNECTING)
     DataBrokerConnection(viewModel = viewModel)
 }
