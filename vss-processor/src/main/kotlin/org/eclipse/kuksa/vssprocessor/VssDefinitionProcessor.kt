@@ -100,7 +100,7 @@ class VssDefinitionProcessor(
         private fun loadAssetFile(fileName: String): File? {
             val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return null
             val generationPath = generatedFile.absolutePath
-            val buildPath = generationPath.replaceAfter(BUILD_FOLDER_NAME, "")
+            val buildPath = generationPath.replaceAfterLast(BUILD_FOLDER_NAME, "")
             val assetsFilePath = "$buildPath/$ASSETS_BUILD_DIRECTORY"
             val assetsFolder = File(assetsFilePath)
 
@@ -141,7 +141,7 @@ class VssDefinitionProcessor(
         private const val PACKAGE_NAME = "org.eclipse.kuksa.vss"
         private const val FILE_NAME_PROCESSOR_POSTFIX = "Processor"
         private const val ASSETS_BUILD_DIRECTORY = "intermediates/assets/"
-        private const val BUILD_FOLDER_NAME = "build/"
+        private const val BUILD_FOLDER_NAME = "/build/"
     }
 }
 
