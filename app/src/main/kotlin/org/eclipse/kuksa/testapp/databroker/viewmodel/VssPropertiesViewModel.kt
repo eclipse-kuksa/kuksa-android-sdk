@@ -31,6 +31,7 @@ import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.proto.v1.Types.Field
+import java.util.TreeSet
 
 class VSSPropertiesViewModel : ViewModel() {
     var onGetProperty: (property: Property) -> Unit = { }
@@ -47,14 +48,16 @@ class VSSPropertiesViewModel : ViewModel() {
     var vssProperties: VSSProperties by mutableStateOf(VSSProperties())
         private set
 
-    val valueTypes: List<ValueCase> = ValueCase.values().toList()
+    val valueTypes: List<ValueCase> = ValueCase.entries
     val fieldTypes: List<Field> = listOf(
         Field.FIELD_VALUE,
         Field.FIELD_ACTUATOR_TARGET,
         Field.FIELD_METADATA,
     )
 
-    var suggestions: Collection<String> by mutableStateOf(listOf())
+    private var _suggestions: Collection<String> by mutableStateOf(listOf())
+    val suggestions
+        get() = _suggestions
 
     val datapoint: Datapoint
         get() = vssProperties.valueType.createDatapoint(vssProperties.value)
@@ -65,6 +68,26 @@ class VSSPropertiesViewModel : ViewModel() {
 
     fun updateVssProperties(vssProperties: VSSProperties = VSSProperties()) {
         this.vssProperties = vssProperties
+    }
+
+    fun updateSuggestions(vssPaths: Collection<String>) {
+        this._suggestions = createVssPathHierarchy(vssPaths)
+    }
+
+    private fun createVssPathHierarchy(paths: Collection<String>): TreeSet<String> {
+        val pathSet = TreeSet<String>()
+
+        paths.forEach {
+            pathSet.add(it)
+
+            var value = it
+            while (value.indexOf(".") > -1) {
+                value = value.substringBeforeLast(".")
+                pathSet.add(value)
+            }
+        }
+
+        return pathSet
     }
 }
 

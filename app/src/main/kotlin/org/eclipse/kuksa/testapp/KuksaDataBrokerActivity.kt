@@ -60,7 +60,6 @@ import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import java.util.TreeSet
 
 @VssDefinition("vss_rel_4.0.yaml")
 class KuksaDataBrokerActivity : ComponentActivity() {
@@ -327,8 +326,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                     val entriesList = result?.entriesList
                     val vssPaths = entriesList?.map { it.path } ?: emptyList()
 
-                    val vssPathHierarchySet = createVssPathHierarchy(vssPaths)
-                    vssPropertiesViewModel.suggestions = vssPathHierarchySet
+                    vssPropertiesViewModel.updateSuggestions(vssPaths)
                 }
 
                 override fun onError(error: Throwable) {
@@ -336,21 +334,5 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 }
             },
         )
-    }
-
-    private fun createVssPathHierarchy(paths: List<String>): TreeSet<String> {
-        val pathSet = TreeSet<String>()
-
-        paths.forEach {
-            pathSet.add(it)
-
-            var value = it
-            while (value.indexOf(".") > -1) {
-                value = value.substringBeforeLast(".")
-                pathSet.add(value)
-            }
-        }
-
-        return pathSet
     }
 }
