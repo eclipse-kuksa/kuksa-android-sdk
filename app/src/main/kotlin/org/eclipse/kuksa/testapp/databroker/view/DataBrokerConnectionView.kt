@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -235,16 +236,21 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
 
 @Preview
 @Composable
-fun DataBrokerConnectionPreview_Disconnected() {
+private fun ConnectedPreview() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
-    DataBrokerConnection(viewModel = ConnectionViewModel(connectionInfoRepository))
+    val viewModel = ConnectionViewModel(connectionInfoRepository)
+    Surface {
+        DataBrokerConnection(viewModel = viewModel)
+    }
 }
 
 @Preview
 @Composable
-fun DataBrokerConnectionPreview_Connecting() {
+private fun DisconnectedPreview() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
     val viewModel = ConnectionViewModel(connectionInfoRepository)
     viewModel.updateConnectionState(ConnectionViewState.CONNECTING)
-    DataBrokerConnection(viewModel = viewModel)
+    Surface {
+        DataBrokerConnection(viewModel = viewModel)
+    }
 }
