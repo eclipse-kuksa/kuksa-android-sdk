@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -52,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.*
+import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.RememberCountdown
 import org.eclipse.kuksa.testapp.extension.fetchFileName
@@ -71,8 +72,9 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
         mutableStateOf(connectionInfoState.value)
     }
 
-    Headline("Connection")
     Column {
+        Headline("Connection")
+
         AnimatedVisibility(visible = viewModel.isDisconnected) {
             Column {
                 Row(
@@ -223,13 +225,9 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                             Text(text = "Connecting... ($timeoutSeconds)", textAlign = TextAlign.Center)
                         }
 
-                    ConnectionViewState.CONNECTED ->
-                        Button(
-                            onClick = { viewModel.onDisconnect() },
-                            modifier = Modifier.requiredWidth(MinimumButtonWidth),
-                        ) {
-                            Text(text = "Disconnect")
-                        }
+                    ConnectionViewState.CONNECTED -> {
+                        // intentionally left empty
+                    }
                 }
             }
         }
@@ -238,7 +236,21 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
 
 @Preview
 @Composable
-fun DataBrokerConnectionPreview() {
+private fun ConnectedPreview() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
-    DataBrokerConnection(viewModel = ConnectionViewModel(connectionInfoRepository))
+    val viewModel = ConnectionViewModel(connectionInfoRepository)
+    Surface {
+        DataBrokerConnection(viewModel = viewModel)
+    }
+}
+
+@Preview
+@Composable
+private fun DisconnectedPreview() {
+    val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
+    val viewModel = ConnectionViewModel(connectionInfoRepository)
+    viewModel.updateConnectionState(ConnectionViewState.CONNECTING)
+    Surface {
+        DataBrokerConnection(viewModel = viewModel)
+    }
 }

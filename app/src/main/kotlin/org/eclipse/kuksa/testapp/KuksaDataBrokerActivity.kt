@@ -77,6 +77,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         override fun onSuccess(result: DataBrokerConnection?) {
             outputViewModel.addOutputEntry("Connection to DataBroker successful established")
             connectionViewModel.updateConnectionState(ConnectionViewState.CONNECTED)
+
+            loadVssPathSuggestions()
         }
 
         override fun onError(error: Throwable) {
@@ -309,6 +311,26 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
                 override fun onError(error: Throwable) {
                     outputViewModel.addOutputEntry("Could not fetch specification: ${error.message}")
+                }
+            },
+        )
+    }
+
+    private fun loadVssPathSuggestions() {
+        val property = Property("Vehicle", listOf(Field.FIELD_VALUE))
+
+        dataBrokerEngine.fetch(
+            property,
+            object : CoroutineCallback<GetResponse>() {
+                override fun onSuccess(result: GetResponse?) {
+                    val entriesList = result?.entriesList
+                    val vssPaths = entriesList?.map { it.path } ?: emptyList()
+
+                    vssPropertiesViewModel.updateSuggestions(vssPaths)
+                }
+
+                override fun onError(error: Throwable) {
+                    outputViewModel.addOutputEntry(error.toString())
                 }
             },
         )
