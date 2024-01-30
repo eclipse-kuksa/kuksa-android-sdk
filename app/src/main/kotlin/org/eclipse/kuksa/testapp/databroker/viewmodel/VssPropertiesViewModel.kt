@@ -55,14 +55,12 @@ class VSSPropertiesViewModel : ViewModel() {
         Field.FIELD_METADATA,
     )
 
-    private var _suggestions: Collection<String> by mutableStateOf(listOf())
-    val suggestions
-        get() = _suggestions
+    var suggestions: Set<String> by mutableStateOf(setOf())
+        private set
 
     val datapoint: Datapoint
         get() = vssProperties.valueType.createDatapoint(vssProperties.value)
 
-    // Meta data are always part of the properties
     val property: Property
         get() = Property(vssProperties.vssPath, listOf(vssProperties.fieldType))
 
@@ -71,10 +69,10 @@ class VSSPropertiesViewModel : ViewModel() {
     }
 
     fun updateSuggestions(vssPaths: Collection<String>) {
-        this._suggestions = createVssPathHierarchy(vssPaths)
+        suggestions = generateVssPathHierarchy(vssPaths)
     }
 
-    private fun createVssPathHierarchy(paths: Collection<String>): TreeSet<String> {
+    private fun generateVssPathHierarchy(paths: Collection<String>): TreeSet<String> {
         val pathSet = TreeSet<String>()
 
         paths.forEach {
