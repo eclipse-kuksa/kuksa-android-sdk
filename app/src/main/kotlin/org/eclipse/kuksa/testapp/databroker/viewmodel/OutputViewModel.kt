@@ -29,56 +29,52 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.testapp.collection.MaxElementSet
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 private const val MAX_NUMBER_LOG_ENTRIES = 100
 
 class OutputViewModel : ViewModel() {
-    private val logEntries = MaxElementSet<String>(MAX_NUMBER_LOG_ENTRIES)
+    private val outputEntries = MaxElementSet<OutputEntry>(MAX_NUMBER_LOG_ENTRIES)
 
-    var output: List<String> by mutableStateOf(listOf())
+    var output: List<OutputEntry> by mutableStateOf(listOf())
         private set
 
-    fun appendOutput(text: String) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Main) {
-                val sanitizedText = sanitizeString(text)
+    fun addOutputEntry(message: String) {
+        val messages = listOf(message)
+        val outputEntry = OutputEntry(messages = messages)
 
-                val emptyLines = if (logEntries.isEmpty()) "\n" else "\n\n"
-                val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
-                val date = LocalDateTime.now().format(dateFormatter)
-                logEntries += "$emptyLines- $date\n $sanitizedText"
-
-                output = logEntries.toList()
-            }
-        }
+        addOutputEntry(outputEntry)
     }
 
-    // fixes a crash when outputting VssPath(Vehicle). The ScrollBar can't handle input with more than 3971 line breaks
-    private fun sanitizeString(text: String): String {
-        var sanitizedText = text
-        val isTextTooLong = sanitizedText.length >= MAX_LENGTH_LOG_ENTRY
-        if (isTextTooLong) {
-            sanitizedText = sanitizedText.substring(0, MAX_LENGTH_LOG_ENTRY) + "…"
-            sanitizedText += System.lineSeparator()
-            sanitizedText += System.lineSeparator()
-            sanitizedText += "Text is too long and was truncated"
-        }
+    fun addOutputEntry(outputEntry: OutputEntry) {
+        viewModelScope.launch {
+            withContext(Dispatchers.Main) {
+                outputEntries.add(outputEntry)
 
-        return sanitizedText
+                output = outputEntries.toList()
+            }
+        }
     }
 
     fun clear() {
         viewModelScope.launch {
             withContext(Dispatchers.Main) {
-                logEntries.clear()
+                outputEntries.clear()
 
-                output = logEntries.toList()
+                output = outputEntries.toList()
             }
         }
     }
+}
 
-    private companion object {
-        private const val MAX_LENGTH_LOG_ENTRY = 90_000
+class OutputEntry(
+    val localDateTime: LocalDateTime = LocalDateTime.now(),
+    messages: List<String> = mutableListOf(),
+) {
+    private var _messages: MutableList<String> = messages.toMutableList()
+    val messages: List<String>
+        get() = _messages
+
+    fun addMessage(message: String) {
+        _messages.add(message)
     }
 }

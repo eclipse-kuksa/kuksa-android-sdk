@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.3](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.1.2...release/v0.1.3) (2024-01-22)
+
+
+### Bug Fixes
+
+* VSS Specification Generation fails for specific Folder Structure ([9f9f285](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/9f9f28561dafe2e32fce5fb8be72d5882e04b035))
+
 ## [0.1.2](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.1.1...release/v0.1.2) (2023-12-04)
 
 

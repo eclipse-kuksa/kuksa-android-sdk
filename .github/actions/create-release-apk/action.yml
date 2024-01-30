@@ -1,0 +1,38 @@
+name: Release apk
+description: Decodes any provided Keystore and creates a signed .apk with this.
+
+inputs:
+  keystore:
+    description: "Keystore Base64 encoded"
+    required: true
+  key_alias:
+    description: "Keystore alias"
+    required: true
+  key_password:
+    description: "Keystore password"
+    required: true
+  store_password:
+    description: "Store password"
+    required: true
+  gradle_task:
+    description: "Gradle Task to execute"
+    required: false
+    default: assembleRelease
+
+runs:
+  using: "composite"
+  steps:
+    - name: Decode Keystore
+      uses: timheuer/base64-to-file@v1
+      with:
+        fileName: 'keystore.jks'
+        encodedString: ${{ inputs.keystore }}
+
+    - name: Create .apk file
+      env:
+        SIGNING_KEY_ALIAS: ${{ inputs.key_alias }}
+        SIGNING_KEY_PASSWORD: ${{ inputs.key_password }}
+        SIGNING_STORE_PASSWORD: ${{ inputs.store_password }}
+        KEYSTORE_PATH: ${{ runner.temp }}/keystore.jks
+      shell: bash
+      run: ./gradlew ${{ inputs.gradle_task }}

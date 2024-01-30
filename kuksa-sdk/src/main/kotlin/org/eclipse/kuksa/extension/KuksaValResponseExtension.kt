@@ -25,16 +25,11 @@ import org.eclipse.kuksa.proto.v1.Types
 /**
  * Convenience property which returns any [Types.Metadata] if available.
  */
-val KuksaValV1.GetResponse.metadata: Types.Metadata?
+val KuksaValV1.GetResponse.entriesMetadata: List<Types.Metadata>
     get() {
-        if (entriesList.isEmpty()) return null
+        if (entriesList.isEmpty()) return emptyList()
 
-        val entry = entriesList.first()
-        if (!entry.hasMetadata()) {
-            return null
-        }
-
-        return entry.metadata
+        return entriesList.map { it.metadata }
     }
 
 /**
