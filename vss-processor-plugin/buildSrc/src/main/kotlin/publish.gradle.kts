@@ -23,8 +23,6 @@ plugins {
 }
 
 interface PublishPluginExtension {
-    val mavenPublicationName: Property<String>
-    val componentName: Property<String>
     val description: Property<String>
 }
 
@@ -53,9 +51,7 @@ afterEvaluate {
             }
         }
         publications {
-            register<MavenPublication>(extension.mavenPublicationName.get()) {
-                from(components[extension.componentName.get()])
-
+            getByName<MavenPublication>("pluginMaven") {
                 pom {
                     name = "${project.group}:${project.name}"
                     description = extension.description.get()
@@ -109,26 +105,5 @@ afterEvaluate {
             privateKey,
             passphrase,
         )
-
-        sign(publishing.publications)
-    }
-}
-
-gradle.taskGraph.whenReady {
-    tasks.withType(Sign::class) {
-        val publishToMavenLocalTask = allTasks.find { it.name.contains("ToMavenLocal") }
-        val isPublishingToMavenLocal = true
-        allTasks.forEach {
-            println("${it.name}")
-        }
-//        allTasks.
-        val muh = tasks.findByName("publishToMavenLocal")
-//val muh = tasks["publishReleasePublicationToMavenLocal"]
-//        println("AHÀ${muh}")
-        if (isPublishingToMavenLocal) {
-            println(":${project.name}:$name - Signing is disabled (publishToMavenLocal)")
-        }
-
-        onlyIf { !isPublishingToMavenLocal } // disable signing when publishing to MavenLocal
     }
 }

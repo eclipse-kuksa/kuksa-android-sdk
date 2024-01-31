@@ -47,9 +47,6 @@ dependencies {
 }
 
 configure<Publish_gradle.PublishPluginExtension> {
-    mavenPublicationName = "release"
-    componentName = "java"
     description = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK"
 }
-
 

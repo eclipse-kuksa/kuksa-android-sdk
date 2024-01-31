@@ -122,3 +122,26 @@ protobuf {
         }
     }
 }
+
+// Tasks for included composite builds need to be called separately. For convenience sake we depend on the most used
+// tasks. Every task execution of the main project will then be forwarded to the included build project.
+//
+// We have to manually define the task names because the task() method of the included build throws an error for any
+// unknown task.
+val dependentCompositeTasks = setOf(
+    "setSnapshotVersion",
+    "setReleaseVersion",
+    "publishToMavenLocal",
+    "publishAllPublicationsToOSSRHSnapshotRepository",
+    "publishAllPublicationsToOSSRHReleaseRepository"
+)
+tasks
+    .filter { dependentCompositeTasks.contains(it.name) }
+    .forEach { task ->
+        val compositeTask = gradle.includedBuilds.map { compositeBuild ->
+            val compositeTaskPath = task.path.substringAfter(":kuksa-sdk")
+            compositeBuild.task(compositeTaskPath)
+        }
+
+        task.dependsOn(compositeTask)
+    }
