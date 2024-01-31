@@ -29,7 +29,6 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vsscore.model.vssProperties
 
 /**
  * Creates [Subscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
@@ -93,10 +92,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     ) {
         val vssPath = specification.vssPath
 
-        val leafProperties = specification.vssProperties
-        val childPropertiesPaths = leafProperties.map { it.vssPath }
-
-        val specificationPropertyListener = SpecificationPropertyListener(specification, childPropertiesPaths, listener)
+        val specificationPropertyListener = SpecificationPropertyListener(specification, listener)
         subscribe(vssPath, field, specificationPropertyListener)
     }
 
@@ -113,10 +109,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     ) {
         val vssPath = specification.vssPath
 
-        val leafProperties = specification.vssProperties
-        val childPropertiesPaths = leafProperties.map { it.vssPath }
-
-        val specificationPropertyListener = SpecificationPropertyListener(specification, childPropertiesPaths, listener)
+        val specificationPropertyListener = SpecificationPropertyListener(specification, listener)
         unsubscribe(vssPath, field, specificationPropertyListener)
     }
 

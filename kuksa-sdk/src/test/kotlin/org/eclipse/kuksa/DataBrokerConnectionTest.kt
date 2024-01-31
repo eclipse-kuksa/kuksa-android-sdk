@@ -32,6 +32,7 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.test.kotest.Integration
@@ -48,17 +49,23 @@ class DataBrokerConnectionTest : BehaviorSpec({
         val dataBrokerConnection = connectToDataBrokerBlocking()
 
         and("A Property with a valid VSS Path") {
+            val vssPath = "Vehicle.Acceleration.Lateral"
             val fields = listOf(Types.Field.FIELD_VALUE)
-            val property = Property("Vehicle.Acceleration.Lateral", fields)
+            val property = Property(vssPath, fields)
 
             `when`("Subscribing to the Property") {
                 val propertyListener = mockk<PropertyListener>(relaxed = true)
                 dataBrokerConnection.subscribe(property, propertyListener)
 
                 then("The #onPropertyChanged method is triggered") {
+                    val capturingSlot = slot<List<KuksaValV1.EntryUpdate>>()
                     verify(timeout = 100L) {
-                        propertyListener.onPropertyChanged(any(), any(), any())
+                        propertyListener.onPropertyChanged(capture(capturingSlot))
                     }
+
+                    val entryUpdates = capturingSlot.captured
+                    entryUpdates.size shouldBe 1
+                    entryUpdates[0].entry.path shouldBe vssPath
                 }
 
                 `when`("The observed Property changes") {
@@ -70,14 +77,14 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     dataBrokerConnection.update(property, datapoint)
 
                     then("The #onPropertyChanged callback is triggered with the new value") {
-                        val capturingSlot = slot<Types.DataEntry>()
+                        val capturingSlot = slot<List<KuksaValV1.EntryUpdate>>()
 
                         verify(timeout = 100) {
-                            propertyListener.onPropertyChanged(any(), any(), capture(capturingSlot))
+                            propertyListener.onPropertyChanged(capture(capturingSlot))
                         }
 
-                        val dataEntry = capturingSlot.captured
-                        val capturedDatapoint = dataEntry.value
+                        val entryUpdates = capturingSlot.captured
+                        val capturedDatapoint = entryUpdates[0].entry.value
                         val float = capturedDatapoint.float
 
                         assertEquals(newValue, float, 0.0001f)

@@ -30,12 +30,13 @@ import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.extensions.updateRandomUint32Value
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
+import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.DataEntry
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.vssSpecification.VssDriver
@@ -53,6 +54,55 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 DataBrokerTransporter(dataBrokerConnectorProvider.managedChannel)
             val classUnderTest = DataBrokerSubscriber(databrokerTransporter)
 
+            `when`("Subscribing to VSS_PATH (Branch) 'Vehicle.ADAS.ABS'") {
+                val vssPath = "Vehicle.ADAS.ABS"
+                val fieldValue = Types.Field.FIELD_VALUE
+                val propertyListener = mockk<PropertyListener>(relaxed = true)
+                classUnderTest.subscribe(vssPath, fieldValue, propertyListener)
+
+                then("The PropertyListener should send out ONE update containing ALL children") {
+                    val entryUpdatesList = mutableListOf<List<KuksaValV1.EntryUpdate>>()
+                    verify(timeout = 100, exactly = 1) {
+                        propertyListener.onPropertyChanged(capture(entryUpdatesList))
+                    }
+
+                    val entryUpdates = entryUpdatesList[0]
+                    entryUpdatesList.size shouldBe 1 // ONE update
+                    entryUpdates.size shouldBe 3 // all children: IsEnabled, IsEngaged, IsError
+                    entryUpdates.all { it.entry.path.startsWith(vssPath) } shouldBe true
+                }
+
+                `when`("Any child changes it's value") {
+                    clearMocks(propertyListener)
+                    val vssPathIsError = "Vehicle.ADAS.ABS.IsError"
+                    val newValueIsError = databrokerTransporter.toggleBoolean(vssPathIsError)
+                    val vssPathIsEngaged = "Vehicle.ADAS.ABS.IsEngaged"
+                    val newValueIsEngaged = databrokerTransporter.toggleBoolean(vssPathIsEngaged)
+                    delay(50)
+
+                    then("The PropertyListener should be notified about it") {
+                        val entryUpdatesList = mutableListOf<List<KuksaValV1.EntryUpdate>>()
+                        verify(timeout = 100, exactly = 2) {
+                            propertyListener.onPropertyChanged(capture(entryUpdatesList))
+                        }
+                        entryUpdatesList.size shouldBe 2
+                        val entryUpdates = entryUpdatesList.flatten()
+                        entryUpdates.count {
+                            val path = it.entry.path
+                            val entry = it.entry
+                            val value = entry.value
+                            path == vssPathIsError && value.bool == newValueIsError
+                        } shouldBe 1
+                        entryUpdates.count {
+                            val path = it.entry.path
+                            val entry = it.entry
+                            val value = entry.value
+                            path == vssPathIsEngaged && value.bool == newValueIsEngaged
+                        } shouldBe 1
+                    }
+                }
+            }
+
             `when`("Subscribing using VSS_PATH to Vehicle.Speed with FIELD_VALUE") {
                 val vssPath = "Vehicle.Speed"
                 val fieldValue = Types.Field.FIELD_VALUE
@@ -64,26 +114,41 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
                     then("The PropertyListener is notified about the change") {
                         verify(timeout = 100L, exactly = 2) {
-                            propertyListener.onPropertyChanged(vssPath, fieldValue, any())
+                            propertyListener.onPropertyChanged(any())
                         }
                     }
                 }
 
                 `when`("Subscribing the same PropertyListener to a different vssPath") {
+                    clearMocks(propertyListener)
                     val otherVssPath = "Vehicle.ADAS.CruiseControl.SpeedSet"
                     classUnderTest.subscribe(otherVssPath, fieldValue, propertyListener)
 
                     and("Both values are updated") {
-                        databrokerTransporter.updateRandomFloatValue(vssPath)
-                        databrokerTransporter.updateRandomFloatValue(otherVssPath)
+                        val updatedValueVssPath = databrokerTransporter.updateRandomFloatValue(vssPath)
+                        val updatedValueOtherVssPath = databrokerTransporter.updateRandomFloatValue(otherVssPath)
+                        delay(50)
 
                         then("The Observer is notified about both changes") {
+                            val entryUpdatesList = mutableListOf<List<KuksaValV1.EntryUpdate>>()
                             verify(timeout = 100L, exactly = 3) {
-                                propertyListener.onPropertyChanged(vssPath, fieldValue, any())
+                                propertyListener.onPropertyChanged(capture(entryUpdatesList))
                             }
-                            verify(timeout = 100L, exactly = 2) {
-                                propertyListener.onPropertyChanged(otherVssPath, fieldValue, any())
-                            }
+                            val entryUpdates = entryUpdatesList.flatten()
+                            entryUpdates
+                                .count {
+                                    val path = it.entry.path
+                                    val entry = it.entry
+                                    val value = entry.value
+                                    path == vssPath && value.float == updatedValueVssPath
+                                } shouldBe 1
+                            entryUpdates
+                                .count {
+                                    val path = it.entry.path
+                                    val entry = it.entry
+                                    val value = entry.value
+                                    path == otherVssPath && value.float == updatedValueOtherVssPath
+                                } shouldBe 1
                         }
                     }
                 }
@@ -102,13 +167,13 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
                         then("Each PropertyListener is only notified once") {
                             propertyListenerMocks.forEach { propertyListenerMock ->
-                                val dataEntries = mutableListOf<DataEntry>()
+                                val dataEntries = mutableListOf<List<KuksaValV1.EntryUpdate>>()
 
                                 verify(timeout = 100L, exactly = 2) {
-                                    propertyListenerMock.onPropertyChanged(vssPath, fieldValue, capture(dataEntries))
+                                    propertyListenerMock.onPropertyChanged(capture(dataEntries))
                                 }
 
-                                val count = dataEntries.count { it.value.float == randomFloatValue }
+                                val count = dataEntries.count { it[0].entry.value.float == randomFloatValue }
                                 count shouldBe 1
                             }
                         }
@@ -125,7 +190,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
                         then("The PropertyListener is not notified") {
                             verify(exactly = 0) {
-                                propertyListener.onPropertyChanged(vssPath, fieldValue, any())
+                                propertyListener.onPropertyChanged(any())
                             }
                         }
                     }
@@ -143,13 +208,13 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     val randomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
                     then("The PropertyListener is only notified once") {
-                        val dataEntries = mutableListOf<DataEntry>()
+                        val dataEntries = mutableListOf<List<KuksaValV1.EntryUpdate>>()
 
                         verify(timeout = 100L, exactly = 2) {
-                            propertyListenerMock.onPropertyChanged(vssPath, fieldValue, capture(dataEntries))
+                            propertyListenerMock.onPropertyChanged(capture(dataEntries))
                         }
 
-                        val count = dataEntries.count { it.value.float == randomFloatValue }
+                        val count = dataEntries.count { it[0].entry.value.float == randomFloatValue }
                         count shouldBe 1
                     }
                 }
