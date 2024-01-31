@@ -4,7 +4,7 @@ Get instantly bootstrapped into the world of the KUKSA SDK with the following co
 
 ## Integration
 
-*build.gradle*
+*build.gradle.kts*
 ```
 implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
 ```
@@ -153,9 +153,26 @@ For a more convenient usage you can opt in to auto generate Kotlin models via [S
 of the same specification the Databroker uses. For starters you can retrieve an extensive default specification from the
 release page of the [COVESA Vehicle Signal Specification GitHub repository](https://github.com/COVESA/vehicle_signal_specification/releases).
 
-*build.gradle*
+*build.gradle.kts*
 ```
-ksp("org.eclipse.kuksa:vss-processor:<VERSION>")
+plugins {
+    id("org.eclipse.kuksa.vss-processor-plugin")
+}
+
+dependencies {
+    ksp("org.eclipse.kuksa:vss-processor:<VERSION>")
+}
+
+// Copies the given specification file to the KSP processor
+tasks.register<ProvideVssDefinitionTask>("ProvideVssDefinition") {
+    val vssDefinitionFilePath = "$projectDir/src/main/assets/<VSS_FILE.yml>"
+    val regularFile = RegularFile { File(vssDefinitionFilePath) }
+    vssDefinitionFile.add(regularFile)
+}
+
+tasks.withType<KspTask> {
+    dependsOn(tasks.withType<ProvideVssDefinitionTask>())
+}
 ```
 
 Use the new [`VssDefinition`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssDefinition.kt) annotation and provide the path to the specification file (Inside the assets folder).
