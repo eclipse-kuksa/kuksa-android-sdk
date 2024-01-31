@@ -133,7 +133,7 @@ val dependentCompositeTasks = setOf(
     "setReleaseVersion",
     "publishToMavenLocal",
     "publishAllPublicationsToOSSRHSnapshotRepository",
-    "publishAllPublicationsToOSSRHReleaseRepository"
+    "publishAllPublicationsToOSSRHReleaseRepository",
 )
 tasks
     .filter { dependentCompositeTasks.contains(it.name) }

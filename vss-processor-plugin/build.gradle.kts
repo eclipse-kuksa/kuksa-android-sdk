@@ -49,4 +49,3 @@ dependencies {
 configure<Publish_gradle.PublishPluginExtension> {
     description = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK"
 }
-
