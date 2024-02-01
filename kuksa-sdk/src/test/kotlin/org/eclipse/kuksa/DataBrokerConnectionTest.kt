@@ -21,6 +21,7 @@ package org.eclipse.kuksa
 
 import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -31,6 +32,7 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.mocking.FriendlyVssSpecificationListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
@@ -41,6 +43,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerConnectionTest : BehaviorSpec({
     tags(Integration)
@@ -161,14 +164,12 @@ class DataBrokerConnectionTest : BehaviorSpec({
             }
 
             `when`("Subscribing to the specification") {
-                val specificationListener =
-                    mockk<VssSpecificationListener<VssDriver>>(relaxed = true)
+                val specificationListener = FriendlyVssSpecificationListener<VssDriver>()
                 dataBrokerConnection.subscribe(specification, listener = specificationListener)
 
                 then("The #onSpecificationChanged method is triggered") {
-                    val capturingList = mutableListOf<VssDriver>()
-                    verify(timeout = 100L, exactly = 1) {
-                        specificationListener.onSpecificationChanged(capture(capturingList))
+                    eventually(1.seconds) {
+                        specificationListener.updatedSpecifications.size shouldBe 1
                     }
                 }
 
@@ -179,13 +180,11 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     dataBrokerConnection.update(property, datapoint)
 
                     then("Every child property has been updated with the correct value") {
-                        val capturingList = mutableListOf<VssDriver>()
-
-                        verify(timeout = 100, exactly = 2) {
-                            specificationListener.onSpecificationChanged(capture(capturingList))
+                        eventually(1.seconds) {
+                            specificationListener.updatedSpecifications.size shouldBe 2
                         }
 
-                        val updatedDriver = capturingList.last()
+                        val updatedDriver = specificationListener.updatedSpecifications.last()
                         val heartRate = updatedDriver.heartRate
 
                         heartRate.value shouldBe newHeartRateValue
@@ -199,13 +198,11 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     dataBrokerConnection.update(property, datapoint)
 
                     then("The subscribed Specification should be updated") {
-                        val capturingSlots = mutableListOf<VssDriver>()
-
-                        verify(timeout = 100, exactly = 3) {
-                            specificationListener.onSpecificationChanged(capture(capturingSlots))
+                        eventually(1.seconds) {
+                            specificationListener.updatedSpecifications.size shouldBe 3
                         }
 
-                        val updatedDriver = capturingSlots.last()
+                        val updatedDriver = specificationListener.updatedSpecifications.last()
                         val heartRate = updatedDriver.heartRate
 
                         heartRate.value shouldBe newHeartRateValue

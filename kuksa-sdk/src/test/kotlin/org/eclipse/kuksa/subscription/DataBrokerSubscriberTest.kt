@@ -30,14 +30,14 @@ import io.mockk.verify
 import kotlinx.coroutines.delay
 import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.extensions.updateRandomUint32Value
+import org.eclipse.kuksa.mocking.FriendlyPropertyListener
+import org.eclipse.kuksa.mocking.FriendlyVssSpecificationListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
-import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
@@ -163,10 +163,10 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 }
 
                 `when`("Subscribing multiple (different) PropertyListener to $vssPath") {
-                    val propertyListenerMocks = mutableListOf<PropertyListener>()
+                    val friendlyPropertyListeners = mutableListOf<FriendlyPropertyListener>()
                     repeat(10) {
-                        val otherPropertyListenerMock = mockk<PropertyListener>(relaxed = true)
-                        propertyListenerMocks.add(otherPropertyListenerMock)
+                        val otherPropertyListenerMock = FriendlyPropertyListener()
+                        friendlyPropertyListeners.add(otherPropertyListenerMock)
 
                         classUnderTest.subscribe(vssPath, fieldValue, otherPropertyListenerMock)
                     }
@@ -175,14 +175,13 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                         val randomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
                         then("Each PropertyListener is only notified once") {
-                            propertyListenerMocks.forEach { propertyListenerMock ->
-                                val dataEntries = mutableListOf<List<KuksaValV1.EntryUpdate>>()
-
-                                verify(timeout = 100L, exactly = 2) {
-                                    propertyListenerMock.onPropertyChanged(capture(dataEntries))
+                            friendlyPropertyListeners.forEach { friendlyPropertyListener ->
+                                eventually(1.seconds) {
+                                    friendlyPropertyListener.updates.size shouldBe 2
                                 }
 
-                                val count = dataEntries.count { it[0].entry.value.float == randomFloatValue }
+                                val count = friendlyPropertyListener.updates
+                                    .count { it[0].entry.value.float == randomFloatValue }
                                 count shouldBe 1
                             }
                         }
@@ -209,21 +208,20 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             `when`("Subscribing the same PropertyListener twice using VSS_PATH to Vehicle.Speed with FIELD_VALUE") {
                 val vssPath = "Vehicle.Speed"
                 val fieldValue = Types.Field.FIELD_VALUE
-                val propertyListenerMock = mockk<PropertyListener>(relaxed = true)
-                classUnderTest.subscribe(vssPath, fieldValue, propertyListenerMock)
-                classUnderTest.subscribe(vssPath, fieldValue, propertyListenerMock)
+                val friendlyPropertyListener = FriendlyPropertyListener()
+                classUnderTest.subscribe(vssPath, fieldValue, friendlyPropertyListener)
+                classUnderTest.subscribe(vssPath, fieldValue, friendlyPropertyListener)
 
                 and("When the FIELD_VALUE of Vehicle.Speed is updated") {
                     val randomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
                     then("The PropertyListener is only notified once") {
-                        val dataEntries = mutableListOf<List<KuksaValV1.EntryUpdate>>()
-
-                        verify(timeout = 100L, exactly = 2) {
-                            propertyListenerMock.onPropertyChanged(capture(dataEntries))
+                        eventually(1.seconds) {
+                            friendlyPropertyListener.updates.size shouldBe 2
                         }
 
-                        val count = dataEntries.count { it[0].entry.value.float == randomFloatValue }
+                        val count = friendlyPropertyListener.updates
+                            .count { it[0].entry.value.float == randomFloatValue }
                         count shouldBe 1
                     }
                 }
@@ -232,12 +230,11 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             val specification = VssDriver.VssHeartRate()
 
             `when`("Subscribing using VssSpecification to Vehicle.Driver.HeartRate with Field FIELD_VALUE") {
-                val specificationObserverMock =
-                    mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
+                val friendlyVssSpecificationListener = FriendlyVssSpecificationListener<VssDriver.VssHeartRate>()
                 classUnderTest.subscribe(
                     specification,
                     Types.Field.FIELD_VALUE,
-                    specificationObserverMock,
+                    friendlyVssSpecificationListener,
                 )
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
@@ -245,20 +242,19 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                         databrokerTransporter.updateRandomUint32Value(specification.vssPath)
 
                     then("The Observer should be triggered") {
-                        val vssHeartRates = mutableListOf<VssDriver.VssHeartRate>()
-                        verify(timeout = 100, exactly = 2) {
-                            specificationObserverMock.onSpecificationChanged(capture(vssHeartRates))
+                        eventually(1.seconds) {
+                            friendlyVssSpecificationListener.updatedSpecifications.size shouldBe 2
                         }
 
-                        val count = vssHeartRates.count { it.value == randomIntValue }
+                        val count = friendlyVssSpecificationListener.updatedSpecifications
+                            .count { it.value == randomIntValue }
                         count shouldBe 1
                     }
                 }
             }
 
             `when`("Subscribing the same SpecificationObserver twice to Vehicle.Driver.HeartRate") {
-                val specificationObserverMock =
-                    mockk<VssSpecificationListener<VssDriver.VssHeartRate>>(relaxed = true)
+                val specificationObserverMock = FriendlyVssSpecificationListener<VssDriver.VssHeartRate>()
                 classUnderTest.subscribe(
                     specification,
                     Types.Field.FIELD_VALUE,
@@ -275,13 +271,11 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                         databrokerTransporter.updateRandomUint32Value(specification.vssPath)
 
                     then("The Observer is only notified once") {
-                        val heartRates = mutableListOf<VssDriver.VssHeartRate>()
-
-                        verify(timeout = 100, exactly = 2) {
-                            specificationObserverMock.onSpecificationChanged(capture(heartRates))
+                        eventually(1.seconds) {
+                            specificationObserverMock.updatedSpecifications.size shouldBe 2
                         }
 
-                        val count = heartRates.count { it.value == randomIntValue }
+                        val count = specificationObserverMock.updatedSpecifications.count { it.value == randomIntValue }
                         count shouldBe 1
                     }
                 }
@@ -349,20 +343,3 @@ class DataBrokerSubscriberTest : BehaviorSpec({
         }
     }
 })
-
-class FriendlyPropertyListener : PropertyListener {
-    val updates = mutableListOf<List<KuksaValV1.EntryUpdate>>()
-    val errors = mutableListOf<Throwable>()
-    override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
-        updates.add(entryUpdates)
-    }
-
-    override fun onError(throwable: Throwable) {
-        errors.add(throwable)
-    }
-
-    fun reset() {
-        updates.clear()
-        errors.clear()
-    }
-}
