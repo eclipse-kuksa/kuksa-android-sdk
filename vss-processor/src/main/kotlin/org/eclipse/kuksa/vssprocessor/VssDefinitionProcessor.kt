@@ -100,7 +100,7 @@ class VssDefinitionProcessor(
         private fun loadAssetFile(fileName: String): File? {
             val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return null
             val generationPath = generatedFile.absolutePath
-            val buildPath = generationPath.replaceAfter("$BUILD_FOLDER_NAME$fileSeparator", "")
+            val buildPath = generationPath.replaceAfterLast("$BUILD_FOLDER_NAME$fileSeparator", "")
             val kspInputFilePath = "$buildPath$fileSeparator$KSP_INPUT_BUILD_DIRECTORY"
             val kspInputFolder = File(kspInputFilePath)
 

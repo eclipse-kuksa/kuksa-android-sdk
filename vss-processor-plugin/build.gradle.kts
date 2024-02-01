@@ -46,6 +46,6 @@ dependencies {
     implementation(kotlin("stdlib"))
 }
 
-configure<Publish_gradle.PublishPluginExtension> {
+publish {
     description = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK"
 }
