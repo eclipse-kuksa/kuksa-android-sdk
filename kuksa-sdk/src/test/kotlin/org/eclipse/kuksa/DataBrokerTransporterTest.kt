@@ -111,7 +111,7 @@ class DataBrokerTransporterTest : BehaviorSpec({
 
                         then("The PropertyListener should be notified") {
                             verify {
-                                propertyListener.onPropertyChanged(vssPath, Types.Field.FIELD_VALUE, any())
+                                propertyListener.onPropertyChanged(any())
                             }
                         }
                     }

@@ -60,3 +60,22 @@ internal suspend fun DataBrokerTransporter.updateRandomUint32Value(
 
     return randomValue
 }
+
+internal suspend fun DataBrokerTransporter.toggleBoolean(vssPath: String): Boolean {
+    val fields = listOf(Types.Field.FIELD_VALUE)
+
+    var newBoolean: Boolean? = null
+    try {
+        val response = fetch(vssPath, fields)
+        val currentBool = response.entriesList[0].value.bool
+
+        newBoolean = !currentBool
+        val newDatapoint = Types.Datapoint.newBuilder().setBool(newBoolean).build()
+
+        update(vssPath, fields, newDatapoint)
+    } catch (e: Exception) {
+        fail("Updating $vssPath to $newBoolean failed: $e")
+    }
+
+    return newBoolean == true
+}
