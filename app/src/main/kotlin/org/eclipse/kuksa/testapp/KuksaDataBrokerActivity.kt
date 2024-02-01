@@ -95,7 +95,13 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     private val propertyListener = object : PropertyListener {
         override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
             Log.d(TAG, "onPropertyChanged() called with: updatedValues = $entryUpdates")
-            outputViewModel.addOutputEntry("Updated value: $entryUpdates")
+
+            val entries = mutableListOf<String>().apply {
+                add("Updated Entries")
+                addAll(entryUpdates.map { it.entry.toString() })
+            }
+            val outputEntry = OutputEntry(messages = entries)
+            outputViewModel.addOutputEntry(outputEntry)
         }
 
         override fun onError(throwable: Throwable) {
