@@ -1,0 +1,42 @@
+name: GitHub release
+
+concurrency: production
+
+on:
+  push:
+    tags:
+      - 'release/v*'
+
+permissions:
+  contents: write
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/setup-project
+
+      - name: Set Release Version
+        run: ./gradlew setReleaseVersion # Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
+
+      - uses: ./.github/actions/create-release-apk
+        with:
+          keystore: ${{ secrets.KEYSTORE_RELEASE }}
+          key_alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          store_password: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          gradle_task: app:assembleRelease
+
+      - name: Rename release artefact
+        run: mv app/build/outputs/apk/release/app-release.apk kuksa_sdk_testapp.apk
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          body_path: CHANGELOG.md
+          files: |
+            kuksa_sdk_testapp.apk
+            CHANGELOG.md
