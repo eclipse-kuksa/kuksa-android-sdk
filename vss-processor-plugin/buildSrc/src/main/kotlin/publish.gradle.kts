@@ -18,7 +18,7 @@
  */
 
 plugins {
-    `maven-publish`
+//    id("com.gradle.plugin-publish")
     signing
 }
 
@@ -28,82 +28,87 @@ interface PublishPluginExtension {
 
 val extension = project.extensions.create<PublishPluginExtension>("publish")
 
-afterEvaluate {
-    publishing {
-        repositories {
-            maven {
-                name = "OSSRHRelease"
+//afterEvaluate {
+//    publishing {
+//        repositories {
+//            maven {
+//                name = "OSSRHRelease"
+//
+//                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+//                credentials {
+//                    username = System.getenv("ORG_OSSRH_USERNAME")
+//                    password = System.getenv("ORG_OSSRH_PASSWORD")
+//                }
+//            }
+//            maven {
+//                name = "OSSRHSnapshot"
+//
+//                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+//                credentials {
+//                    username = System.getenv("ORG_OSSRH_USERNAME")
+//                    password = System.getenv("ORG_OSSRH_PASSWORD")
+//                }
+//            }
+//        }
+//        publications {
+//            getByName<MavenPublication>("pluginMaven") {
+//                pom {
+//                    name = "${project.group}:${project.name}"
+//                    description = extension.description.get()
+//                    url = "https://github.com/eclipse-kuksa/kuksa-android-sdk"
+//                    licenses {
+//                        license {
+//                            name.set("The Apache Software License, Version 2.0")
+//                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+//                        }
+//                    }
+//                    developers {
+//                        developer {
+//                            name = "Mark Hüsers"
+//                            email = "mark.huesers@etas.com"
+//                            organization = "ETAS GmbH"
+//                            organizationUrl = "https://www.etas.com"
+//                        }
+//                        developer {
+//                            name = "Sebastian Schildt"
+//                            email = "sebastian.schildt@etas.com"
+//                            organization = "ETAS GmbH"
+//                            organizationUrl = "https://www.etas.com"
+//                        }
+//                        developer {
+//                            name = "Andre Weber"
+//                            email = "andre.weber3@etas.com"
+//                            organization = "ETAS GmbH"
+//                            organizationUrl = "https://www.etas.com"
+//                        }
+//                    }
+//                    scm {
+//                        connection.set("scm:git:github.com/eclipse-kuksa/kuksa-android-sdk.git")
+//                        developerConnection.set("scm:git:ssh://github.com/eclipse-kuksa/kuksa-android-sdk.git")
+//                        url.set("https://github.com/eclipse-kuksa/kuksa-android-sdk/tree/main")
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    signing {
+//        var keyId: String? = System.getenv("ORG_GPG_KEY_ID")
+//        if (keyId != null && keyId.length > 8) {
+//            keyId = keyId.takeLast(8)
+//        }
+//        val privateKey = System.getenv("ORG_GPG_PRIVATE_KEY")
+//        val passphrase = System.getenv("ORG_GPG_PASSPHRASE")
+//
+//        useInMemoryPgpKeys(
+//            keyId,
+//            privateKey,
+//            passphrase,
+//        )
+//    }
+//}
 
-                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-                credentials {
-                    username = System.getenv("ORG_OSSRH_USERNAME")
-                    password = System.getenv("ORG_OSSRH_PASSWORD")
-                }
-            }
-            maven {
-                name = "OSSRHSnapshot"
-
-                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-                credentials {
-                    username = System.getenv("ORG_OSSRH_USERNAME")
-                    password = System.getenv("ORG_OSSRH_PASSWORD")
-                }
-            }
-        }
-        publications {
-            getByName<MavenPublication>("pluginMaven") {
-                pom {
-                    name = "${project.group}:${project.name}"
-                    description = extension.description.get()
-                    url = "https://github.com/eclipse-kuksa/kuksa-android-sdk"
-                    licenses {
-                        license {
-                            name.set("The Apache Software License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-                    developers {
-                        developer {
-                            name = "Mark Hüsers"
-                            email = "mark.huesers@etas.com"
-                            organization = "ETAS GmbH"
-                            organizationUrl = "https://www.etas.com"
-                        }
-                        developer {
-                            name = "Sebastian Schildt"
-                            email = "sebastian.schildt@etas.com"
-                            organization = "ETAS GmbH"
-                            organizationUrl = "https://www.etas.com"
-                        }
-                        developer {
-                            name = "Andre Weber"
-                            email = "andre.weber3@etas.com"
-                            organization = "ETAS GmbH"
-                            organizationUrl = "https://www.etas.com"
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:github.com/eclipse-kuksa/kuksa-android-sdk.git")
-                        developerConnection.set("scm:git:ssh://github.com/eclipse-kuksa/kuksa-android-sdk.git")
-                        url.set("https://github.com/eclipse-kuksa/kuksa-android-sdk/tree/main")
-                    }
-                }
-            }
-        }
-    }
-
-    signing {
-        var keyId: String? = System.getenv("ORG_GPG_KEY_ID")
-        if (keyId != null && keyId.length > 8) {
-            keyId = keyId.takeLast(8)
-        }
-        val privateKey = System.getenv("ORG_GPG_PRIVATE_KEY")
-        val passphrase = System.getenv("ORG_GPG_PASSPHRASE")
-
-        useInMemoryPgpKeys(
-            keyId,
-            privateKey,
-            passphrase,
-        )
-    }
-}
+//gradlePlugin {
+//    website = "<substitute your project website>"
+//    vcsUrl = "<uri to project source repository>"
+//}

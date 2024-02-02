@@ -5,7 +5,7 @@ concurrency: snapshot
 on:
   push:
     branches:
-      - main
+      - feature-45-work
 
 jobs:
   deployment:

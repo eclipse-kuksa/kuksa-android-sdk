@@ -36,9 +36,15 @@ open class VssProcessorPluginExtension
 @Inject
 internal constructor(objectFactory: ObjectFactory) {
     /**
-     * The default search path is the main assets folder. If
+     * The default search path is the main assets folder. The defined folder will be crawled for all compatible
+     * extension types by this plugin.
      */
     val searchPath: Property<String> = objectFactory.property(String::class.java).convention("")
+
+    /**
+     * If no file name is provided then all compatible files inside the [searchPath] will be copied. Otherwise only
+     * the defined file will be used if available.
+     */
     val fileName: Property<String> = objectFactory.property(String::class.java).convention("")
 }
 
