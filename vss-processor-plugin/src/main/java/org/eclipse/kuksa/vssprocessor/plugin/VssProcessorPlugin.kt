@@ -48,11 +48,12 @@ internal constructor(objectFactory: ObjectFactory) {
     val fileName: Property<String> = objectFactory.property(String::class.java).convention("")
 }
 
+private val fileSeparator = File.separator
+
 /**
  * This Plugin searches for compatible specification files and copies them into an input folder for the
  * KSP VSS Processor. This is necessary because the Symbol Processor does not have access to the android assets folder.
  * The default search path is the main assets folder.
- *
  */
 class VssProcessorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -64,10 +65,10 @@ class VssProcessorPlugin : Plugin<Project> {
         val compatibleFiles = findFiles(
             directory = searchDirectory,
             fileName = extension.fileName.get(),
-            validExtensions = compatibleExtensions
+            validExtensions = compatibleExtensions,
         )
 
-        val provideVssDefinitionTask = project.tasks.register<ProvideVssDefinitionTask>("ProvideVssDefinition") {
+        val provideVssDefinitionTask = project.tasks.register<ProvideVssDefinitionTask>(PROVIDE_VSS_DEFINITION_TASK) {
             compatibleFiles.forEach { definitionFile ->
                 val regularFile = RegularFile { definitionFile }
                 vssDefinitionFiles.add(regularFile)
@@ -75,10 +76,11 @@ class VssProcessorPlugin : Plugin<Project> {
         }
 
         project.tasks.getByName("preBuild").finalizedBy(
-            provideVssDefinitionTask.get()
+            provideVssDefinitionTask.get(),
         )
     }
 
+    @Suppress("SameParameterValue")
     private fun findFiles(
         directory: String,
         fileName: String = "",
@@ -98,42 +100,22 @@ class VssProcessorPlugin : Plugin<Project> {
 
     companion object {
         private const val EXTENSION_NAME = "vssProcessor"
+        private const val PROVIDE_VSS_DEFINITION_TASK = "ProvideVssDefinition"
 
         private val compatibleExtensions = setOf("yaml")
-        private val fileSeparator = File.separator
         private val mainAssetsDirectory = "src$fileSeparator" + "main$fileSeparator" + "assets"
     }
 }
 
+/**
+ * This task takes a collection of files
+ */
 abstract class ProvideVssDefinitionTask : DefaultTask() {
-
     @get:InputFiles
     abstract val vssDefinitionFiles: ListProperty<RegularFile>
 
     @TaskAction
     fun provideFile() {
-//        val buildDirPath = project.buildDir.absolutePath
-//        val mainAssets = "${project.projectDir}$fileSeparator$mainAssetsDirectory"
-//        val mainAssetsFolder = File(mainAssets)
-
-//        mainAssetsFolder
-//            .walk()
-//            .filter { compatibleExtensions.contains(it.extension) }
-//            .forEach { vssDefinitionInputFile ->
-//                val vssDefinitionBuildFile = File(
-//                    "$buildDirPath$fileSeparator" +
-//                        "$KSP_INPUT_BUILD_DIRECTORY$fileSeparator" +
-//                        vssDefinitionInputFile.name,
-//                )
-//
-//                println(
-//                    "Found VSS definition input file: ${vssDefinitionInputFile.name}, " +
-//                        "copying to: $vssDefinitionBuildFile",
-//                )
-//
-//                vssDefinitionInputFile.copyTo(vssDefinitionBuildFile, true)
-//            }
-
         val buildDirPath = project.buildDir.absolutePath
         vssDefinitionFiles.get().forEach { file ->
             val vssDefinitionInputFile = file.asFile
@@ -152,7 +134,5 @@ abstract class ProvideVssDefinitionTask : DefaultTask() {
 
     companion object {
         private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput"
-
-        private val fileSeparator = File.separator
     }
 }

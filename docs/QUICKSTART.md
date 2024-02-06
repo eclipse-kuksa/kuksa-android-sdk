@@ -163,15 +163,10 @@ dependencies {
     ksp("org.eclipse.kuksa:vss-processor:<VERSION>")
 }
 
-// Copies the given specification file to the KSP processor
-tasks.register<ProvideVssDefinitionTask>("ProvideVssDefinition") {
-    val vssDefinitionFilePath = "$projectDir/src/main/assets/<VSS_FILE.yml>"
-    val regularFile = RegularFile { File(vssDefinitionFilePath) }
-    vssDefinitionFile.add(regularFile)
-}
-
-tasks.withType<KspTask> {
-    dependsOn(tasks.withType<ProvideVssDefinitionTask>())
+// Optional - See plugin documentation. Files inside the main assets are used automatically.
+vssProcessor {
+    searchPath = "$projectDir/src/main/assets"
+    fileName = "vss_rel_4.0.yaml"
 }
 ```
 

@@ -28,7 +28,7 @@ pluginManagement {
 
     plugins {
         id("com.google.devtools.ksp") version "1.9.0-1.0.11"
-        id("org.eclipse.kuksa.vss-processor-plugin") version "0.1.3"
+        id("org.eclipse.kuksa.vss-processor-plugin") // Always take the newest version since it's locally included
         kotlin("jvm") version "1.9.0-1.0.11"
         kotlin("plugin.serialization") version "1.9.0"
     }

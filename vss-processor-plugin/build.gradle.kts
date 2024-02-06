@@ -21,7 +21,6 @@ plugins {
     alias(libs.plugins.pluginPublishing)
     signing
     `kotlin-dsl`
-//    publish
     version
 }
 
@@ -56,15 +55,8 @@ afterEvaluate {
                     password = System.getenv("ORG_OSSRH_PASSWORD")
                 }
             }
-            maven {
-                name = "OSSRHSnapshot"
-
-                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-                credentials {
-                    username = System.getenv("ORG_OSSRH_USERNAME")
-                    password = System.getenv("ORG_OSSRH_PASSWORD")
-                }
-            }
+            // Snapshot are disabled for Plugins since the plugin marker has issues finding the correct jar with the
+            // automatic timestamps / build number being added as a postfix to the files.
         }
         publications {
             getByName<MavenPublication>("pluginMaven") {

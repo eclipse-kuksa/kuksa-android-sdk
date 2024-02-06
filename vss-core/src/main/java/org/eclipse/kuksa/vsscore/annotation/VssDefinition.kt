@@ -32,14 +32,10 @@ package org.eclipse.kuksa.vsscore.annotation
  *     id("org.eclipse.kuksa.vss-processor-plugin") version "<VERSION>"
  * }
  *
- * tasks.register<ProvideVssDefinitionTask>("ProvideVssDefinition") {
- *     val vssDefinitionFilePath = "$projectDir/src/main/assets/vss_rel_4.0.yaml"
- *     val regularFile = RegularFile { File(vssDefinitionFilePath) }
- *     vssDefinitionFile.add(regularFile)
- * }
- *
- * tasks.withType<KspTask> {
- *     dependsOn(tasks.withType<ProvideVssDefinitionTask>())
+ * // Optional - See plugin documentation. Files inside the main assets are used automatically.
+ * vssProcessor {
+ *     searchPath = "$projectDir/src/main/assets"
+ *     fileName = "vss_rel_4.0.yaml"
  * }
  * ```
  *

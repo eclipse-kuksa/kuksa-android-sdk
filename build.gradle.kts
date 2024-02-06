@@ -93,7 +93,6 @@ val dependentCompositeTasks = setOf(
     "setSnapshotVersion",
     "setReleaseVersion",
     "publishToMavenLocal",
-    "publishAllPublicationsToOSSRHSnapshotRepository",
     "publishAllPublicationsToOSSRHReleaseRepository",
 )
 
