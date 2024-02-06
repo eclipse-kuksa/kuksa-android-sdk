@@ -19,49 +19,27 @@
 
 package org.eclipse.kuksa.subscription
 
-import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
-import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
-import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 internal class SpecificationPropertyListener<T : VssSpecification>(
     specification: T,
-    vssPaths: Collection<String>,
     private val listener: VssSpecificationListener<T>,
 ) : PropertyListener {
-    // TODO: Remove as soon as the server supports subscribing to vssPaths which are not VssProperties
-    // Reduces the load on the observer for big VssSpecifications. We wait for the initial update
-    // of all VssProperties before notifying the observer about the first batch
-    private val initialSubscriptionUpdates = vssPaths.associateWith { false }.toMutableMap()
-
     // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we
     // would override the last heir value with every new response.
     private var updatedVssSpecification: T = specification
 
-    // Multiple onPropertyChanged updates from different threads may be called. The updatedVssSpecification must be
-    // in sync however. Calling the .copy in a blocking context is necessary for this.
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val specificationUpdateContext = Dispatchers.IO.limitedParallelism(1)
-
-    override fun onPropertyChanged(vssPath: String, field: Types.Field, updatedValue: Types.DataEntry) {
-        Log.d(TAG, "Update from subscribed property: $vssPath - $field: ${updatedValue.value}")
-
-        runBlocking(specificationUpdateContext) {
-            updatedVssSpecification = updatedVssSpecification.copy(vssPath, updatedValue.value)
+    override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+        entryUpdates.forEach { entryUpdate ->
+            val dataEntry = entryUpdate.entry
+            updatedVssSpecification = updatedVssSpecification.copy(dataEntry.path, dataEntry.value)
         }
 
-        initialSubscriptionUpdates[vssPath] = true
-        val isInitialSubscriptionComplete = initialSubscriptionUpdates.values.all { it }
-        if (isInitialSubscriptionComplete) {
-            Log.d(TAG, "Update for subscribed specification complete: ${updatedVssSpecification.vssPath}")
-            listener.onSpecificationChanged(updatedVssSpecification)
-        }
+        listener.onSpecificationChanged(updatedVssSpecification)
     }
 
     override fun onError(throwable: Throwable) {

@@ -20,18 +20,19 @@
 package org.eclipse.kuksa
 
 import org.eclipse.kuksa.pattern.listener.Listener
-import org.eclipse.kuksa.proto.v1.Types.DataEntry
-import org.eclipse.kuksa.proto.v1.Types.Field
+import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 /**
- * The Listener is used to notify about changes to subscribed properties.
+ * The Listener is used to notify about changes to subscribed properties. When registering the listener to
+ * Vehicle.ADAS.ABS this listener will also be notified about changes of sub-properties e.g. Vehicle.ADAS.ABS.IsEnabled
+ * or Vehicle.ADAS.ABS.IsEngaged.
  */
 interface PropertyListener : Listener {
     /**
-     * Will be triggered with the [updatedValue] when the underlying [field] of the [vssPath] changed it's value.
+     * Will be triggered with a list of [entryUpdates] of the corresponding field.
      */
-    fun onPropertyChanged(vssPath: String, field: Field, updatedValue: DataEntry)
+    fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>)
 
     /**
      * Will be triggered when an error happens during subscription and forwards the [throwable].

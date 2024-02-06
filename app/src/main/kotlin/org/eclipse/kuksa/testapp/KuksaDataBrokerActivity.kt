@@ -40,7 +40,6 @@ import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.DataEntry
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
@@ -94,9 +93,15 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     }
 
     private val propertyListener = object : PropertyListener {
-        override fun onPropertyChanged(vssPath: String, field: Field, updatedValue: DataEntry) {
-            Log.d(TAG, "onPropertyChanged path: vssPath = $vssPath, field = $field, changedValue = $updatedValue")
-            outputViewModel.addOutputEntry("Updated value: $updatedValue")
+        override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+            Log.d(TAG, "onPropertyChanged() called with: updatedValues = $entryUpdates")
+
+            val entries = mutableListOf<String>().apply {
+                add("Updated Entries")
+                addAll(entryUpdates.map { it.entry.toString() })
+            }
+            val outputEntry = OutputEntry(messages = entries)
+            outputViewModel.addOutputEntry(outputEntry)
         }
 
         override fun onError(throwable: Throwable) {

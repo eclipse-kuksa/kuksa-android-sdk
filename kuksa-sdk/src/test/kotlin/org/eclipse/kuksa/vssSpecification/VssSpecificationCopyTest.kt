@@ -58,7 +58,7 @@ class VssSpecificationCopyTest : BehaviorSpec({
             val invertedSpecification = !vehicle.driver.isEyesOnRoad
 
             then("it should return a copy with the inverted value") {
-                invertedSpecification.value shouldBe false
+                invertedSpecification.value shouldBe true
             }
         }
 

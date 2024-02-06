@@ -33,6 +33,7 @@ import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.vss.VssVehicle
@@ -131,11 +132,15 @@ class KotlinActivity : AppCompatActivity() {
 
     fun subscribeProperty(property: Property) {
         val propertyListener = object : PropertyListener {
-            override fun onPropertyChanged(vssPath: String, field: Types.Field, updatedValue: Types.DataEntry) {
-                // handle property change
-                when (vssPath) {
-                    "Vehicle.Speed" -> {
-                        val speed = updatedValue.value.float
+            override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+                entryUpdates.forEach { entryUpdate ->
+                    val updatedValue = entryUpdate.entry
+
+                    // handle property change
+                    when (updatedValue.path) {
+                        "Vehicle.Speed" -> {
+                            val speed = updatedValue.value.float
+                        }
                     }
                 }
             }

@@ -48,10 +48,7 @@ internal class Subscription(
             } else {
                 val lastSubscribeResponse = lastSubscribeResponse ?: return@MultiListener
 
-                for (entryUpdate in lastSubscribeResponse.updatesList) {
-                    val entry = entryUpdate.entry
-                    observer.onPropertyChanged(vssPath, field, entry)
-                }
+                observer.onPropertyChanged(lastSubscribeResponse.updatesList)
             }
         },
     )

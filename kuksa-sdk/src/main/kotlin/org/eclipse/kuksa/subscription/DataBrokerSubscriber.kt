@@ -25,7 +25,6 @@ import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
-import org.eclipse.kuksa.extension.createProperties
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.vsscore.model.VssProperty
@@ -91,13 +90,10 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
         field: Field = Field.FIELD_VALUE,
         listener: VssSpecificationListener<T>,
     ) {
-        val leafProperties = specification.createProperties(field)
-        val vssPaths = leafProperties.map { it.vssPath }
+        val vssPath = specification.vssPath
 
-        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, listener)
-        vssPaths.forEach { vssPath ->
-            subscribe(vssPath, field, specificationPropertyListener)
-        }
+        val specificationPropertyListener = SpecificationPropertyListener(specification, listener)
+        subscribe(vssPath, field, specificationPropertyListener)
     }
 
     /**
@@ -111,13 +107,10 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
         field: Field = Field.FIELD_VALUE,
         listener: VssSpecificationListener<T>,
     ) {
-        val leafProperties = specification.createProperties(field)
-        val vssPaths = leafProperties.map { it.vssPath }
+        val vssPath = specification.vssPath
 
-        val specificationPropertyListener = SpecificationPropertyListener(specification, vssPaths, listener)
-        vssPaths.forEach { vssPath ->
-            unsubscribe(vssPath, field, specificationPropertyListener)
-        }
+        val specificationPropertyListener = SpecificationPropertyListener(specification, listener)
+        unsubscribe(vssPath, field, specificationPropertyListener)
     }
 
     private companion object {

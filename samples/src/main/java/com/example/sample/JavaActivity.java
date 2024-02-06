@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -165,11 +166,18 @@ public class JavaActivity extends AppCompatActivity {
 
         dataBrokerConnection.subscribe(property, new PropertyListener() {
             @Override
-            public void onPropertyChanged(
-                @NonNull String vssPath,
-                @NonNull Types.Field field,
-                @NonNull Types.DataEntry updatedValue) {
-                // handle result
+            public void onPropertyChanged(@NonNull List<KuksaValV1.EntryUpdate> entryUpdates) {
+                for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
+                    Types.DataEntry updatedValue = entryUpdate.getEntry();
+
+                    // handle property change
+                    //noinspection SwitchStatementWithTooFewBranches
+                    switch (updatedValue.getPath()) {
+                        case "VSS.Speed":
+                            float speed = updatedValue.getValue().getFloat();
+
+                    }
+                }
             }
 
             @Override
