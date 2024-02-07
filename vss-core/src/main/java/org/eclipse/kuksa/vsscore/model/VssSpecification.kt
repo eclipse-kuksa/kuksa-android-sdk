@@ -102,6 +102,16 @@ val VssSpecification.parentKey: String
     }
 
 /**
+ * Similar to the [variableName] but for the parent and does not lowercase the [name] wherever necessary.
+ */
+val VssSpecification.parentClassName: String
+    get() {
+        if (parentKey.isEmpty()) return ""
+
+        return (classNamePrefix + parentKey).toCamelCase.replaceFirstChar { it.uppercase() }
+    }
+
+/**
  * Iterates through all nested children which also may have children and aggregates them into one big collection.
  */
 val VssSpecification.heritage: Collection<VssSpecification>

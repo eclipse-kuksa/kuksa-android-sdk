@@ -39,6 +39,7 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.parentClassName
 import org.eclipse.kuksa.vssprocessor.parser.YamlDefinitionParser
 import org.eclipse.kuksa.vssprocessor.spec.VssPath
 import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
@@ -115,6 +116,7 @@ class VssDefinitionProcessor(
 
             logger.info("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
 
+            val generatedFilesVssPathToClassName = mutableMapOf<String, String>()
             for ((vssPath, specModel) in vssPathToSpecification) {
                 // Every duplicate is produced as a nested class - No separate file should be generated
                 if (duplicateSpecificationNames.contains(vssPath.leaf)) {
@@ -128,11 +130,50 @@ class VssDefinitionProcessor(
                     duplicateSpecificationNames,
                 )
 
-                val file = FileSpec.builder(PACKAGE_NAME, classSpec.name!!)
+                val className = classSpec.name ?: throw NoSuchFieldException("")
+                val fileSpecBuilder = FileSpec.builder(PACKAGE_NAME, className)
+
+                val parentImport = createParentImport(specModel, generatedFilesVssPathToClassName)
+                if (parentImport.isNotEmpty()) {
+                    fileSpecBuilder.addImport(PACKAGE_NAME, parentImport)
+                }
+
+                val file = fileSpecBuilder
                     .addType(classSpec)
                     .build()
 
                 file.writeTo(codeGenerator, false)
+                generatedFilesVssPathToClassName[vssPath.path] = className
+            }
+        }
+
+        // Uses a map of vssPaths to ClassNames which are validated if it contains a parent of the given specModel.
+        // If the actual parent is a sub class (Driver) in another class file (e.g. Vehicle) then this method returns
+        // a sub import e.g. "Vehicle.Driver". Otherwise just "Vehicle" is returned.
+        private fun createParentImport(
+            specModel: VssSpecificationSpecModel,
+            parentVssPathToClassName: Map<String, String>,
+        ): String {
+            var availableParentVssPath = specModel.vssPath
+            var parentSpecClassName: String? = null
+
+            // Iterate up from the parent until the actual file name = class name was found. This indicates
+            // that the actual parent is a sub class in this file.
+            while (availableParentVssPath.contains(".")) {
+                availableParentVssPath = availableParentVssPath.substringBeforeLast(".")
+
+                parentSpecClassName = parentVssPathToClassName[availableParentVssPath]
+                if (parentSpecClassName != null) break
+            }
+
+            if (parentSpecClassName == null) return ""
+
+            val parentClassName = specModel.parentClassName
+
+            return if (parentSpecClassName != parentClassName) {
+                "$parentSpecClassName.$parentClassName" // Sub class in another file
+            } else {
+                parentClassName // Main class = File name
             }
         }
     }
