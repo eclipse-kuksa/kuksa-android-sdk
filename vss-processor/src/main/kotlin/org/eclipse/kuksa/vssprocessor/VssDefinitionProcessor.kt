@@ -130,10 +130,10 @@ class VssDefinitionProcessor(
                     duplicateSpecificationNames,
                 )
 
-                val className = classSpec.name ?: throw NoSuchFieldException("")
+                val className = classSpec.name ?: throw NoSuchFieldException("Class spec $classSpec has no name field!")
                 val fileSpecBuilder = FileSpec.builder(PACKAGE_NAME, className)
 
-                val parentImport = createParentImport(specModel, generatedFilesVssPathToClassName)
+                val parentImport = buildParentImport(specModel, generatedFilesVssPathToClassName)
                 if (parentImport.isNotEmpty()) {
                     fileSpecBuilder.addImport(PACKAGE_NAME, parentImport)
                 }
@@ -150,7 +150,7 @@ class VssDefinitionProcessor(
         // Uses a map of vssPaths to ClassNames which are validated if it contains a parent of the given specModel.
         // If the actual parent is a sub class (Driver) in another class file (e.g. Vehicle) then this method returns
         // a sub import e.g. "Vehicle.Driver". Otherwise just "Vehicle" is returned.
-        private fun createParentImport(
+        private fun buildParentImport(
             specModel: VssSpecificationSpecModel,
             parentVssPathToClassName: Map<String, String>,
         ): String {
@@ -166,7 +166,10 @@ class VssDefinitionProcessor(
                 if (parentSpecClassName != null) break
             }
 
-            if (parentSpecClassName == null) return ""
+            if (parentSpecClassName == null) {
+                logger.info("Could not create import string for: ${specModel.vssPath} - No parent was found")
+                return ""
+            }
 
             val parentClassName = specModel.parentClassName
 
