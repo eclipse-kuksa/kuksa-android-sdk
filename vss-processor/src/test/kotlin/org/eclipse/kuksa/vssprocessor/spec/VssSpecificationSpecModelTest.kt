@@ -150,27 +150,44 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
             }
         }
         and("related specifications") {
+            val vehicleSpeedSpecModel = VssSpecificationSpecModel(datatype = "float", vssPath = "Vehicle.Speed")
             val relatedSpecifications = listOf(
                 VssSpecificationSpecModel(vssPath = "Vehicle.SmartphoneProjection"),
                 VssSpecificationSpecModel(datatype = "boolean", vssPath = "Vehicle.IsBrokenDown"),
-                VssSpecificationSpecModel(datatype = "float", vssPath = "Vehicle.Speed"),
+                vehicleSpeedSpecModel,
                 VssSpecificationSpecModel(datatype = "string[]", vssPath = "Vehicle.SupportedMode"),
                 VssSpecificationSpecModel(datatype = "boolean[]", vssPath = "Vehicle.AreSeatsHeated"),
                 VssSpecificationSpecModel(datatype = "invalid", vssPath = "Vehicle.Invalid"),
             )
 
-            `when`("creating a child class spec with children") {
-                val classSpec = specModel.createClassSpec("test", relatedSpecifications)
+            `when`("creating a class spec with children") {
+                val rootClassSpec = specModel.createClassSpec("test", relatedSpecifications)
 
                 then("it should contain the child properties") {
-                    val isBrokenDownPropertySpec = classSpec.propertySpecs.find { it.name == "isBrokenDown" }
-                    val childrenPropertySpec = classSpec.propertySpecs.find { it.name == "children" }
+                    val isBrokenDownPropertySpec = rootClassSpec.propertySpecs.find { it.name == "isBrokenDown" }
+                    val childrenPropertySpec = rootClassSpec.propertySpecs.find { it.name == "children" }
 
-                    classSpec.name shouldBe "VssVehicle"
-                    classSpec.propertySpecs.size shouldBe 13 // 8 interface props + 5 children
+                    rootClassSpec.name shouldBe "VssVehicle"
+                    rootClassSpec.propertySpecs.size shouldBe 13 // 8 interface props + 5 children
 
                     isBrokenDownPropertySpec shouldNotBe null
                     childrenPropertySpec?.getter.toString() shouldContain "smartphoneProjection, isBrokenDown"
+                }
+
+                then("it should have no parent") {
+                    val parentPropertySpec = rootClassSpec.propertySpecs.find { it.name == "parentClass" }
+
+                    parentPropertySpec?.getter.toString() shouldContain "null"
+                }
+
+                and("a child class spec is created") {
+                    val vehicleSpeedClassSpec = vehicleSpeedSpecModel.createClassSpec("test")
+
+                    then("it should have the root class as parent") {
+                        val parentPropertySpec = vehicleSpeedClassSpec.propertySpecs.find { it.name == "parentClass" }
+
+                        parentPropertySpec?.getter.toString() shouldContain "VssVehicle"
+                    }
                 }
             }
             and("nested specifications") {
