@@ -30,9 +30,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.assign
-import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.*
 import org.gradle.work.ChangeType
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
