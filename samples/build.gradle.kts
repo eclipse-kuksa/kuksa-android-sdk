@@ -56,8 +56,7 @@ android {
 }
 
 vssProcessor {
-    searchPath = "$projectDir/src/main/assets"
-    fileName = "vss_rel_4.0.yaml"
+    searchPath = "$rootDir/vss"
 }
 
 dependencies {

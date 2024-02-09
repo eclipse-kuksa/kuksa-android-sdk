@@ -163,10 +163,9 @@ dependencies {
     ksp("org.eclipse.kuksa:vss-processor:<VERSION>")
 }
 
-// Optional - See plugin documentation. Files inside the main assets are used automatically.
+// Optional - See plugin documentation. Files inside the "$rootDir/vss" folder are used automatically.
 vssProcessor {
-    searchPath = "$projectDir/src/main/assets"
-    fileName = "vss_rel_4.0.yaml"
+    searchPath = "$rootDir/vss"
 }
 ```
 
@@ -177,12 +176,12 @@ convenience operators and extension methods to work with to manipulate the tree 
 
 *Kotlin*
 ```kotlin
-@VssDefinition("vss_rel_4.0.yaml") 
+@VssDefinition 
 class KotlinActivity
 ```
 *Java*
 ```java
-@VssDefinition(vssDefinitionPath = "vss_rel_4.0.yaml")
+@VssDefinition
 public class JavaActivity
 ```
 > [!IMPORTANT]

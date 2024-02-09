@@ -41,7 +41,7 @@ import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import java.io.IOException
 
 @Suppress("UNUSED_VARIABLE", "SwallowedException")
-@VssDefinition("vss_rel_4.0.yaml")
+@VssDefinition
 class KotlinActivity : AppCompatActivity() {
 
     private var disconnectListener = DisconnectListener {

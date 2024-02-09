@@ -124,11 +124,6 @@ android {
     }
 }
 
-vssProcessor {
-    searchPath = "$projectDir/src/main/assets"
-    fileName = "vss_rel_4.0.yaml"
-}
-
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
