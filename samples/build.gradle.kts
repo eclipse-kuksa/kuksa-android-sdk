@@ -1,3 +1,6 @@
+import org.eclipse.kuksa.version.SemanticVersion
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
+
 /*
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
@@ -32,8 +35,11 @@ android {
         applicationId = "org.eclipse.kuksa.samples"
         minSdk = 27
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+
+        val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
+        val semanticVersion = SemanticVersion.create(versionPath)
+        versionCode = semanticVersion.versionCode
+        versionName = semanticVersion.versionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -56,6 +62,7 @@ android {
 }
 
 vssProcessor {
+    // Optional - See plugin documentation. Files inside the "$rootDir/vss" folder are used automatically.
     searchPath = "$rootDir/vss"
 }
 

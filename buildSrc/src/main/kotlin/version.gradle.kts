@@ -25,31 +25,56 @@ val semanticVersion = SemanticVersion(fileContent)
 
 updateExtras()
 
-// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
-tasks.register("setReleaseVersion") {
-    group = "version"
-    doLast {
-        semanticVersion.suffix = ""
+abstract class SetVersionSuffixTask : DefaultTask() {
+    @get:Input
+    abstract val suffix: Property<String>
 
-        updateVersion()
+    @get:InputFile
+    abstract val inputFile: RegularFileProperty
+
+    @get:OutputFile
+    @get:Optional
+    abstract val outputFile: RegularFileProperty
+
+    @TaskAction
+    fun addVersionSuffix() {
+        val newVersionFile = if (outputFile.isPresent) outputFile.asFile.get() else inputFile.asFile.get()
+
+        val inputFilePath = inputFile.get().asFile.path
+        val newSemanticVersion = SemanticVersion.create(inputFilePath)
+        newSemanticVersion.suffix = suffix.get()
+
+        val newVersionName = newSemanticVersion.versionName
+        val fileContent = newVersionFile.readText()
+
+        logger.info("Version suffix changed - old: $fileContent <-> new: $newVersionName")
+        if (fileContent == newVersionName) return
+
+        newVersionFile.writeText(newVersionName)
     }
 }
 
 // Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
-tasks.register("setSnapshotVersion") {
+tasks.register<SetVersionSuffixTask>("setSnapshotVersion") {
     group = "version"
-    doLast {
-        semanticVersion.suffix = "SNAPSHOT"
 
-        updateVersion()
-    }
+    inputFile = file
+    suffix = "SNAPSHOT"
+}
+
+// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
+tasks.register<SetVersionSuffixTask>("setReleaseVersion") {
+    group = "version"
+
+    inputFile = file
+    suffix = ""
 }
 
 tasks.register("printVersion") {
     group = "version"
-    doLast {
-        val version = semanticVersion.versionString
 
+    val version = project.rootProject.extra["projectVersion"]
+    doLast {
         println("VERSION=$version")
     }
 
@@ -57,12 +82,12 @@ tasks.register("printVersion") {
 }
 
 fun updateExtras() {
-    rootProject.extra["projectVersion"] = semanticVersion.versionString
+    rootProject.extra["projectVersion"] = semanticVersion.versionName
     rootProject.extra["projectVersionCode"] = semanticVersion.versionCode
 }
 
 fun updateVersion() {
     updateExtras()
 
-    file.writeText(semanticVersion.versionString)
+    file.writeText(semanticVersion.versionName)
 }

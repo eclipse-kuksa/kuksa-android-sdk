@@ -1,3 +1,7 @@
+import org.eclipse.kuksa.vssprocessor.plugin.version.SemanticVersion
+import org.eclipse.kuksa.vssprocessor.plugin.version.VERSION_FILE_DEFAULT_NAME
+import org.eclipse.kuksa.vssprocessor.plugin.version.VERSION_FILE_DEFAULT_PATH_KEY
+
 /*
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
@@ -17,15 +21,19 @@
  *
  */
 
+val versionDefaultPath = "$rootDir/../$VERSION_FILE_DEFAULT_NAME"
+rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
+
 plugins {
     alias(libs.plugins.pluginPublishing)
     signing
     `kotlin-dsl`
-    version
 }
 
+val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
+val semanticVersion = SemanticVersion.create(versionPath)
+version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
-version = rootProject.extra["projectVersion"].toString()
 
 gradlePlugin {
     website.set("https://github.com/eclipse-kuksa/kuksa-android-sdk")

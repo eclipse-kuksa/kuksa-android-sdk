@@ -20,11 +20,13 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.eclipse.kuksa.property.PropertiesLoader
+import org.eclipse.kuksa.version.SemanticVersion
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
-    id("org.eclipse.kuksa.vss-processor-plugin")
+    id("org.eclipse.kuksa.vss-processor-plugin") // Always take the newest version since it's locally included
     kotlin("plugin.serialization")
     kotlin("android")
 }
@@ -58,11 +60,14 @@ android {
         applicationId = "org.eclipse.kuksa.testapp"
         minSdk = 27
         targetSdk = 34
-        versionCode = rootProject.extra["projectVersionCode"].toString().toInt()
-        versionName = rootProject.extra["projectVersion"].toString()
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
+        val semanticVersion = SemanticVersion.create(versionPath)
+        versionCode = semanticVersion.versionCode
+        versionName = semanticVersion.versionName
     }
     signingConfigs {
         create("release") {

@@ -18,7 +18,11 @@
 
 package org.eclipse.kuksa.version
 
+import java.io.File
 import java.util.Locale
+
+const val VERSION_FILE_DEFAULT_PATH_KEY = "versionFilePathKey"
+const val VERSION_FILE_DEFAULT_NAME = "version.txt"
 
 class SemanticVersion(semanticVersion: String) {
     val major: Int
@@ -26,7 +30,7 @@ class SemanticVersion(semanticVersion: String) {
     val patch: Int
     var suffix: String = ""
 
-    val versionString: String
+    val versionName: String
         get() {
             var version = "$major.$minor.$patch"
             if (suffix.isNotEmpty()) {
@@ -57,6 +61,15 @@ class SemanticVersion(semanticVersion: String) {
         patch = versions[2].toInt()
         this.suffix = suffix
 
-        print("Current SemanticVersion($versionString)\n")
+        println("Current SemanticVersion($versionName)\n")
+    }
+
+    companion object {
+        fun create(versionFilePath: String): SemanticVersion {
+            val file = File(versionFilePath)
+            val fileContent = file.readText()
+
+            return SemanticVersion(fileContent)
+        }
     }
 }

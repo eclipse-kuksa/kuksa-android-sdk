@@ -1,3 +1,7 @@
+import org.eclipse.kuksa.version.SemanticVersion
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
+import org.jetbrains.dokka.gradle.DokkaTask
+
 /*
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
@@ -23,8 +27,10 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
+val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
+val semanticVersion = SemanticVersion.create(versionPath)
+version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
-version = rootProject.extra["projectVersion"].toString()
 
 dependencies {
     implementation(project(":vss-core"))
