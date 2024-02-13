@@ -17,7 +17,12 @@
  *
  */
 
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 import org.jetbrains.kotlin.incremental.createDirectory
+
+val versionDefaultPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
+rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
 
 plugins {
     base
@@ -56,9 +61,19 @@ tasks.register("mergeDashFiles") {
         },
     )
 
+    val ossFolder = File("$rootDir/build/oss/all")
+    ossFolder.createDirectory()
+
+    val ossDependenciesFile = File("$ossFolder/all-dependencies.txt")
+    if (ossDependenciesFile.exists()) {
+        ossDependenciesFile.delete()
+    }
+    ossDependenciesFile.createNewFile()
+
+    val ossFiles = files("build/oss")
     doLast {
         val sortedLinesSet = sortedSetOf<String>()
-        files("build/oss").asFileTree.forEach { file ->
+        ossFiles.asFileTree.forEach { file ->
             if (file.name != "dependencies.txt") return@forEach
 
             file.useLines {
@@ -66,16 +81,7 @@ tasks.register("mergeDashFiles") {
             }
         }
 
-        val folder = File("$rootDir/build/oss/all")
-        folder.createDirectory()
-
-        val file = File("$folder/all-dependencies.txt")
-        if (file.exists()) {
-            file.delete()
-        }
-        file.createNewFile()
-
-        val bufferedWriter = file.bufferedWriter()
+        val bufferedWriter = ossDependenciesFile.bufferedWriter()
         bufferedWriter.use { writer ->
             sortedLinesSet.forEach { line ->
                 writer.write(line + System.lineSeparator())
@@ -90,8 +96,6 @@ tasks.register("mergeDashFiles") {
 // We have to manually define the task names because the task() method of the included build throws an error for any
 // unknown task.
 val dependentCompositeTasks = setOf(
-    "setSnapshotVersion",
-    "setReleaseVersion",
     "publishToMavenLocal",
     "publishAllPublicationsToOSSRHReleaseRepository",
 )

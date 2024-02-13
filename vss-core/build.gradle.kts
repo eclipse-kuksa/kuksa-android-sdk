@@ -56,8 +56,12 @@ publish {
 
 tasks.register("javadocJar", Jar::class) {
     dependsOn("dokkaHtml")
-    from("$buildDir/dokka/html")
+    from("${layout.buildDirectory}/dokka/html")
     archiveClassifier.set("javadoc")
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    notCompatibleWithConfigurationCache("https://github.com/Kotlin/dokka/issues/2231")
 }
 
 java {

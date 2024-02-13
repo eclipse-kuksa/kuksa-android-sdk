@@ -64,6 +64,10 @@ tasks.register("javadocJar", Jar::class) {
     archiveClassifier.set("javadoc")
 }
 
+tasks.withType<DokkaTask>().configureEach {
+    notCompatibleWithConfigurationCache("https://github.com/Kotlin/dokka/issues/2231")
+}
+
 java {
     withJavadocJar() // needs to be called after tasks.register("javadocJar")
     withSourcesJar()

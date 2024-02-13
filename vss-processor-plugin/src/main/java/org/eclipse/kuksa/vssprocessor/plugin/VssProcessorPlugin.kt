@@ -35,6 +35,7 @@ import org.gradle.work.ChangeType
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.io.File
+import java.io.FileNotFoundException
 import javax.inject.Inject
 
 open class VssProcessorPluginExtension
@@ -59,20 +60,28 @@ class VssProcessorPlugin : Plugin<Project> {
 
         // The extension variables are only available after the project has been evaluated
         project.afterEvaluate {
+            val buildDir = layout.buildDirectory.asFile.get()
             val buildDirPath = buildDir.absolutePath
-            val vssDirectory = "${rootDir}${fileSeparator}$VSS_FOLDER_NAME"
+            val vssDir = "${rootDir}${fileSeparator}$VSS_FOLDER_NAME"
 
             val provideVssDefinitionTask =
                 project.tasks.register<ProvideVssDefinitionTask>(PROVIDE_VSS_DEFINITION_TASK) {
-                    val searchDirectory = extension.searchPath.get().ifEmpty { vssDirectory }
-                    val vssDefinitionBuildFile = File(
-                        "$buildDirPath$fileSeparator" +
-                            "$KSP_INPUT_BUILD_DIRECTORY$fileSeparator",
-                    )
+                    val searchPath = extension.searchPath.get().ifEmpty { vssDir }
+                    val vssDefinitionFilePath = StringBuilder(buildDirPath)
+                        .append(fileSeparator)
+                        .append(KSP_INPUT_BUILD_DIRECTORY)
+                        .append(fileSeparator)
+                        .toString()
+                    val vssDefinitionBuildFile = File(vssDefinitionFilePath)
 
-                    println("Searching directory: $searchDirectory for vss definitions")
+                    logger.info("Searching directory: $searchPath for VSS definitions")
 
-                    inputDir = file(searchDirectory)
+                    val searchDir = file(searchPath)
+                    if (!searchDir.exists()) {
+                        throw FileNotFoundException("Directory for VSS files not found!")
+                    }
+
+                    inputDir = searchDir
                     outputDir = vssDefinitionBuildFile
                 }
 
@@ -85,7 +94,7 @@ class VssProcessorPlugin : Plugin<Project> {
     companion object {
         private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput"
         private const val EXTENSION_NAME = "vssProcessor"
-        private const val PROVIDE_VSS_DEFINITION_TASK = "ProvideVssDefinition"
+        private const val PROVIDE_VSS_DEFINITION_TASK = "provideVssDefinition"
         private const val VSS_FOLDER_NAME = "vss"
     }
 }
@@ -109,12 +118,12 @@ private abstract class ProvideVssDefinitionTask : DefaultTask() {
             if (change.fileType == FileType.DIRECTORY) return@forEach
 
             val targetFile = outputDir.file(change.normalizedPath).get().asFile
-            println("Found vss file change for: ${targetFile.name}, change: ${change.changeType}")
+            logger.info("Found vss file change for: ${targetFile.name}, change: ${change.changeType}")
 
             when (change.changeType) {
                 ChangeType.ADDED,
                 ChangeType.MODIFIED,
-                -> change.file.copyTo(targetFile)
+                -> change.file.copyTo(targetFile, true)
 
                 else -> targetFile.delete()
             }
