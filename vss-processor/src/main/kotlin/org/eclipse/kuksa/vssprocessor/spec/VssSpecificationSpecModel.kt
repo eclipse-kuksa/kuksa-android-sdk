@@ -37,6 +37,7 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.className
 import org.eclipse.kuksa.vsscore.model.name
+import org.eclipse.kuksa.vsscore.model.parentClassName
 import org.eclipse.kuksa.vsscore.model.parentKey
 import org.eclipse.kuksa.vsscore.model.variableName
 import kotlin.reflect.KClass
@@ -152,6 +153,7 @@ internal class VssSpecificationSpecModel(
                         relevantRelatedSpecifications,
                         nestedClasses,
                     )
+
                     nestedChildSpecs.add(childSpec)
                 }
 
@@ -274,13 +276,14 @@ internal class VssSpecificationSpecModel(
         }
 
         fun createParentSpec(memberName: String, memberType: TypeName): PropertySpec {
+            val parentClass = if (parentClassName.isNotEmpty()) "$parentClassName::class" else "null"
             return PropertySpec
                 .builder(memberName, memberType)
                 .mutable(false)
                 .addModifiers(KModifier.OVERRIDE)
                 .getter(
                     FunSpec.getterBuilder()
-                        .addStatement("return %L", "$className::class")
+                        .addStatement("return %L", parentClass)
                         .build(),
                 )
                 .build()
