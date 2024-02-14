@@ -24,11 +24,13 @@ import java.util.Locale
 const val VERSION_FILE_DEFAULT_PATH_KEY = "versionFilePathKey"
 const val VERSION_FILE_DEFAULT_NAME = "version.txt"
 
-class SemanticVersion(semanticVersion: String) {
+class SemanticVersion(versionFilePath: String) {
     val major: Int
     val minor: Int
     val patch: Int
     var suffix: String = ""
+
+    val versionFile: File
 
     val versionName: String
         get() {
@@ -51,6 +53,9 @@ class SemanticVersion(semanticVersion: String) {
         }
 
     init {
+        versionFile = File(versionFilePath)
+
+        val semanticVersion = versionFile.readText()
         val versions = semanticVersion.trim()
             .substringBefore("-") // Ignore suffixes like -SNAPSHOT
             .split(".")
@@ -62,14 +67,5 @@ class SemanticVersion(semanticVersion: String) {
         this.suffix = suffix
 
         println("Current SemanticVersion($versionName)\n")
-    }
-
-    companion object {
-        fun create(versionFilePath: String): SemanticVersion {
-            val file = File(versionFilePath)
-            val fileContent = file.readText()
-
-            return SemanticVersion(fileContent)
-        }
     }
 }

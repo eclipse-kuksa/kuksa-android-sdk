@@ -28,7 +28,7 @@ plugins {
 }
 
 val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
-val semanticVersion = SemanticVersion.create(versionPath)
+val semanticVersion = SemanticVersion(versionPath)
 version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
 
@@ -66,6 +66,8 @@ publish {
 
 tasks.register("javadocJar", Jar::class) {
     dependsOn("dokkaHtml")
+
+    val buildDir = layout.buildDirectory.asFile.get()
     from("$buildDir/dokka/html")
     archiveClassifier.set("javadoc")
 }

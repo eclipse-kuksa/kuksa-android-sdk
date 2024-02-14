@@ -31,7 +31,7 @@ plugins {
 }
 
 val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
-val semanticVersion = SemanticVersion.create(versionPath)
+val semanticVersion = SemanticVersion(versionPath)
 version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
 

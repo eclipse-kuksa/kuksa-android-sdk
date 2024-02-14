@@ -18,39 +18,33 @@
  */
 
 import org.eclipse.kuksa.version.SemanticVersion
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 
-val file = File("$rootDir/version.txt")
-val fileContent = file.readText()
-val semanticVersion = SemanticVersion(fileContent)
+private val versionPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
+private val semanticVersion = SemanticVersion(versionPath)
 
-updateExtras()
-
+/**
+ * Writes the given [suffix] into the given [inputFileProperty] while keeping the semantic version intact.
+ * E.g. 1.2.3 -> 1.2.3-SNAPSHOT (suffix = SNAPSHOT). Leave the suffix empty to restore the initial version.
+ */
 abstract class SetVersionSuffixTask : DefaultTask() {
     @get:Input
     abstract val suffix: Property<String>
 
+    @get:Incremental
     @get:InputFile
-    abstract val inputFile: RegularFileProperty
-
-    @get:OutputFile
-    @get:Optional
-    abstract val outputFile: RegularFileProperty
+    abstract val inputFileProperty: RegularFileProperty
 
     @TaskAction
     fun addVersionSuffix() {
-        val newVersionFile = if (outputFile.isPresent) outputFile.asFile.get() else inputFile.asFile.get()
+        val inputFile = inputFileProperty.asFile.get()
 
-        val inputFilePath = inputFile.get().asFile.path
-        val newSemanticVersion = SemanticVersion.create(inputFilePath)
+        val newSemanticVersion = SemanticVersion(inputFile.path)
         newSemanticVersion.suffix = suffix.get()
 
-        val newVersionName = newSemanticVersion.versionName
-        val fileContent = newVersionFile.readText()
+        println("Applying version suffix: ${suffix.get()}")
 
-        logger.info("Version suffix changed - old: $fileContent <-> new: $newVersionName")
-        if (fileContent == newVersionName) return
-
-        newVersionFile.writeText(newVersionName)
+        inputFile.writeText(newSemanticVersion.versionName)
     }
 }
 
@@ -58,7 +52,7 @@ abstract class SetVersionSuffixTask : DefaultTask() {
 tasks.register<SetVersionSuffixTask>("setSnapshotVersion") {
     group = "version"
 
-    inputFile = file
+    inputFileProperty = semanticVersion.versionFile
     suffix = "SNAPSHOT"
 }
 
@@ -66,28 +60,18 @@ tasks.register<SetVersionSuffixTask>("setSnapshotVersion") {
 tasks.register<SetVersionSuffixTask>("setReleaseVersion") {
     group = "version"
 
-    inputFile = file
+    inputFileProperty = semanticVersion.versionFile
     suffix = ""
 }
 
 tasks.register("printVersion") {
     group = "version"
 
-    val version = project.rootProject.extra["projectVersion"]
-    doLast {
-        println("VERSION=$version")
+    val versionFilePath = versionPath
+    doLast { // Prints the correct version if chained with SetVersionSuffix tasks
+        val currentSemanticVersion = SemanticVersion(versionFilePath)
+        println("Current version: ${currentSemanticVersion.versionName}")
     }
 
     mustRunAfter("setReleaseVersion", "setSnapshotVersion")
-}
-
-fun updateExtras() {
-    rootProject.extra["projectVersion"] = semanticVersion.versionName
-    rootProject.extra["projectVersionCode"] = semanticVersion.versionCode
-}
-
-fun updateVersion() {
-    updateExtras()
-
-    file.writeText(semanticVersion.versionName)
 }

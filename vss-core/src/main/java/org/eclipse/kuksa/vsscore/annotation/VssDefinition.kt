@@ -27,6 +27,7 @@ package org.eclipse.kuksa.vsscore.annotation
  * ### Plugin Example
  *
  * ```
+ * // app/build.gradle.kts
  * plugins {
  *     id("org.eclipse.kuksa.vss-processor-plugin") version "<VERSION>"
  * }

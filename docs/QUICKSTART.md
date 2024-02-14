@@ -4,7 +4,7 @@ Get instantly bootstrapped into the world of the KUKSA SDK with the following co
 
 ## Integration
 
-*build.gradle.kts*
+*app/build.gradle.kts*
 ```
 implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
 ```
@@ -153,7 +153,7 @@ For a more convenient usage you can opt in to auto generate Kotlin models via [S
 of the same specification the Databroker uses. For starters you can retrieve an extensive default specification from the
 release page of the [COVESA Vehicle Signal Specification GitHub repository](https://github.com/COVESA/vehicle_signal_specification/releases).
 
-*build.gradle.kts*
+*app/build.gradle.kts*
 ```
 plugins {
     id("org.eclipse.kuksa.vss-processor-plugin")
