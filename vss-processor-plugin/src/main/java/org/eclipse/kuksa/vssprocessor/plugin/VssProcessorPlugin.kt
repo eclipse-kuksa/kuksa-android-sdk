@@ -25,6 +25,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileType
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -74,18 +75,22 @@ class VssProcessorPlugin : Plugin<Project> {
                         .toString()
                     val vssDefinitionBuildFile = File(vssDefinitionFilePath)
 
-                    logger.info("Searching directory: $searchPath for VSS definitions")
+                    logger.info("Searching directory $searchPath for VSS definitions")
 
                     val searchDir = file(searchPath)
                     if (!searchDir.exists()) {
-                        throw FileNotFoundException("Directory for VSS files not found!")
+                        throw FileNotFoundException(
+                            "Directory $searchPath for VSS files not found! Consider creating the default folder" +
+                                " ($VSS_FOLDER_NAME) inside your project root or use the plugin" +
+                                " configuration:searchPath option.",
+                        )
                     }
 
                     inputDir = searchDir
                     outputDir = vssDefinitionBuildFile
                 }
 
-            tasks.getByName("preBuild").finalizedBy(
+            tasks.getByName("preBuild").dependsOn(
                 provideVssDefinitionTask.get(),
             )
         }
@@ -103,6 +108,7 @@ class VssProcessorPlugin : Plugin<Project> {
  * This task takes an input directory [inputDir] which should contain all available VSS definition files and an
  * output directory [outputDir] where all files are copied to so the VSSProcessor can work with them.
  */
+@CacheableTask
 private abstract class ProvideVssDefinitionTask : DefaultTask() {
     @get:Incremental
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
@@ -117,16 +123,28 @@ private abstract class ProvideVssDefinitionTask : DefaultTask() {
         inputChanges.getFileChanges(inputDir).forEach { change ->
             if (change.fileType == FileType.DIRECTORY) return@forEach
 
+            val file = change.file
+            val extension = file.extension
+            if (!validVssExtension.contains(extension)) {
+                logger.warn("Found incompatible file VSS file: ${file.name} - Consider removing it")
+                return@forEach
+            }
+
             val targetFile = outputDir.file(change.normalizedPath).get().asFile
             logger.info("Found vss file change for: ${targetFile.name}, change: ${change.changeType}")
 
             when (change.changeType) {
                 ChangeType.ADDED,
                 ChangeType.MODIFIED,
-                -> change.file.copyTo(targetFile, true)
+                -> file.copyTo(targetFile, true)
 
-                else -> targetFile.delete()
+                ChangeType.REMOVED -> targetFile.delete()
+                else -> logger.warn("Could not determine file change type: ${change.changeType}")
             }
         }
+    }
+
+    companion object {
+        private val validVssExtension = setOf("yml", "yaml")
     }
 }
