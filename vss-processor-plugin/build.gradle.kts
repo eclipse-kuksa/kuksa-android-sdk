@@ -42,8 +42,8 @@ gradlePlugin {
         create("VssProcessorPlugin") {
             id = "org.eclipse.kuksa.vss-processor-plugin"
             implementationClass = "org.eclipse.kuksa.vssprocessor.plugin.VssProcessorPlugin"
-            displayName = "Vss Processor Plugin"
-            tags.set(listOf("KUKSA", "Vehicle Signal Specification", "VSS", "android", "kotlin"))
+            displayName = "VSS Processor Plugin"
+            tags.set(listOf("KUKSA", "Vehicle Signal Specification", "VSS", "Android", "Kotlin"))
             description = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK. This is used in combination " +
                 "with the KSP processor component 'KUKSA VSS Processor'. The plugin is configured to provide " +
                 "VSS Files to KSP processor. This is mandatory to use the 'KUKSA VSS Processor' component."

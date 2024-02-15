@@ -63,7 +63,9 @@ publish {
 
 tasks.register("javadocJar", Jar::class) {
     dependsOn("dokkaHtml")
-    from("${layout.buildDirectory}/dokka/html")
+
+    val buildDir = layout.buildDirectory.asFile.get()
+    from("$buildDir/dokka/html")
     archiveClassifier.set("javadoc")
 }
 

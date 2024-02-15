@@ -26,12 +26,15 @@ import org.gradle.api.file.FileType
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.register
 import org.gradle.work.ChangeType
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
@@ -66,7 +69,7 @@ class VssProcessorPlugin : Plugin<Project> {
             val vssDir = "${rootDir}${fileSeparator}$VSS_FOLDER_NAME"
 
             val provideVssDefinitionTask =
-                project.tasks.register<ProvideVssDefinitionTask>(PROVIDE_VSS_DEFINITION_TASK) {
+                project.tasks.register<ProvideVssDefinitionTask>(PROVIDE_VSS_DEFINITION_TASK_NAME) {
                     val searchPath = extension.searchPath.get().ifEmpty { vssDir }
                     val vssDefinitionFilePath = StringBuilder(buildDirPath)
                         .append(fileSeparator)
@@ -80,9 +83,7 @@ class VssProcessorPlugin : Plugin<Project> {
                     val searchDir = file(searchPath)
                     if (!searchDir.exists()) {
                         throw FileNotFoundException(
-                            "Directory $searchPath for VSS files not found! Consider creating the default folder" +
-                                " ($VSS_FOLDER_NAME) inside your project root or use the plugin" +
-                                " configuration:searchPath option.",
+                            "Directory '$searchPath' for VSS files not found! Please create the folder."
                         )
                     }
 
@@ -99,7 +100,7 @@ class VssProcessorPlugin : Plugin<Project> {
     companion object {
         private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput"
         private const val EXTENSION_NAME = "vssProcessor"
-        private const val PROVIDE_VSS_DEFINITION_TASK = "provideVssDefinition"
+        private const val PROVIDE_VSS_DEFINITION_TASK_NAME = "provideVssDefinition"
         private const val VSS_FOLDER_NAME = "vss"
     }
 }
@@ -111,6 +112,7 @@ class VssProcessorPlugin : Plugin<Project> {
 @CacheableTask
 private abstract class ProvideVssDefinitionTask : DefaultTask() {
     @get:Incremental
+    @get:IgnoreEmptyDirectories
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
     @get:InputDirectory
     abstract val inputDir: DirectoryProperty
@@ -126,7 +128,7 @@ private abstract class ProvideVssDefinitionTask : DefaultTask() {
             val file = change.file
             val extension = file.extension
             if (!validVssExtension.contains(extension)) {
-                logger.warn("Found incompatible file VSS file: ${file.name} - Consider removing it")
+                logger.warn("Found incompatible VSS file: ${file.name} - Consider removing it")
                 return@forEach
             }
 
