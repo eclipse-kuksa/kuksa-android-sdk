@@ -19,7 +19,9 @@
 
 package org.eclipse.kuksa.testapp.databroker;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -31,6 +33,7 @@ import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.PropertyListener;
 import org.eclipse.kuksa.TimeoutConfig;
 import org.eclipse.kuksa.VssSpecificationListener;
+import org.eclipse.kuksa.authentication.JsonWebToken;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
@@ -43,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,6 +59,8 @@ import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.TlsChannelCredentials;
+import kotlin.io.TextStreamsKt;
+import kotlin.text.Charsets;
 
 public class JavaDataBrokerEngine implements DataBrokerEngine {
     private static final String TAG = JavaDataBrokerEngine.class.getSimpleName();
@@ -73,21 +79,28 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         if (connectionInfo.isTlsEnabled()) {
             connectSecure(context, connectionInfo, callback);
         } else {
-            connectInsecure(connectionInfo, callback);
+            connectInsecure(context, connectionInfo, callback);
         }
     }
 
     private void connectInsecure(
-        @NonNull ConnectionInfo connectInfo,
+        @NonNull Context context,
+        @NonNull ConnectionInfo connectionInfo,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
         try {
             ManagedChannel managedChannel = ManagedChannelBuilder
-                .forAddress(connectInfo.getHost(), connectInfo.getPort())
+                .forAddress(connectionInfo.getHost(), connectionInfo.getPort())
                 .usePlaintext()
                 .build();
 
-            connect(managedChannel, callback);
+            String jwtUriPath = connectionInfo.getJwtUriPath();
+            JsonWebToken jsonWebToken = null;
+            if (jwtUriPath != null) {
+                jsonWebToken = loadJsonWebToken(context, jwtUriPath);
+            }
+
+            connect(managedChannel, jsonWebToken, callback);
         } catch (IllegalArgumentException e) {
             callback.onError(e);
         }
@@ -95,10 +108,10 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
     private void connectSecure(
         @NotNull Context context,
-        @NotNull ConnectionInfo connectInfo,
+        @NotNull ConnectionInfo connectionInfo,
         @NotNull CoroutineCallback<DataBrokerConnection> callback
     ) {
-        Certificate certificate = connectInfo.getCertificate();
+        Certificate certificate = connectionInfo.getCertificate();
 
         ChannelCredentials tlsCredentials;
         try {
@@ -116,7 +129,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
         try {
             ManagedChannelBuilder<?> channelBuilder = Grpc
-                .newChannelBuilderForAddress(connectInfo.getHost(), connectInfo.getPort(), tlsCredentials);
+                .newChannelBuilderForAddress(connectionInfo.getHost(), connectionInfo.getPort(), tlsCredentials);
 
             String overrideAuthority = certificate.getOverrideAuthority().trim();
             boolean hasOverrideAuthority = !overrideAuthority.isEmpty();
@@ -124,8 +137,14 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
                 channelBuilder.overrideAuthority(overrideAuthority);
             }
 
+            String jwtUriPath = connectionInfo.getJwtUriPath();
+            JsonWebToken jsonWebToken = null;
+            if (jwtUriPath != null) {
+                jsonWebToken = loadJsonWebToken(context, jwtUriPath);
+            }
+
             ManagedChannel managedChannel = channelBuilder.build();
-            connect(managedChannel, callback);
+            connect(managedChannel, jsonWebToken, callback);
         } catch (IllegalArgumentException e) {
             callback.onError(e);
         }
@@ -133,9 +152,10 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
     private void connect(
         @NonNull ManagedChannel managedChannel,
+        @Nullable JsonWebToken jsonWebToken,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
-        DataBrokerConnector connector = new DataBrokerConnector(managedChannel);
+        DataBrokerConnector connector = new DataBrokerConnector(managedChannel, jsonWebToken);
         connector.setTimeoutConfig(new TimeoutConfig(TIMEOUT_CONNECTION, TimeUnit.SECONDS));
         connector.connect(new CoroutineCallback<>() {
             @Override
@@ -276,6 +296,20 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     public void unsubscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
         if (dataBrokerConnection != null) {
             dataBrokerConnection.unsubscribe(property, propertyListener);
+        }
+    }
+
+    public JsonWebToken loadJsonWebToken(Context context, String uriPath) {
+        Uri uri = Uri.parse(uriPath);
+
+        ContentResolver contentResolver = context.getContentResolver();
+        try (InputStream inputStream = contentResolver.openInputStream(uri)) {
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charsets.UTF_8);
+            String token = TextStreamsKt.readText(inputStreamReader);
+
+            return new JsonWebToken(token);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

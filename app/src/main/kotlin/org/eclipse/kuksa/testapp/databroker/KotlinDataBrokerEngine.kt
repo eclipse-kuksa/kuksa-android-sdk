@@ -20,6 +20,7 @@
 package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.LifecycleCoroutineScope
 import io.grpc.ChannelCredentials
 import io.grpc.Grpc
@@ -35,6 +36,7 @@ import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.TimeoutConfig
 import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.authentication.JsonWebToken
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -59,21 +61,26 @@ class KotlinDataBrokerEngine(
         if (connectionInfo.isTlsEnabled) {
             connectSecure(context, connectionInfo, callback)
         } else {
-            connectInsecure(connectionInfo, callback)
+            connectInsecure(context, connectionInfo, callback)
         }
     }
 
     private fun connectInsecure(
-        connectInfo: ConnectionInfo,
+        context: Context,
+        connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
         try {
             val managedChannel = ManagedChannelBuilder
-                .forAddress(connectInfo.host, connectInfo.port)
+                .forAddress(connectionInfo.host, connectionInfo.port)
                 .usePlaintext()
                 .build()
 
-            connect(managedChannel, callback)
+            val jsonWebToken = connectionInfo.jwtUriPath?.let {
+                loadJsonWebToken(context, it)
+            }
+
+            connect(managedChannel, jsonWebToken, callback)
         } catch (e: IllegalArgumentException) {
             callback.onError(e)
         }
@@ -81,10 +88,10 @@ class KotlinDataBrokerEngine(
 
     private fun connectSecure(
         context: Context,
-        connectInfo: ConnectionInfo,
+        connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
-        val certificate = connectInfo.certificate
+        val certificate = connectionInfo.certificate
 
         val tlsCredentials: ChannelCredentials
         try {
@@ -98,8 +105,8 @@ class KotlinDataBrokerEngine(
         }
 
         try {
-            val host = connectInfo.host.trim()
-            val port = connectInfo.port
+            val host = connectionInfo.host.trim()
+            val port = connectionInfo.port
             val channelBuilder = Grpc
                 .newChannelBuilderForAddress(host, port, tlsCredentials)
 
@@ -109,15 +116,23 @@ class KotlinDataBrokerEngine(
                 channelBuilder.overrideAuthority(overrideAuthority)
             }
 
+            val jsonWebToken = connectionInfo.jwtUriPath?.let {
+                loadJsonWebToken(context, it)
+            }
+
             val managedChannel = channelBuilder.build()
-            connect(managedChannel, callback)
+            connect(managedChannel, jsonWebToken, callback)
         } catch (e: IllegalArgumentException) {
             callback.onError(e)
         }
     }
 
-    private fun connect(managedChannel: ManagedChannel, callback: CoroutineCallback<DataBrokerConnection>) {
-        val connector = DataBrokerConnector(managedChannel).apply {
+    private fun connect(
+        managedChannel: ManagedChannel,
+        jsonWebToken: JsonWebToken?,
+        callback: CoroutineCallback<DataBrokerConnection>,
+    ) {
+        val connector = DataBrokerConnector(managedChannel, jsonWebToken).apply {
             timeoutConfig = TimeoutConfig(TIMEOUT_CONNECTION_SEC)
         }
 
@@ -205,6 +220,17 @@ class KotlinDataBrokerEngine(
     override fun unregisterDisconnectListener(listener: DisconnectListener) {
         disconnectListeners.remove(listener)
         dataBrokerConnection?.disconnectListeners?.unregister(listener)
+    }
+
+    private fun loadJsonWebToken(context: Context, uriPath: String): JsonWebToken {
+        val uri = Uri.parse(uriPath)
+
+        val contentResolver = context.contentResolver
+        val token: String = contentResolver.openInputStream(uri)?.use {
+            it.reader().readText()
+        } ?: error("Could not read jwt")
+
+        return JsonWebToken(token)
     }
 
     companion object {

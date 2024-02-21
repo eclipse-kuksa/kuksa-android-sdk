@@ -28,8 +28,10 @@ import org.eclipse.kuksa.testapp.serialization.JsonSerializer
 data class ConnectionInfo(
     val host: String = "localhost",
     val port: Int = 55556,
-    val certificate: Certificate = Certificate.DEFAULT,
     val isTlsEnabled: Boolean = false,
+    val certificate: Certificate = Certificate.DEFAULT,
+    val isAuthenticationEnabled: Boolean = false,
+    val jwtUriPath: String? = null,
 )
 
 object ConnectionInfoSerializer : JsonSerializer<ConnectionInfo>(ConnectionInfo.serializer()) {

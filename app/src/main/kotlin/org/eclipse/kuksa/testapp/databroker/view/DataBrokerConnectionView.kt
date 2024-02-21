@@ -19,6 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker.view
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -186,9 +187,32 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                             },
                         )
                     }
-
-                    Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
                 }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
+                ) {
+                    Text(text = "Authentication:")
+                    Checkbox(checked = connectionInfo.isAuthenticationEnabled, onCheckedChange = { isChecked ->
+                        val newConnectionInfo = connectionInfo.copy(isAuthenticationEnabled = isChecked)
+                        viewModel.updateConnectionInfo(newConnectionInfo)
+                    })
+                }
+
+                if (connectionInfo.isAuthenticationEnabled) {
+                    val uri = Uri.parse(connectionInfo.jwtUriPath ?: "")
+                    val fileName = uri.fetchFileName(context) ?: "Select JWT..."
+
+                    FileSelectorSettingView(
+                        label = "JWT",
+                        value = fileName,
+                        modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
+                    ) {
+                        val newConnectionInfo = connectionInfo.copy(jwtUriPath = it.toString())
+                        viewModel.updateConnectionInfo(newConnectionInfo)
+                    }
+                }
+                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
             }
         }
         Row(
