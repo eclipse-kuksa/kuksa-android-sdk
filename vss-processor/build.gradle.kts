@@ -90,6 +90,7 @@ java {
 val dependentCompositeTasks = setOf(
     "publishToMavenLocal",
     "publishAllPublicationsToOSSRHReleaseRepository",
+    "test",
 )
 val dependentCompositeBuilds = setOf("vss-processor-plugin")
 

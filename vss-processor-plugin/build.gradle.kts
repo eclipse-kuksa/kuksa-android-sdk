@@ -51,6 +51,8 @@ gradlePlugin {
     }
 }
 
+// <property>.set calls need to be done instead of "=" because of a IDEA bug.
+// https://youtrack.jetbrains.com/issue/KTIJ-17783/False-positive-Val-cannot-be-reassigned-in-build.gradle.kts
 afterEvaluate {
     publishing {
         repositories {
@@ -77,22 +79,22 @@ afterEvaluate {
                     }
                     developers {
                         developer {
-                            name = "Mark Hüsers"
-                            email = "mark.huesers@etas.com"
-                            organization = "ETAS GmbH"
-                            organizationUrl = "https://www.etas.com"
+                            name.set("Mark Hüsers")
+                            email.set("mark.huesers@etas.com")
+                            organization.set("ETAS GmbH")
+                            organizationUrl.set("https://www.etas.com")
                         }
                         developer {
-                            name = "Sebastian Schildt"
-                            email = "sebastian.schildt@etas.com"
-                            organization = "ETAS GmbH"
-                            organizationUrl = "https://www.etas.com"
+                            name.set("Sebastian Schildt")
+                            email.set("sebastian.schildt@etas.com")
+                            organization.set("ETAS GmbH")
+                            organizationUrl.set("https://www.etas.com")
                         }
                         developer {
-                            name = "Andre Weber"
-                            email = "andre.weber3@etas.com"
-                            organization = "ETAS GmbH"
-                            organizationUrl = "https://www.etas.com"
+                            name.set("Andre Weber")
+                            email.set("andre.weber3@etas.com")
+                            organization.set("ETAS GmbH")
+                            organizationUrl.set("https://www.etas.com")
                         }
                     }
                     scm {
@@ -130,6 +132,15 @@ afterEvaluate {
     }
 }
 
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    testLogging.showStandardStreams = true
+}
+
 dependencies {
     implementation(kotlin("stdlib"))
+
+    testImplementation(gradleTestKit())
+    testImplementation(libs.kotest)
+    testImplementation(libs.mockk)
 }
