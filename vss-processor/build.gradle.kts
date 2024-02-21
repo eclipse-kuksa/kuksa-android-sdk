@@ -67,7 +67,7 @@ publish {
 tasks.register("javadocJar", Jar::class) {
     dependsOn("dokkaHtml")
 
-    val buildDir = layout.buildDirectory.asFile.get()
+    val buildDir = layout.buildDirectory.get()
     from("$buildDir/dokka/html")
     archiveClassifier.set("javadoc")
 }
@@ -79,4 +79,35 @@ tasks.withType<DokkaTask>().configureEach {
 java {
     withJavadocJar() // needs to be called after tasks.register("javadocJar")
     withSourcesJar()
+}
+
+// Tasks for included composite builds need to be called separately. For convenience sake we depend on the most used
+// tasks. Every task execution of this project will then be forwarded to the included build project. Since this module
+// is hard coupled to the
+//
+// We have to manually define the task names because the task() method of the included build throws an error for any
+// unknown task.
+val dependentCompositeTasks = setOf(
+    "publishToMavenLocal",
+    "publishAllPublicationsToOSSRHReleaseRepository",
+)
+val dependentCompositeBuilds = setOf("vss-processor-plugin")
+
+gradle.projectsEvaluated {
+    val subProjectTasks = tasks + subprojects.flatMap { it.tasks }
+
+    subProjectTasks
+        .filter { dependentCompositeTasks.contains(it.name) }
+        .forEach { task ->
+            val compositeTask = gradle.includedBuilds
+                .filter { dependentCompositeBuilds.contains(it.name) }
+                .map { compositeBuild ->
+                    val compositeTaskPath = task.path.substringAfterLast(":")
+                    println("Linking composite task - ${compositeBuild.name} <-> ${task.project}:${task.name}")
+
+                    compositeBuild.task(":$compositeTaskPath")
+                }
+
+            task.dependsOn(compositeTask)
+        }
 }

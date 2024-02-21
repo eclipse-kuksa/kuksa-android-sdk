@@ -32,7 +32,6 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 import org.gradle.work.ChangeType
@@ -83,12 +82,12 @@ class VssProcessorPlugin : Plugin<Project> {
                     val searchDir = file(searchPath)
                     if (!searchDir.exists()) {
                         throw FileNotFoundException(
-                            "Directory '$searchPath' for VSS files not found! Please create the folder."
+                            "Directory '$searchPath' for VSS files not found! Please create the folder.",
                         )
                     }
 
-                    inputDir = searchDir
-                    outputDir = vssDefinitionBuildFile
+                    inputDir.set(searchDir)
+                    outputDir.set(vssDefinitionBuildFile)
                 }
 
             tasks.getByName("preBuild").dependsOn(
