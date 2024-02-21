@@ -25,6 +25,7 @@ import io.grpc.ManagedChannel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.authentication.JsonWebToken
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.datapoint
@@ -40,6 +41,7 @@ import org.eclipse.kuksa.vsscore.model.VssProperty
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.heritage
 import org.eclipse.kuksa.vsscore.model.vssProperties
+import kotlin.properties.Delegates
 
 /**
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
@@ -54,7 +56,17 @@ class DataBrokerConnection internal constructor(
     ),
     private val dataBrokerSubscriber: DataBrokerSubscriber = DataBrokerSubscriber(dataBrokerTransporter),
 ) {
+    /**
+     * Used to register and unregister multiple [DisconnectListener].
+     */
     val disconnectListeners = MultiListener<DisconnectListener>()
+
+    /**
+     * A JsonWebToken can be provided to authenticate against the DataBroker.
+     */
+    var jsonWebToken: JsonWebToken? by Delegates.observable(null) { _, _, newValue ->
+        dataBrokerTransporter.jsonWebToken = newValue
+    }
 
     init {
         val state = managedChannel.getState(false)
