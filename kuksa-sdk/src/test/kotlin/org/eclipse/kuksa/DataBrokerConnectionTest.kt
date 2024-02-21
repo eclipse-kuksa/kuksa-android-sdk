@@ -37,6 +37,7 @@ import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.vssSpecification.VssDriver
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -46,7 +47,7 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerConnectionTest : BehaviorSpec({
-    tags(Integration)
+    tags(Integration, DefaultDatabroker)
 
     given("A successfully established connection to the DataBroker") {
         val dataBrokerConnection = connectToDataBrokerBlocking()

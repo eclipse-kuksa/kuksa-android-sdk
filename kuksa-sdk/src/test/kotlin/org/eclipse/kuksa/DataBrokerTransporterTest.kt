@@ -32,12 +32,13 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
 import kotlin.random.Random
 
 class DataBrokerTransporterTest : BehaviorSpec({
-    tags(Integration, Insecure)
+    tags(Integration, Insecure, DefaultDatabroker)
 
     given("An active Connection to the DataBroker") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()

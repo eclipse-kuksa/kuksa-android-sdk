@@ -26,6 +26,7 @@ import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.TimeoutConfig
+import org.eclipse.kuksa.authentication.JsonWebToken
 import java.io.IOException
 import java.io.InputStream
 
@@ -34,10 +35,19 @@ class DataBrokerConnectorProvider {
     fun createInsecure(
         host: String = DataBrokerConfig.HOST,
         port: Int = DataBrokerConfig.PORT,
+        jwtFileStream: InputStream? = null,
     ): DataBrokerConnector {
         managedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
 
-        return DataBrokerConnector(managedChannel).apply {
+        val jsonWebToken = jwtFileStream?.let {
+            val token = it.reader().readText()
+            JsonWebToken(token)
+        }
+
+        return DataBrokerConnector(
+            managedChannel,
+            jsonWebToken,
+        ).apply {
             timeoutConfig = TimeoutConfig(DataBrokerConfig.TIMEOUT_SECONDS, DataBrokerConfig.TIMEOUT_UNIT)
         }
     }
@@ -47,6 +57,7 @@ class DataBrokerConnectorProvider {
         port: Int = DataBrokerConfig.PORT,
         rootCertFileStream: InputStream,
         overrideAuthority: String = "",
+        jwtFileStream: InputStream? = null,
     ): DataBrokerConnector {
         val tlsCredentials: ChannelCredentials
         try {
@@ -67,7 +78,16 @@ class DataBrokerConnectorProvider {
         }
 
         managedChannel = channelBuilder.build()
-        return DataBrokerConnector(managedChannel).apply {
+
+        val jsonWebToken = jwtFileStream?.let {
+            val token = it.reader().readText()
+            JsonWebToken(token)
+        }
+
+        return DataBrokerConnector(
+            managedChannel,
+            jsonWebToken,
+        ).apply {
             timeoutConfig = TimeoutConfig(DataBrokerConfig.TIMEOUT_SECONDS, DataBrokerConfig.TIMEOUT_UNIT)
         }
     }
