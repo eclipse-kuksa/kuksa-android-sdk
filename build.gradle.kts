@@ -19,7 +19,16 @@
 
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
-import org.jetbrains.kotlin.incremental.createDirectory
+import java.nio.file.FileVisitResult
+import java.nio.file.Path
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.bufferedWriter
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.name
+import kotlin.io.path.useLines
+import kotlin.io.path.visitFileTree
 
 val versionDefaultPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
 rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
@@ -52,6 +61,7 @@ subprojects {
     }
 }
 
+@OptIn(ExperimentalPathApi::class)
 tasks.register("mergeDashFiles") {
     group = "oss"
 
@@ -61,23 +71,26 @@ tasks.register("mergeDashFiles") {
         },
     )
 
-    val ossFolder = File("$rootDir/build/oss/all")
-    ossFolder.createDirectory()
+    val buildDir = layout.buildDirectory.asFile.get()
+    val buildDirPath = Path.of(buildDir.path)
 
-    val ossDependenciesFile = File("$ossFolder/all-dependencies.txt")
-    if (ossDependenciesFile.exists()) {
-        ossDependenciesFile.delete()
-    }
-    ossDependenciesFile.createNewFile()
-
-    val ossFiles = files("build/oss")
     doLast {
-        val sortedLinesSet = sortedSetOf<String>()
-        ossFiles.asFileTree.forEach { file ->
-            if (file.name != "dependencies.txt") return@forEach
+        val ossDir = buildDirPath.resolve("oss").createDirectories()
+        val ossAllDir = ossDir.resolve("all").createDirectories()
+        val ossDependenciesFile = ossAllDir.resolve("all-dependencies.txt")
+        ossDependenciesFile.deleteIfExists()
+        ossDependenciesFile.createFile()
 
-            file.useLines {
-                sortedLinesSet.addAll(it)
+        val sortedLinesSet = sortedSetOf<String>()
+        ossDir.visitFileTree {
+            onVisitFile { file, _ ->
+                if (file.name != "dependencies.txt") return@onVisitFile FileVisitResult.CONTINUE
+
+                file.useLines {
+                    sortedLinesSet.addAll(it)
+                }
+
+                FileVisitResult.CONTINUE
             }
         }
 

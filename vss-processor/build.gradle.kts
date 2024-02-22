@@ -98,7 +98,8 @@ val dependentCompositeBuilds = setOf("vss-processor-plugin")
 gradle.projectsEvaluated {
     val subProjectTasks = tasks + subprojects.flatMap { it.tasks }
 
-    println("Linking Composite Task:")
+    println("Linking Composite Tasks:")
+
     subProjectTasks
         .filter { dependentCompositeTasks.contains(it.name) }
         .forEach { task ->
