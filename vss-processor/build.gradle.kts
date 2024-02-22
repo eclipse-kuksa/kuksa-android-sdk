@@ -91,6 +91,7 @@ val dependentCompositeTasks = setOf(
     "publishToMavenLocal",
     "publishAllPublicationsToOSSRHReleaseRepository",
     "test",
+    "clean",
 )
 val dependentCompositeBuilds = setOf("vss-processor-plugin")
 
