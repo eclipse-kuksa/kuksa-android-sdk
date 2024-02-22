@@ -106,7 +106,7 @@ gradle.projectsEvaluated {
                 .filter { dependentCompositeBuilds.contains(it.name) }
                 .map { compositeBuild ->
                     val compositeTaskPath = task.path.substringAfterLast(":")
-                    println("${compositeBuild.name}:${task.name} -> ${task.project.name}:${task.name}")
+                    println("- ${task.project.name}:${task.name} -> ${compositeBuild.name}:${task.name}")
 
                     compositeBuild.task(":$compositeTaskPath")
                 }
