@@ -28,7 +28,7 @@ abstract class GradleProject(val name: String, testFolder: String = TEST_FOLDER_
     val buildDir: Path
         get() = projectDir.resolve("build")
 
-    abstract fun generate()
+    abstract fun generate(appendix: String = "")
 
     open fun refresh() {
         generate()
@@ -39,6 +39,9 @@ abstract class GradleProject(val name: String, testFolder: String = TEST_FOLDER_
     }
 
     companion object {
-        private const val TEST_FOLDER_NAME_DEFAULT = "build/functionalTest/"
+        const val TEST_FOLDER_NAME_DEFAULT = "build/functionalTest/"
     }
 }
+
+val dollar: String
+    get() = "\$"

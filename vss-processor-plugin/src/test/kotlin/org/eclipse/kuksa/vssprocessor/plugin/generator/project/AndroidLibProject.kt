@@ -18,6 +18,7 @@
 
 package org.eclipse.kuksa.vssprocessor.plugin.generator.project
 
+import kotlin.io.path.appendText
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 
@@ -28,7 +29,7 @@ open class AndroidLibProject(name: String) : GradleProject(name) {
     private val mainDir = projectDir.resolve("src/main").createDirectories()
     private val androidManifestFile = mainDir.resolve("AndroidManifest.xml")
 
-    override fun generate() {
+    override fun generate(appendix: String) {
         androidManifestFile.writeText(
             """
             <?xml version="1.0" encoding="utf-8"?>
@@ -60,8 +61,11 @@ open class AndroidLibProject(name: String) : GradleProject(name) {
 
             dependencies {
             }
+
             """.trimIndent(),
         )
+
+        buildFile.appendText("\n$appendix")
     }
 
     companion object {

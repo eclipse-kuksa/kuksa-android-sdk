@@ -19,29 +19,22 @@
 package org.eclipse.kuksa.vssprocessor.plugin.generator.project
 
 import java.io.File
+import java.nio.file.Path
 import kotlin.io.path.createDirectories
 
 class VssProcessorLibProject(name: String) : AndroidLibProject(name) {
-    private val vssDir = rootProjectDir.resolve(VSS_DIR_NAME).createDirectories()
+    val vssDir = rootProjectDir.resolve(VSS_DIR_NAME).createDirectories()
+    val vssDir2 = rootProjectDir.resolve("${VSS_DIR_NAME}_2").createDirectories()
 
-    override fun generate() {
-        super.generate()
+    fun copyVssFiles(directory: Path, fileName: String): File {
+        val certificateUrl = VssProcessorLibProject::class.java.classLoader?.getResource(fileName)!!
+        val certificateFile = File(certificateUrl.toURI())
 
-        copyVssFiles(VSS_TEST_FILE)
-    }
-
-    private fun copyVssFiles(vararg files: String) {
-        files.forEach { file ->
-            val certificateUrl = VssProcessorLibProject::class.java.classLoader?.getResource(file)!!
-            val certificateFile = File(certificateUrl.toURI())
-
-            val targetLocation = vssDir.resolve(certificateFile.name).toFile()
-            certificateFile.copyTo(targetLocation, true)
-        }
+        val targetLocation = directory.resolve(certificateFile.name).toFile()
+        return certificateFile.copyTo(targetLocation, true)
     }
 
     companion object {
         const val VSS_DIR_NAME = "vss"
-        const val VSS_TEST_FILE = "vss_rel_4.0_test.yaml"
     }
 }

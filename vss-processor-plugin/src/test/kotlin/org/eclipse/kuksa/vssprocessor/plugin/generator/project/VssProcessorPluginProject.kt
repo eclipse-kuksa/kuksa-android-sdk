@@ -24,7 +24,7 @@ import kotlin.io.path.writeText
 class VssProcessorPluginProject : RootGradleProject("VssProcessorPlugin") {
     val localCacheFolder = projectDir.resolve("local-cache").createDirectories()
 
-    override fun generate() {
+    override fun generate(appendix: String) {
         settingsFile.writeText(
             """
                 pluginManagement {
