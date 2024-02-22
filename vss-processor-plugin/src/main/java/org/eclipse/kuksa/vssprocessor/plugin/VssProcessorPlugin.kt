@@ -82,7 +82,8 @@ class VssProcessorPlugin : Plugin<Project> {
                     val searchDir = file(searchPath)
                     if (!searchDir.exists()) {
                         throw FileNotFoundException(
-                            "Directory '$searchPath' for VSS files not found! Please create the folder.",
+                            "Directory '$searchPath' for VSS files not found! Please create the folder relative to " +
+                                "your project directory: ${searchDir.path}.",
                         )
                     }
 
@@ -132,7 +133,7 @@ private abstract class ProvideVssDefinitionTask : DefaultTask() {
             }
 
             val targetFile = outputDir.file(change.normalizedPath).get().asFile
-            logger.info("Found vss file change for: ${targetFile.name}, change: ${change.changeType}")
+            logger.info("Found VSS file changes for: ${targetFile.name}, change: ${change.changeType}")
 
             when (change.changeType) {
                 ChangeType.ADDED,

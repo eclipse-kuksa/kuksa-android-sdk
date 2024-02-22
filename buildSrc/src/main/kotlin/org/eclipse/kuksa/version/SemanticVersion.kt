@@ -66,6 +66,6 @@ class SemanticVersion(versionFilePath: String) {
         patch = versions[2].toInt()
         this.suffix = suffix
 
-        println("Current SemanticVersion($versionName)\n")
+        println("Current SemanticVersion($versionName)")
     }
 }
