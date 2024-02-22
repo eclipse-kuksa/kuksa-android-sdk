@@ -34,6 +34,11 @@ import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
+// Note:
+// - Debugging into functional gradle test cases do not work.
+// - Sometimes test errors are obscured so try looking into the test report to see the actual one.
+//
+// ./gradlew :vss-processor-plugin:test -Dkotest.tags="Functional"
 @OptIn(ExperimentalPathApi::class)
 class VssProcessorPluginTest : BehaviorSpec({
     tags(Functional)
