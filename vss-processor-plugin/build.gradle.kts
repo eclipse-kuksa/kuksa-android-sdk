@@ -1,6 +1,5 @@
 import org.eclipse.kuksa.vssprocessor.plugin.version.SemanticVersion
 import org.eclipse.kuksa.vssprocessor.plugin.version.VERSION_FILE_DEFAULT_NAME
-import org.eclipse.kuksa.vssprocessor.plugin.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 /*
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
@@ -21,16 +20,13 @@ import org.eclipse.kuksa.vssprocessor.plugin.version.VERSION_FILE_DEFAULT_PATH_K
  *
  */
 
-val versionDefaultPath = "$rootDir/../$VERSION_FILE_DEFAULT_NAME"
-rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
-
 plugins {
     alias(libs.plugins.pluginPublishing)
     signing
     `kotlin-dsl`
 }
 
-val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
+val versionPath = "$rootDir/../$VERSION_FILE_DEFAULT_NAME"
 val semanticVersion = SemanticVersion(versionPath)
 version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
@@ -137,6 +133,10 @@ tasks.withType<Test>().configureEach {
     testLogging.showStandardStreams = true
 }
 
+// IMPORTANT: The currently used dependencies here are already covered by the other modules in this project so dash oss
+// scripts do not have to be included here (yet).
+// But keep in mind to check the coverage when adding new dependencies.
+// TODO: Automated with https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/79
 dependencies {
     implementation(kotlin("stdlib"))
 
