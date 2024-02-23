@@ -26,6 +26,14 @@ plugins {
     `kotlin-dsl`
 }
 
+// TODO: This linking to the version file currently throws a warning:
+// Caught exception: Already watching path: kuksa-android-sdk/vss-processor-plugin/..
+//
+// The reason is that two different root projects (main + composite (this)) are referencing to the same version.txt
+// file because data models like SemanticVersion can't be shared. However the same build folder is used for the
+// caching so the cache does not know about this. The issue will be ignored as a warning for now.
+//
+// Similar issue: https://github.com/gradle/gradle/issues/27940
 val versionPath = "$rootDir/../$VERSION_FILE_DEFAULT_NAME"
 val semanticVersion = SemanticVersion(versionPath)
 version = semanticVersion.versionName
