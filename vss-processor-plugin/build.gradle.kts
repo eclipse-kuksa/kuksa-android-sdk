@@ -141,6 +141,21 @@ tasks.withType<Test>().configureEach {
     testLogging.showStandardStreams = true
 }
 
+afterEvaluate {
+    tasks.find { it.name.contains("generateMetadataFileForPluginMavenPublication") }
+        ?.notCompatibleWithConfigurationCache(
+            """
+            The "generateMetadataFileForPluginMavenPublication" task is currently not using the configuration cache
+            correctly which leads to:
+
+            java.io.FileNotFoundException: /build/libs/vss-processor-plugin-0.1.3.jar (No such file or directory)
+
+            Reproduction steps:
+            ./gradlew :vss-processor-plugin:clean :vss-processor-plugin:generateMetadataFileForPluginMavenPublication
+            """.trimIndent(),
+        )
+}
+
 // IMPORTANT: The currently used dependencies here are already covered by the other modules in this project so dash oss
 // scripts do not have to be included here (yet).
 // But keep in mind to check the coverage when adding new dependencies.
