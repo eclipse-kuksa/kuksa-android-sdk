@@ -87,11 +87,12 @@ java {
 //
 // We have to manually define the task names because the task() method of the included build throws an error for any
 // unknown task.
+//
+// WARNING: Do not depend on the task "clean" here: https://github.com/gradle/gradle/issues/23585
 val dependentCompositeTasks = setOf(
     "publishToMavenLocal",
     "publishAllPublicationsToOSSRHReleaseRepository",
     "test",
-    "clean",
 )
 val dependentCompositeBuilds = setOf("vss-processor-plugin")
 
