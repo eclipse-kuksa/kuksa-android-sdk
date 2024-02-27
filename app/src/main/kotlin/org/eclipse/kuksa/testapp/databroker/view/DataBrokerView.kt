@@ -76,6 +76,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.R
+import org.eclipse.kuksa.testapp.databroker.view.connection.DataBrokerConnectionView
 import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionAdapter
 import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionTextView
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
@@ -121,7 +122,7 @@ fun DataBrokerView(
         ) {
             Column {
                 if (!connectionViewModel.isConnected) {
-                    DataBrokerConnection(connectionViewModel)
+                    DataBrokerConnectionView(connectionViewModel)
                 }
                 val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 if (connectionViewModel.isConnected) {

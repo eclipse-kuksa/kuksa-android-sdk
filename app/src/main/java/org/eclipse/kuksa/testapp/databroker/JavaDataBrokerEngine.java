@@ -20,7 +20,6 @@
 package org.eclipse.kuksa.testapp.databroker;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -29,114 +28,48 @@ import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.PropertyListener;
-import org.eclipse.kuksa.TimeoutConfig;
 import org.eclipse.kuksa.VssSpecificationListener;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
 import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
-import org.eclipse.kuksa.testapp.databroker.model.Certificate;
+import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory;
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
 import org.eclipse.kuksa.vsscore.model.VssSpecification;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
-import io.grpc.ChannelCredentials;
-import io.grpc.Grpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.TlsChannelCredentials;
-
 public class JavaDataBrokerEngine implements DataBrokerEngine {
-    private static final String TAG = JavaDataBrokerEngine.class.getSimpleName();
-    private static final long TIMEOUT_CONNECTION = 5;
-
     @Nullable
     private DataBrokerConnection dataBrokerConnection = null;
 
+    private final DataBrokerConnectorFactory connectorFactory = new DataBrokerConnectorFactory();
     private final Set<DisconnectListener> disconnectListeners = new HashSet<>();
 
+    // Too many to usefully handle: Checked Exceptions: IOE, RuntimeExceptions: UOE, ISE, IAE, ...
+    @SuppressWarnings("TooGenericExceptionCaught")
     public void connect(
         @NonNull Context context,
         @NonNull ConnectionInfo connectionInfo,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
-        if (connectionInfo.isTlsEnabled()) {
-            connectSecure(context, connectionInfo, callback);
-        } else {
-            connectInsecure(connectionInfo, callback);
-        }
-    }
-
-    private void connectInsecure(
-        @NonNull ConnectionInfo connectInfo,
-        @NonNull CoroutineCallback<DataBrokerConnection> callback
-    ) {
         try {
-            ManagedChannel managedChannel = ManagedChannelBuilder
-                .forAddress(connectInfo.getHost(), connectInfo.getPort())
-                .usePlaintext()
-                .build();
-
-            connect(managedChannel, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
-        }
-    }
-
-    private void connectSecure(
-        @NotNull Context context,
-        @NotNull ConnectionInfo connectInfo,
-        @NotNull CoroutineCallback<DataBrokerConnection> callback
-    ) {
-        Certificate certificate = connectInfo.getCertificate();
-
-        ChannelCredentials tlsCredentials;
-        try {
-            InputStream rootCertFile = context.getContentResolver().openInputStream(certificate.getUri());
-            if (rootCertFile == null) return;
-
-            tlsCredentials = TlsChannelCredentials.newBuilder()
-                .trustManager(rootCertFile)
-                .build();
-        } catch (IOException e) {
-            Log.w(TAG, "Could not find file for certificate: " + certificate);
-
-            return;
-        }
-
-        try {
-            ManagedChannelBuilder<?> channelBuilder = Grpc
-                .newChannelBuilderForAddress(connectInfo.getHost(), connectInfo.getPort(), tlsCredentials);
-
-            String overrideAuthority = certificate.getOverrideAuthority().trim();
-            boolean hasOverrideAuthority = !overrideAuthority.isEmpty();
-            if (hasOverrideAuthority) {
-                channelBuilder.overrideAuthority(overrideAuthority);
-            }
-
-            ManagedChannel managedChannel = channelBuilder.build();
-            connect(managedChannel, callback);
-        } catch (IllegalArgumentException e) {
+            DataBrokerConnector connector = connectorFactory.create(context, connectionInfo);
+            connect(connector, callback);
+        } catch (Exception e) {
             callback.onError(e);
         }
     }
 
     private void connect(
-        @NonNull ManagedChannel managedChannel,
+        @NonNull DataBrokerConnector connector,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
-        DataBrokerConnector connector = new DataBrokerConnector(managedChannel);
-        connector.setTimeoutConfig(new TimeoutConfig(TIMEOUT_CONNECTION, TimeUnit.SECONDS));
         connector.connect(new CoroutineCallback<>() {
             @Override
             public void onSuccess(@Nullable DataBrokerConnection result) {

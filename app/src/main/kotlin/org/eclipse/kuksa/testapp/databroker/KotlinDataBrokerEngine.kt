@@ -21,11 +21,6 @@ package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
 import androidx.lifecycle.LifecycleCoroutineScope
-import io.grpc.ChannelCredentials
-import io.grpc.Grpc
-import io.grpc.ManagedChannel
-import io.grpc.ManagedChannelBuilder
-import io.grpc.TlsChannelCredentials
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
@@ -33,15 +28,14 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.TimeoutConfig
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import java.io.IOException
 
 @Suppress("complexity:TooManyFunctions")
 class KotlinDataBrokerEngine(
@@ -49,76 +43,21 @@ class KotlinDataBrokerEngine(
 ) : DataBrokerEngine {
     override var dataBrokerConnection: DataBrokerConnection? = null
 
+    private val connectorFactory = DataBrokerConnectorFactory()
     private val disconnectListeners = mutableSetOf<DisconnectListener>()
 
+    // Too many to usefully handle: Checked Exceptions: IOE, RuntimeExceptions: UOE, ISE, IAE, ...
+    @Suppress("TooGenericExceptionCaught")
     override fun connect(
         context: Context,
         connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
-        if (connectionInfo.isTlsEnabled) {
-            connectSecure(context, connectionInfo, callback)
-        } else {
-            connectInsecure(connectionInfo, callback)
-        }
-    }
-
-    private fun connectInsecure(
-        connectInfo: ConnectionInfo,
-        callback: CoroutineCallback<DataBrokerConnection>,
-    ) {
-        try {
-            val managedChannel = ManagedChannelBuilder
-                .forAddress(connectInfo.host, connectInfo.port)
-                .usePlaintext()
-                .build()
-
-            connect(managedChannel, callback)
-        } catch (e: IllegalArgumentException) {
-            callback.onError(e)
-        }
-    }
-
-    private fun connectSecure(
-        context: Context,
-        connectInfo: ConnectionInfo,
-        callback: CoroutineCallback<DataBrokerConnection>,
-    ) {
-        val certificate = connectInfo.certificate
-
-        val tlsCredentials: ChannelCredentials
-        try {
-            val rootCertFile = context.contentResolver.openInputStream(certificate.uri)
-            tlsCredentials = TlsChannelCredentials.newBuilder()
-                .trustManager(rootCertFile)
-                .build()
-        } catch (e: IOException) {
+        val connector: DataBrokerConnector = try {
+            connectorFactory.create(context, connectionInfo)
+        } catch (e: Exception) {
             callback.onError(e)
             return
-        }
-
-        try {
-            val host = connectInfo.host.trim()
-            val port = connectInfo.port
-            val channelBuilder = Grpc
-                .newChannelBuilderForAddress(host, port, tlsCredentials)
-
-            val overrideAuthority = certificate.overrideAuthority.trim()
-            val hasOverrideAuthority = overrideAuthority.isNotEmpty()
-            if (hasOverrideAuthority) {
-                channelBuilder.overrideAuthority(overrideAuthority)
-            }
-
-            val managedChannel = channelBuilder.build()
-            connect(managedChannel, callback)
-        } catch (e: IllegalArgumentException) {
-            callback.onError(e)
-        }
-    }
-
-    private fun connect(managedChannel: ManagedChannel, callback: CoroutineCallback<DataBrokerConnection>) {
-        val connector = DataBrokerConnector(managedChannel).apply {
-            timeoutConfig = TimeoutConfig(TIMEOUT_CONNECTION_SEC)
         }
 
         lifecycleScope.launch {
@@ -205,9 +144,5 @@ class KotlinDataBrokerEngine(
     override fun unregisterDisconnectListener(listener: DisconnectListener) {
         disconnectListeners.remove(listener)
         dataBrokerConnection?.disconnectListeners?.unregister(listener)
-    }
-
-    companion object {
-        const val TIMEOUT_CONNECTION_SEC = 5L
     }
 }

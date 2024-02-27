@@ -23,11 +23,12 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldNotBe
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
 
 class DataBrokerConnectorTest : BehaviorSpec({
-    tags(Integration, Insecure)
+    tags(Integration, Insecure, DefaultDatabroker)
 
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()

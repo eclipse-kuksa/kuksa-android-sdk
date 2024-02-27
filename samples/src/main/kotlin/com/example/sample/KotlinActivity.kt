@@ -32,6 +32,7 @@ import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.authentication.JsonWebToken
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
@@ -56,7 +57,9 @@ class KotlinActivity : AppCompatActivity() {
                 .usePlaintext()
                 .build()
 
-            val connector = DataBrokerConnector(managedChannel)
+            // or jsonWebToken = null when authentication is disabled
+            val jsonWebToken = JsonWebToken("someValidToken")
+            val connector = DataBrokerConnector(managedChannel, jsonWebToken)
             try {
                 dataBrokerConnection = connector.connect()
                 dataBrokerConnection?.disconnectListeners?.register(disconnectListener)
@@ -89,7 +92,10 @@ class KotlinActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val managedChannel = channelBuilder.build()
-            val connector = DataBrokerConnector(managedChannel)
+
+            // or jsonWebToken = null when authentication is disabled
+            val jsonWebToken = JsonWebToken("someValidToken")
+            val connector = DataBrokerConnector(managedChannel, jsonWebToken)
             try {
                 dataBrokerConnection = connector.connect()
                     .apply {
