@@ -22,14 +22,16 @@ package org.eclipse.kuksa.authentication
 /**
  * A JsonWebToken can be used to authenticate against the DataBroker. For authentication to work the DataBroker must be
  * started with authentication enabled first.
+ *
  * The JsonWebToken is defined by an [authScheme] and [token]. The [authScheme] is set to "Bearer". The [token] should
  * contain a valid JsonWebToken.
  *
  * It will be send to the DataBroker as part of the Header Metadata in the following format:
  *
+ * ```
  * Headers
  *  Authorization: [authScheme] [token]
- *
+ * ```
  */
 data class JsonWebToken(
     val token: String,

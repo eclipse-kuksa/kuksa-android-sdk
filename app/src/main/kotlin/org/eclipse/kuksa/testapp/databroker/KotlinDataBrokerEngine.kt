@@ -20,13 +20,8 @@
 package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.LifecycleCoroutineScope
-import io.grpc.ChannelCredentials
-import io.grpc.Grpc
 import io.grpc.ManagedChannel
-import io.grpc.ManagedChannelBuilder
-import io.grpc.TlsChannelCredentials
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
@@ -42,8 +37,10 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.extension.createInsecureManagedChannel
+import org.eclipse.kuksa.testapp.extension.createSecureManagedChannel
+import org.eclipse.kuksa.testapp.extension.loadJsonWebToken
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import java.io.IOException
 
 @Suppress("complexity:TooManyFunctions")
 class KotlinDataBrokerEngine(
@@ -53,15 +50,21 @@ class KotlinDataBrokerEngine(
 
     private val disconnectListeners = mutableSetOf<DisconnectListener>()
 
+    // Too many to usefully handle: Checked Exceptions: IOE, RuntimeExceptions: UOE, ISE, IAE, ...
+    @Suppress("TooGenericExceptionCaught")
     override fun connect(
         context: Context,
         connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
-        if (connectionInfo.isTlsEnabled) {
-            connectSecure(context, connectionInfo, callback)
-        } else {
-            connectInsecure(context, connectionInfo, callback)
+        try {
+            if (connectionInfo.isTlsEnabled) {
+                connectSecure(context, connectionInfo, callback)
+            } else {
+                connectInsecure(context, connectionInfo, callback)
+            }
+        } catch (e: Exception) {
+            callback.onError(e)
         }
     }
 
@@ -70,20 +73,10 @@ class KotlinDataBrokerEngine(
         connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
-        try {
-            val managedChannel = ManagedChannelBuilder
-                .forAddress(connectionInfo.host, connectionInfo.port)
-                .usePlaintext()
-                .build()
+        val insecureManagedChannel = connectionInfo.createInsecureManagedChannel()
+        val jsonWebToken: JsonWebToken? = connectionInfo.loadJsonWebToken(context)
 
-            val jsonWebToken = connectionInfo.jwtUriPath?.let {
-                loadJsonWebToken(context, it)
-            }
-
-            connect(managedChannel, jsonWebToken, callback)
-        } catch (e: IllegalArgumentException) {
-            callback.onError(e)
-        }
+        connect(insecureManagedChannel, jsonWebToken, callback)
     }
 
     private fun connectSecure(
@@ -91,40 +84,10 @@ class KotlinDataBrokerEngine(
         connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
-        val certificate = connectionInfo.certificate
+        val secureManagedChannel = connectionInfo.createSecureManagedChannel(context)
+        val jsonWebToken: JsonWebToken? = connectionInfo.loadJsonWebToken(context)
 
-        val tlsCredentials: ChannelCredentials
-        try {
-            val rootCertFile = context.contentResolver.openInputStream(certificate.uri)
-            tlsCredentials = TlsChannelCredentials.newBuilder()
-                .trustManager(rootCertFile)
-                .build()
-        } catch (e: IOException) {
-            callback.onError(e)
-            return
-        }
-
-        try {
-            val host = connectionInfo.host.trim()
-            val port = connectionInfo.port
-            val channelBuilder = Grpc
-                .newChannelBuilderForAddress(host, port, tlsCredentials)
-
-            val overrideAuthority = certificate.overrideAuthority.trim()
-            val hasOverrideAuthority = overrideAuthority.isNotEmpty()
-            if (hasOverrideAuthority) {
-                channelBuilder.overrideAuthority(overrideAuthority)
-            }
-
-            val jsonWebToken = connectionInfo.jwtUriPath?.let {
-                loadJsonWebToken(context, it)
-            }
-
-            val managedChannel = channelBuilder.build()
-            connect(managedChannel, jsonWebToken, callback)
-        } catch (e: IllegalArgumentException) {
-            callback.onError(e)
-        }
+        connect(secureManagedChannel, jsonWebToken, callback)
     }
 
     private fun connect(
@@ -220,17 +183,6 @@ class KotlinDataBrokerEngine(
     override fun unregisterDisconnectListener(listener: DisconnectListener) {
         disconnectListeners.remove(listener)
         dataBrokerConnection?.disconnectListeners?.unregister(listener)
-    }
-
-    private fun loadJsonWebToken(context: Context, uriPath: String): JsonWebToken {
-        val uri = Uri.parse(uriPath)
-
-        val contentResolver = context.contentResolver
-        val token: String = contentResolver.openInputStream(uri)?.use {
-            it.reader().readText()
-        } ?: error("Could not read jwt")
-
-        return JsonWebToken(token)
     }
 
     companion object {

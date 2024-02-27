@@ -19,10 +19,7 @@
 
 package org.eclipse.kuksa.testapp.databroker;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.net.Uri;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -39,14 +36,12 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
 import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
-import org.eclipse.kuksa.testapp.databroker.model.Certificate;
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
+import org.eclipse.kuksa.testapp.extension.ConnectionInfoExtensionKt;
 import org.eclipse.kuksa.vsscore.model.VssSpecification;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -54,16 +49,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
-import io.grpc.ChannelCredentials;
-import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.TlsChannelCredentials;
-import kotlin.io.TextStreamsKt;
-import kotlin.text.Charsets;
 
 public class JavaDataBrokerEngine implements DataBrokerEngine {
-    private static final String TAG = JavaDataBrokerEngine.class.getSimpleName();
     private static final long TIMEOUT_CONNECTION = 5;
 
     @Nullable
@@ -71,15 +59,21 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
     private final Set<DisconnectListener> disconnectListeners = new HashSet<>();
 
+    // Too many to usefully handle: Checked Exceptions: IOE, RuntimeExceptions: UOE, ISE, IAE, ...
+    @SuppressWarnings("TooGenericExceptionCaught")
     public void connect(
         @NonNull Context context,
         @NonNull ConnectionInfo connectionInfo,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
-        if (connectionInfo.isTlsEnabled()) {
-            connectSecure(context, connectionInfo, callback);
-        } else {
-            connectInsecure(context, connectionInfo, callback);
+        try {
+            if (connectionInfo.isTlsEnabled()) {
+                connectSecure(context, connectionInfo, callback);
+            } else {
+                connectInsecure(context, connectionInfo, callback);
+            }
+        } catch (Exception e) {
+            callback.onError(e);
         }
     }
 
@@ -87,67 +81,22 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         @NonNull Context context,
         @NonNull ConnectionInfo connectionInfo,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
-    ) {
-        try {
-            ManagedChannel managedChannel = ManagedChannelBuilder
-                .forAddress(connectionInfo.getHost(), connectionInfo.getPort())
-                .usePlaintext()
-                .build();
+    ) throws IOException {
+        ManagedChannel insecureChannel = ConnectionInfoExtensionKt.createInsecureManagedChannel(connectionInfo);
+        JsonWebToken jsonWebToken = ConnectionInfoExtensionKt.loadJsonWebToken(connectionInfo, context);
 
-            String jwtUriPath = connectionInfo.getJwtUriPath();
-            JsonWebToken jsonWebToken = null;
-            if (jwtUriPath != null) {
-                jsonWebToken = loadJsonWebToken(context, jwtUriPath);
-            }
-
-            connect(managedChannel, jsonWebToken, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
-        }
+        connect(insecureChannel, jsonWebToken, callback);
     }
 
     private void connectSecure(
         @NotNull Context context,
         @NotNull ConnectionInfo connectionInfo,
         @NotNull CoroutineCallback<DataBrokerConnection> callback
-    ) {
-        Certificate certificate = connectionInfo.getCertificate();
+    ) throws IOException {
+        ManagedChannel secureChannel = ConnectionInfoExtensionKt.createSecureManagedChannel(connectionInfo, context);
+        JsonWebToken jsonWebToken = ConnectionInfoExtensionKt.loadJsonWebToken(connectionInfo, context);
 
-        ChannelCredentials tlsCredentials;
-        try {
-            InputStream rootCertFile = context.getContentResolver().openInputStream(certificate.getUri());
-            if (rootCertFile == null) return;
-
-            tlsCredentials = TlsChannelCredentials.newBuilder()
-                .trustManager(rootCertFile)
-                .build();
-        } catch (IOException e) {
-            Log.w(TAG, "Could not find file for certificate: " + certificate);
-
-            return;
-        }
-
-        try {
-            ManagedChannelBuilder<?> channelBuilder = Grpc
-                .newChannelBuilderForAddress(connectionInfo.getHost(), connectionInfo.getPort(), tlsCredentials);
-
-            String overrideAuthority = certificate.getOverrideAuthority().trim();
-            boolean hasOverrideAuthority = !overrideAuthority.isEmpty();
-            if (hasOverrideAuthority) {
-                channelBuilder.overrideAuthority(overrideAuthority);
-            }
-
-            String jwtUriPath = connectionInfo.getJwtUriPath();
-            JsonWebToken jsonWebToken = null;
-            if (jwtUriPath != null) {
-                jsonWebToken = loadJsonWebToken(context, jwtUriPath);
-            }
-
-            ManagedChannel managedChannel = channelBuilder.build();
-            connect(managedChannel, jsonWebToken, callback);
-        } catch (IllegalArgumentException e) {
-            callback.onError(e);
-        }
+        connect(secureChannel, jsonWebToken, callback);
     }
 
     private void connect(
@@ -296,20 +245,6 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     public void unsubscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
         if (dataBrokerConnection != null) {
             dataBrokerConnection.unsubscribe(property, propertyListener);
-        }
-    }
-
-    public JsonWebToken loadJsonWebToken(Context context, String uriPath) {
-        Uri uri = Uri.parse(uriPath);
-
-        ContentResolver contentResolver = context.getContentResolver();
-        try (InputStream inputStream = contentResolver.openInputStream(uri)) {
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charsets.UTF_8);
-            String token = TextStreamsKt.readText(inputStreamReader);
-
-            return new JsonWebToken(token);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }

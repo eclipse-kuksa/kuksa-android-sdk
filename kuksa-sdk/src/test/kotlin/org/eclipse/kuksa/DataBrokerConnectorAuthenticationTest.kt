@@ -55,7 +55,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 `when`("Reading Vehicle.Speed") {
                     val response = connection.fetch(property)
 
-                    then("An error should occur") {
+                    then("No error should occur") {
                         response.errorsList.size shouldBe 0
                     }
                 }
@@ -66,7 +66,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
                     val response = connection.update(property, datapoint)
 
-                    then("An error should occur") {
+                    then("No error should occur") {
                         response.errorsList.size shouldBe 0
                     }
                 }
