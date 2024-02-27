@@ -31,7 +31,7 @@ jobs:
           retention-days: 14
 
       - name: Run 'test' with Gradle Wrapper
-        run: ./gradlew test -Dkotest.tags="!Secure"
+        run: ./gradlew test -Dkotest.tags="!CustomDatabroker"
 
       - name: Upload Test Reports
         uses: actions/upload-artifact@v3

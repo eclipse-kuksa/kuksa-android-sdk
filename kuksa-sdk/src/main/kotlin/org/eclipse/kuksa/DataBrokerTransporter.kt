@@ -28,6 +28,8 @@ import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.authentication.JsonWebToken
+import org.eclipse.kuksa.authentication.withAuthenticationInterceptor
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.applyDatapoint
 import org.eclipse.kuksa.proto.v1.KuksaValV1
@@ -49,12 +51,18 @@ internal class DataBrokerTransporter(
     private val managedChannel: ManagedChannel,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
+
     init {
         val state = managedChannel.getState(false)
         check(state == ConnectivityState.READY) {
             "ManagedChannel needs to be connected to the target"
         }
     }
+
+    /**
+     * A JsonWebToken can be provided to authenticate against the DataBroker.
+     */
+    var jsonWebToken: JsonWebToken? = null
 
     /**
      * Sends a request to the DataBroker to respond with the specified [vssPath] and [fields] values.
@@ -76,7 +84,9 @@ internal class DataBrokerTransporter(
                 .build()
 
             return@withContext try {
-                blockingStub.get(request)
+                blockingStub
+                    .withAuthenticationInterceptor(jsonWebToken)
+                    .get(request)
             } catch (e: StatusRuntimeException) {
                 throw DataBrokerException(e.message, e)
             }
@@ -114,7 +124,9 @@ internal class DataBrokerTransporter(
                 .build()
 
             return@withContext try {
-                blockingStub.set(request)
+                blockingStub
+                    .withAuthenticationInterceptor(jsonWebToken)
+                    .set(request)
             } catch (e: StatusRuntimeException) {
                 throw DataBrokerException(e.message, e)
             }
@@ -171,7 +183,9 @@ internal class DataBrokerTransporter(
 
         cancellableContext.run {
             try {
-                asyncStub.subscribe(request, streamObserver)
+                asyncStub
+                    .withAuthenticationInterceptor(jsonWebToken)
+                    .subscribe(request, streamObserver)
             } catch (e: StatusRuntimeException) {
                 throw DataBrokerException(e.message, e)
             }

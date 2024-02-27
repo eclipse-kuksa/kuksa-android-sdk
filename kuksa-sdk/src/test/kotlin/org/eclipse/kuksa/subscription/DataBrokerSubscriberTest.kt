@@ -39,6 +39,7 @@ import org.eclipse.kuksa.mocking.FriendlyVssSpecificationListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
 import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.vssSpecification.VssDriver
@@ -46,7 +47,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerSubscriberTest : BehaviorSpec({
-    tags(Integration, Insecure)
+    tags(Integration, Insecure, DefaultDatabroker)
 
     given("An active Connection to the DataBroker") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()

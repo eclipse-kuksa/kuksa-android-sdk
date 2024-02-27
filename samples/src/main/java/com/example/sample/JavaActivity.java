@@ -28,6 +28,7 @@ import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.PropertyListener;
 import org.eclipse.kuksa.VssSpecificationListener;
+import org.eclipse.kuksa.authentication.JsonWebToken;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
@@ -67,7 +68,9 @@ public class JavaActivity extends AppCompatActivity {
             .usePlaintext()
             .build();
 
-        DataBrokerConnector connector = new DataBrokerConnector(managedChannel);
+        // or jsonWebToken = null when authentication is disabled
+        JsonWebToken jsonWebToken = new JsonWebToken("someValidToken");
+        DataBrokerConnector connector = new DataBrokerConnector(managedChannel, jsonWebToken);
         connector.connect(new CoroutineCallback<DataBrokerConnection>() {
             @Override
             public void onSuccess(DataBrokerConnection result) {
@@ -105,7 +108,10 @@ public class JavaActivity extends AppCompatActivity {
         }
 
         ManagedChannel managedChannel = channelBuilder.build();
-        DataBrokerConnector connector = new DataBrokerConnector(managedChannel);
+
+        // or jsonWebToken = null when authentication is disabled
+        JsonWebToken jsonWebToken = new JsonWebToken("someValidToken");
+        DataBrokerConnector connector = new DataBrokerConnector(managedChannel, jsonWebToken);
         connector.connect(new CoroutineCallback<DataBrokerConnection>() {
             @Override
             public void onSuccess(DataBrokerConnection result) {

@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.authentication.JsonWebToken
 import org.eclipse.kuksa.extension.TAG
 
 /**
@@ -34,6 +35,7 @@ import org.eclipse.kuksa.extension.TAG
  */
 class DataBrokerConnector @JvmOverloads constructor(
     private val managedChannel: ManagedChannel,
+    private val jsonWebToken: JsonWebToken? = null,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
 
@@ -73,6 +75,9 @@ class DataBrokerConnector @JvmOverloads constructor(
 
             if (state == ConnectivityState.READY) {
                 return@withContext DataBrokerConnection(managedChannel, defaultDispatcher)
+                    .apply {
+                        jsonWebToken = this@DataBrokerConnector.jsonWebToken
+                    }
             } else {
                 managedChannel.shutdownNow()
                 throw DataBrokerException("timeout")

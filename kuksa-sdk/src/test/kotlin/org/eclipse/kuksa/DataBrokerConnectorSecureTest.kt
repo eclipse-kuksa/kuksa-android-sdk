@@ -21,12 +21,17 @@ package org.eclipse.kuksa
 
 import io.kotest.core.spec.style.BehaviorSpec
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.test.kotest.CustomDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.Secure
 import org.junit.jupiter.api.Assertions
 
+// DataBroker must be started with TLS enabled:
+// databroker --tls-cert /certs/Server.pem --tls-private-key /certs/Server.key"
+
+// run command: ./gradlew clean test -Dkotest.tags="Secure"
 class DataBrokerConnectorSecureTest : BehaviorSpec({
-    tags(Integration, Secure)
+    tags(Integration, Secure, CustomDatabroker)
 
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()

@@ -25,7 +25,9 @@ fun connectInsecure(host: String, port: Int) {
             .usePlaintext()
             .build()
 
-        val connector = DataBrokerConnector(managedChannel)
+        // or jsonWebToken = null when authentication is disabled
+        val jsonWebToken = JsonWebToken("someValidJwt") 
+        val connector = DataBrokerConnector(managedChannel, jsonWebToken)
         try {
             dataBrokerConnection = connector.connect()
             // Connection to the Databroker successfully established
@@ -42,7 +44,10 @@ void connectInsecure(String host, int port) {
         .usePlaintext()
         .build();
 
-    DataBrokerConnector connector = new DataBrokerConnector(managedChannel);
+    // or jsonWebToken = null when authentication is disabled
+    JsonWebToken jsonWebToken = new JsonWebToken("someValidJwt");
+
+    DataBrokerConnector connector = new DataBrokerConnector(managedChannel, jsonWebToken);
     connector.connect(new CoroutineCallback<DataBrokerConnection>() {
         @Override
         public void onSuccess(DataBrokerConnection result) {
@@ -82,11 +87,15 @@ fun update() {
 fun subscribe() {
     val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
     val propertyListener = object : PropertyListener {
-        override fun onPropertyChanged(vssPath: String, field: Types.Field, updatedValue: Types.DataEntry) {
-             when (vssPath) {
-                "Vehicle.Speed" -> {
-                    val speed = updatedValue.value.float
-                }
+        override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+            entryUpdates.forEach { entryUpdate ->
+                val updatedValue = entryUpdate.entry
+
+                // handle property change
+                when (updatedValue.path) {
+                    "Vehicle.Speed" -> {
+                        val speed = updatedValue.value.float
+                    }
             }
         }
     }
@@ -124,12 +133,12 @@ void subscribe() {
     Property property = new Property("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
     dataBrokerConnection.subscribe(property, new PropertyListener() {
         @Override
-        public void onPropertyChanged(
-            @NonNull String vssPath,
-            @NonNull Types.Field field,
-            @NonNull Types.DataEntry updatedValue) {
-            
-            switch (vssPath) {
+        public void onPropertyChanged(@NonNull List<EntryUpdate> entryUpdates) {
+            for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
+            Types.DataEntry updatedValue = entryUpdate.getEntry();
+
+            // handle property change
+            switch (updatedValue.getPath()) {
                 case "Vehicle.Speed":
                 float speed = updatedValue.getValue().getFloat();
             }
@@ -188,30 +197,31 @@ Vehicle.Speed:
 ```
 
 *Example model*
+
 ```kotlin
 data class VssSpeed @JvmOverloads constructor(
     override val `value`: Float = 0f,
-  ) : VssProperty<Float> {
+) : VssProperty<Float> {
     override val comment: String
-      get() = ""
+        get() = ""
 
     override val description: String
-      get() = "Vehicle speed."
+        get() = "Vehicle speed."
 
     override val type: String
-      get() = "sensor"
+        get() = "sensor"
 
     override val uuid: String
-      get() = "efe50798638d55fab18ab7d43cc490e9"
+        get() = "efe50798638d55fab18ab7d43cc490e9"
 
     override val vssPath: String
-      get() = "Vehicle.Speed"
+        get() = "Vehicle.Speed"
 
     override val children: Set<VssSpecification>
-      get() = setOf()
+        get() = setOf()
 
-    override val parentClass: KClass<*>?
-      get() = VssVehicle::class
+    override val parentClass: KClass<*>
+        get() = VssVehicle::class
 }
 ```
 

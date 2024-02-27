@@ -22,6 +22,7 @@ package org.eclipse.kuksa.testapp.extension
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import java.io.FileNotFoundException
 
 fun Uri.fetchFileName(context: Context): String? {
     var fileName: String? = null
@@ -34,4 +35,12 @@ fun Uri.fetchFileName(context: Context): String? {
         }
     }
     return fileName
+}
+
+@Throws(FileNotFoundException::class)
+fun Uri.readAsText(context: Context): String {
+    val contentResolver = context.contentResolver
+    return contentResolver.openInputStream(this)?.use {
+        it.reader().readText()
+    } ?: error("Could not read file from uri")
 }

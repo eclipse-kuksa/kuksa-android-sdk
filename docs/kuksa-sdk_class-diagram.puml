@@ -19,6 +19,7 @@ package kuksa {
         class SetResponse
         class GetResponse
         class DataEntryError
+        class EntryUpdate
     }
 
     DataBrokerConnector -down-> DataBrokerException
@@ -32,6 +33,7 @@ package kuksa {
     DataBrokerSubscriber -up-> DataBrokerTransporter
     MultiListener -right-> DisconnectListener
     TimeoutConfig -left-* DataBrokerConnector
+    JsonWebToken -right-* DataBrokerConnector
 
     class DataBrokerConnector {
         + connect(): DataBrokerConnection
@@ -43,6 +45,8 @@ package kuksa {
     }
 
     class DataBrokerTransporter {
+        + jsonWebToken: JsonWebToken
+
         + fetch(vssPath: String, Collection<Field>): GetResponse
         + update(vssPath: String, Collection<Field>, Types.Datapoint): SetResponse
         + subscribe(vssPath: String, Field): Subscription
@@ -57,6 +61,7 @@ package kuksa {
 
     class DataBrokerConnection {
         + disconnectListeners: MultiListener<DisconnectListener>
+        + jsonWebToken: JsonWebToken
 
         + subscribe(Property, PropertyListener)
         + subscribe<T : VssSpecification>(T, Collection<Field>, VssSpecificationListener<T>)
@@ -70,7 +75,7 @@ package kuksa {
     }
     
     interface PropertyListener {
-        + onPropertyChanged(vssPath: String, Types.DataEntry)
+        + onPropertyChanged(List<EntryUpdate>)
         + onError(Throwable)
     }
 
@@ -88,6 +93,11 @@ package kuksa {
 
     interface DisconnectListener {
         + onDisconnect()
+    }
+
+    class JsonWebToken {
+        + authScheme: String
+        + authParameters: String
     }
 }
 
