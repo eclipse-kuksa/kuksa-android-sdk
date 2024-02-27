@@ -21,7 +21,6 @@ package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
 import androidx.lifecycle.LifecycleCoroutineScope
-import io.grpc.ManagedChannel
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
@@ -29,17 +28,13 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.TimeoutConfig
 import org.eclipse.kuksa.VssSpecificationListener
-import org.eclipse.kuksa.authentication.JsonWebToken
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
+import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.testapp.extension.createInsecureManagedChannel
-import org.eclipse.kuksa.testapp.extension.createSecureManagedChannel
-import org.eclipse.kuksa.testapp.extension.loadJsonWebToken
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 @Suppress("complexity:TooManyFunctions")
@@ -48,6 +43,7 @@ class KotlinDataBrokerEngine(
 ) : DataBrokerEngine {
     override var dataBrokerConnection: DataBrokerConnection? = null
 
+    private val connectorFactory = DataBrokerConnectorFactory()
     private val disconnectListeners = mutableSetOf<DisconnectListener>()
 
     // Too many to usefully handle: Checked Exceptions: IOE, RuntimeExceptions: UOE, ISE, IAE, ...
@@ -57,46 +53,11 @@ class KotlinDataBrokerEngine(
         connectionInfo: ConnectionInfo,
         callback: CoroutineCallback<DataBrokerConnection>,
     ) {
-        try {
-            if (connectionInfo.isTlsEnabled) {
-                connectSecure(context, connectionInfo, callback)
-            } else {
-                connectInsecure(context, connectionInfo, callback)
-            }
+        val connector: DataBrokerConnector = try {
+            connectorFactory.create(context, connectionInfo)
         } catch (e: Exception) {
             callback.onError(e)
-        }
-    }
-
-    private fun connectInsecure(
-        context: Context,
-        connectionInfo: ConnectionInfo,
-        callback: CoroutineCallback<DataBrokerConnection>,
-    ) {
-        val insecureManagedChannel = connectionInfo.createInsecureManagedChannel()
-        val jsonWebToken: JsonWebToken? = connectionInfo.loadJsonWebToken(context)
-
-        connect(insecureManagedChannel, jsonWebToken, callback)
-    }
-
-    private fun connectSecure(
-        context: Context,
-        connectionInfo: ConnectionInfo,
-        callback: CoroutineCallback<DataBrokerConnection>,
-    ) {
-        val secureManagedChannel = connectionInfo.createSecureManagedChannel(context)
-        val jsonWebToken: JsonWebToken? = connectionInfo.loadJsonWebToken(context)
-
-        connect(secureManagedChannel, jsonWebToken, callback)
-    }
-
-    private fun connect(
-        managedChannel: ManagedChannel,
-        jsonWebToken: JsonWebToken?,
-        callback: CoroutineCallback<DataBrokerConnection>,
-    ) {
-        val connector = DataBrokerConnector(managedChannel, jsonWebToken).apply {
-            timeoutConfig = TimeoutConfig(TIMEOUT_CONNECTION_SEC)
+            return
         }
 
         lifecycleScope.launch {
@@ -183,9 +144,5 @@ class KotlinDataBrokerEngine(
     override fun unregisterDisconnectListener(listener: DisconnectListener) {
         disconnectListeners.remove(listener)
         dataBrokerConnection?.disconnectListeners?.unregister(listener)
-    }
-
-    companion object {
-        const val TIMEOUT_CONNECTION_SEC = 5L
     }
 }

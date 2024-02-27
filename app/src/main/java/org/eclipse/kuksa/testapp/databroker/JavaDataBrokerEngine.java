@@ -28,35 +28,27 @@ import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.PropertyListener;
-import org.eclipse.kuksa.TimeoutConfig;
 import org.eclipse.kuksa.VssSpecificationListener;
-import org.eclipse.kuksa.authentication.JsonWebToken;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
 import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
+import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory;
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
-import org.eclipse.kuksa.testapp.extension.ConnectionInfoExtensionKt;
 import org.eclipse.kuksa.vsscore.model.VssSpecification;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
-import io.grpc.ManagedChannel;
-
 public class JavaDataBrokerEngine implements DataBrokerEngine {
-    private static final long TIMEOUT_CONNECTION = 5;
-
     @Nullable
     private DataBrokerConnection dataBrokerConnection = null;
 
+    private final DataBrokerConnectorFactory connectorFactory = new DataBrokerConnectorFactory();
     private final Set<DisconnectListener> disconnectListeners = new HashSet<>();
 
     // Too many to usefully handle: Checked Exceptions: IOE, RuntimeExceptions: UOE, ISE, IAE, ...
@@ -67,45 +59,17 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
         try {
-            if (connectionInfo.isTlsEnabled()) {
-                connectSecure(context, connectionInfo, callback);
-            } else {
-                connectInsecure(context, connectionInfo, callback);
-            }
+            DataBrokerConnector connector = connectorFactory.create(context, connectionInfo);
+            connect(connector, callback);
         } catch (Exception e) {
             callback.onError(e);
         }
     }
 
-    private void connectInsecure(
-        @NonNull Context context,
-        @NonNull ConnectionInfo connectionInfo,
-        @NonNull CoroutineCallback<DataBrokerConnection> callback
-    ) throws IOException {
-        ManagedChannel insecureChannel = ConnectionInfoExtensionKt.createInsecureManagedChannel(connectionInfo);
-        JsonWebToken jsonWebToken = ConnectionInfoExtensionKt.loadJsonWebToken(connectionInfo, context);
-
-        connect(insecureChannel, jsonWebToken, callback);
-    }
-
-    private void connectSecure(
-        @NotNull Context context,
-        @NotNull ConnectionInfo connectionInfo,
-        @NotNull CoroutineCallback<DataBrokerConnection> callback
-    ) throws IOException {
-        ManagedChannel secureChannel = ConnectionInfoExtensionKt.createSecureManagedChannel(connectionInfo, context);
-        JsonWebToken jsonWebToken = ConnectionInfoExtensionKt.loadJsonWebToken(connectionInfo, context);
-
-        connect(secureChannel, jsonWebToken, callback);
-    }
-
     private void connect(
-        @NonNull ManagedChannel managedChannel,
-        @Nullable JsonWebToken jsonWebToken,
+        @NonNull DataBrokerConnector connector,
         @NonNull CoroutineCallback<DataBrokerConnection> callback
     ) {
-        DataBrokerConnector connector = new DataBrokerConnector(managedChannel, jsonWebToken);
-        connector.setTimeoutConfig(new TimeoutConfig(TIMEOUT_CONNECTION, TimeUnit.SECONDS));
         connector.connect(new CoroutineCallback<>() {
             @Override
             public void onSuccess(@Nullable DataBrokerConnection result) {
