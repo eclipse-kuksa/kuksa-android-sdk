@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.databroker.view
+package org.eclipse.kuksa.testapp.databroker.view.connection
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +32,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -41,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -53,25 +50,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.view.DefaultEdgePadding
+import org.eclipse.kuksa.testapp.databroker.view.DefaultElementPadding
+import org.eclipse.kuksa.testapp.databroker.view.MinimumButtonWidth
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.RememberCountdown
-import org.eclipse.kuksa.testapp.extension.fetchFileName
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun DataBrokerConnection(viewModel: ConnectionViewModel) {
-    val context = LocalContext.current
-
+fun DataBrokerConnectionView(viewModel: ConnectionViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val connectionInfoState = viewModel.connectionInfoFlow.collectAsStateWithLifecycle(initialValue = ConnectionInfo())
+    val repositoryConnectionInfoState =
+        viewModel.connectionInfoFlow.collectAsStateWithLifecycle(initialValue = ConnectionInfo())
 
-    var connectionInfo by remember(connectionInfoState.value) {
-        mutableStateOf(connectionInfoState.value)
+    val connectionInfoState = remember(repositoryConnectionInfoState.value) {
+        mutableStateOf(repositoryConnectionInfoState.value)
     }
+    val connectionInfo = connectionInfoState.value
 
     Column {
         Headline("Connection")
@@ -87,8 +86,8 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                     TextField(
                         value = connectionInfo.host,
                         onValueChange = {
-                            val newConnectionInfo = connectionInfoState.value.copy(host = it)
-                            connectionInfo = newConnectionInfo
+                            val newConnectionInfo = repositoryConnectionInfoState.value.copy(host = it)
+                            connectionInfoState.value = newConnectionInfo
                         },
                         keyboardActions = KeyboardActions(
                             onDone = {
@@ -115,7 +114,7 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                             try {
                                 val port = value.toInt()
                                 val newConnectionInfo = connectionInfo.copy(port = port)
-                                connectionInfo = newConnectionInfo
+                                connectionInfoState.value = newConnectionInfo
                             } catch (e: NumberFormatException) {
                                 // ignore gracefully
                             }
@@ -136,82 +135,43 @@ fun DataBrokerConnection(viewModel: ConnectionViewModel) {
                     )
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                ) {
-                    Text(text = "TLS:")
-                    Checkbox(checked = connectionInfo.isTlsEnabled, onCheckedChange = { isChecked ->
-                        val newConnectionInfo = connectionInfo.copy(isTlsEnabled = isChecked)
+                TlsOptionsView(
+                    connectionInfo = connectionInfo,
+                    onTlsStateChanged = { isTlsEnabled ->
+                        val newConnectionInfo = connectionInfo.copy(isTlsEnabled = isTlsEnabled)
                         viewModel.updateConnectionInfo(newConnectionInfo)
-                    })
-                }
-
-                if (connectionInfo.isTlsEnabled) {
-                    val uri = connectionInfo.certificate.uri
-                    val fileName = uri.fetchFileName(context) ?: "Select certificate..."
-
-                    FileSelectorSettingView(
-                        label = "Certificate",
-                        value = fileName,
-                        modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                    ) {
-                        val newCertificate = connectionInfo.certificate.copy(uriPath = it.toString())
+                    },
+                    onCertificateSelected = { certificateUri ->
+                        val newCertificate = connectionInfo.certificate.copy(uriPath = certificateUri.toString())
                         val newConnectionInfo = connectionInfo.copy(certificate = newCertificate)
                         viewModel.updateConnectionInfo(newConnectionInfo)
-                    }
+                    },
+                    onAuthorityOverrideChanged = { overrideAuthorityValue ->
+                        val certificate = connectionInfo.certificate.copy(overrideAuthority = overrideAuthorityValue)
+                        val newConnectionInfo = connectionInfo.copy(certificate = certificate)
+                        connectionInfoState.value = newConnectionInfo
+                    },
+                    onKeyboardDone = {
+                        viewModel.updateConnectionInfo(connectionInfo)
+                        keyboardController?.hide()
+                    },
+                )
 
-                    Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
+                Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
 
-                    Column(
-                        modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                    ) {
-                        TextField(
-                            value = connectionInfo.certificate.overrideAuthority,
-                            onValueChange = {
-                                val certificate = connectionInfo.certificate.copy(overrideAuthority = it)
-                                val newConnectionInfo = connectionInfo.copy(certificate = certificate)
-                                connectionInfo = newConnectionInfo
-                            },
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    viewModel.updateConnectionInfo(connectionInfo)
-                                    keyboardController?.hide()
-                                },
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            enabled = connectionInfo.isTlsEnabled,
-                            label = {
-                                Text(text = "Authority override")
-                            },
-                        )
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                ) {
-                    Text(text = "Authentication:")
-                    Checkbox(checked = connectionInfo.isAuthenticationEnabled, onCheckedChange = { isChecked ->
-                        val newConnectionInfo = connectionInfo.copy(isAuthenticationEnabled = isChecked)
+                AuthenticationOptionsView(
+                    connectionInfo = connectionInfo,
+                    onAuthenticationStateChanged = { isAuthenticationEnabled ->
+                        val newConnectionInfo =
+                            connectionInfo.copy(isAuthenticationEnabled = isAuthenticationEnabled)
                         viewModel.updateConnectionInfo(newConnectionInfo)
-                    })
-                }
-
-                if (connectionInfo.isAuthenticationEnabled) {
-                    val uri = Uri.parse(connectionInfo.jwtUriPath ?: "")
-                    val fileName = uri.fetchFileName(context) ?: "Select JWT..."
-
-                    FileSelectorSettingView(
-                        label = "JWT",
-                        value = fileName,
-                        modifier = Modifier.padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-                    ) {
-                        val newConnectionInfo = connectionInfo.copy(jwtUriPath = it.toString())
+                    },
+                    onJwtSelected = { jwtUri ->
+                        val newConnectionInfo = connectionInfo.copy(jwtUriPath = jwtUri.toString())
                         viewModel.updateConnectionInfo(newConnectionInfo)
-                    }
-                }
+                    },
+                )
+
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
             }
         }
@@ -264,7 +224,7 @@ private fun ConnectedPreview() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
     val viewModel = ConnectionViewModel(connectionInfoRepository)
     Surface {
-        DataBrokerConnection(viewModel = viewModel)
+        DataBrokerConnectionView(viewModel = viewModel)
     }
 }
 
@@ -275,6 +235,6 @@ private fun DisconnectedPreview() {
     val viewModel = ConnectionViewModel(connectionInfoRepository)
     viewModel.updateConnectionState(ConnectionViewState.CONNECTING)
     Surface {
-        DataBrokerConnection(viewModel = viewModel)
+        DataBrokerConnectionView(viewModel = viewModel)
     }
 }
