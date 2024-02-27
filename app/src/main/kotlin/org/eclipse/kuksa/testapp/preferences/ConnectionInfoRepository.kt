@@ -27,8 +27,6 @@ import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfoSerializer
 
 class ConnectionInfoRepository(context: Context) {
-
-    private val Context.dataStore: DataStore<ConnectionInfo> by dataStore(PREFERENCES_NAME, ConnectionInfoSerializer)
     private val dataStore = context.dataStore
 
     val connectionInfoFlow: Flow<ConnectionInfo> = dataStore.data
@@ -39,5 +37,9 @@ class ConnectionInfoRepository(context: Context) {
 
     private companion object {
         private const val PREFERENCES_NAME = "connection_info"
+        private val Context.dataStore: DataStore<ConnectionInfo> by dataStore(
+            PREFERENCES_NAME,
+            ConnectionInfoSerializer,
+        )
     }
 }
