@@ -21,13 +21,28 @@ package org.eclipse.kuksa.vsscore.annotation
 
 /**
  * Add this annotation to any class to trigger the model generation (Kotlin Symbol Processing) for the given
- * Vehicle Signal Specification definition file. Only .yaml files are currently supported. The searched root folder
- * is the assets folder (example path: app/src/main/assets).
+ * Vehicle Signal Specification definition file by the "vss-processor-plugin". Only .yaml files are currently supported.
+ * Use the "VSS Processor Plugin" to provide the Symbol Processor with the necessary definition file(s).
  *
- * ### Example
+ * ### Plugin Example
  *
  * ```
- * @VssDefinition("vss_rel_4.0.yaml")
+ * // app/build.gradle.kts
+ * plugins {
+ *     id("org.eclipse.kuksa.vss-processor-plugin") version "<VERSION>"
+ * }
+ *
+ * // Optional - See plugin documentation. Files inside the "$rootDir/vss" folder are used automatically.
+ * vssProcessor {
+ *     searchPath = "$rootDir/vss"
+ * }
+ * ```
+ *
+ * ### Annotation Example
+ *
+ * ```
+ * @VssDefinition
+ * class Activity
  * ```
  *
  * ### Important
@@ -36,10 +51,8 @@ package org.eclipse.kuksa.vsscore.annotation
  * then the incremental compiler for KSP needs to be disabled explicitly in the gradle properties.
  * ```
  * <ksp.incremental=false>
- *
- * @param vssDefinitionPath the path to the definition file
  * ```
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class VssDefinition(val vssDefinitionPath: String)
+annotation class VssDefinition

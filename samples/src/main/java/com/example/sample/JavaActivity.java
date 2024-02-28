@@ -53,7 +53,7 @@ import io.grpc.TlsChannelCredentials;
 /**
  * @noinspection unused
  */
-//@VssDefinition(vssDefinitionPath = "vss_rel_4.0.yaml") // Commented out to prevent conflicts with the Kotlin activity
+//@VssDefinition // Commented out to prevent conflicts with the Kotlin activity
 public class JavaActivity extends AppCompatActivity {
 
     private final DisconnectListener disconnectListener = () -> {

@@ -19,15 +19,21 @@
 
 @file:Suppress("UnstableApiUsage")
 
+import org.eclipse.kuksa.version.SemanticVersion
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
+import org.jetbrains.dokka.gradle.DokkaTask
+
+
 plugins {
     kotlin("jvm")
-    `maven-publish`
     publish
     alias(libs.plugins.dokka)
 }
 
+val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
+val semanticVersion = SemanticVersion(versionPath)
+version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
-version = rootProject.extra["projectVersion"].toString()
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -49,7 +55,7 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-configure<Publish_gradle.PublishPluginExtension> {
+publish {
     mavenPublicationName = "release"
     componentName = "java"
     description = "Vehicle Signal Specification (VSS) Core Module of the KUKSA SDK"
@@ -57,8 +63,14 @@ configure<Publish_gradle.PublishPluginExtension> {
 
 tasks.register("javadocJar", Jar::class) {
     dependsOn("dokkaHtml")
+
+    val buildDir = layout.buildDirectory.get()
     from("$buildDir/dokka/html")
     archiveClassifier.set("javadoc")
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    notCompatibleWithConfigurationCache("https://github.com/Kotlin/dokka/issues/2231")
 }
 
 java {

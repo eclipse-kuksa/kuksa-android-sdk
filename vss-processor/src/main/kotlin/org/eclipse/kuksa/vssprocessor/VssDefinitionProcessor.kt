@@ -22,7 +22,6 @@
 package org.eclipse.kuksa.vssprocessor
 
 import com.google.devtools.ksp.KspExperimental
-import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
@@ -70,7 +69,6 @@ class VssDefinitionProcessor(
     }
 
     private inner class VssDefinitionVisitor : KSVisitorVoid() {
-        @OptIn(KspExperimental::class)
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             val containingFile = classDeclaration.containingFile ?: return
 
@@ -82,30 +80,34 @@ class VssDefinitionProcessor(
                 annotatedProcessorFileName,
             )
 
-            val vssDefinition = classDeclaration.getAnnotationsByType(VssDefinition::class).firstOrNull() ?: return
-            val vssDefinitionPath = vssDefinition.vssDefinitionPath
-
-            val definitionFile = loadAssetFile(vssDefinitionPath)
-            if (definitionFile == null || !definitionFile.exists()) {
-                logger.info("No VSS definition file was found!")
+            val definitionFiles = loadVssDefinitionFiles()
+            if (definitionFiles.isEmpty()) {
+                logger.error("No VSS definition files were found! Is the plugin correctly configured?")
                 return
             }
 
-            val simpleSpecificationElements = yamlParser.parseSpecifications(definitionFile)
-            val vssPathToSpecificationElement = simpleSpecificationElements.associateBy({ VssPath(it.vssPath) }, { it })
+            definitionFiles.forEach { definitionFile ->
+                val simpleSpecificationElements = yamlParser.parseSpecifications(definitionFile)
+                val vssPathToSpecificationElement = simpleSpecificationElements
+                    .associateBy({ VssPath(it.vssPath) }, { it })
 
-            generateModelFiles(vssPathToSpecificationElement)
+                logger.info("Generating models for definition file: ${definitionFile.name}")
+                generateModelFiles(vssPathToSpecificationElement)
+            }
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.
-        private fun loadAssetFile(fileName: String): File? {
-            val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return null
+        private fun loadVssDefinitionFiles(): Collection<File> {
+            val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return emptySet()
             val generationPath = generatedFile.absolutePath
-            val buildPath = generationPath.replaceAfterLast(buildDir, "")
-            val assetsFilePath = buildPath + fileSeparator + assetsDir
-            val assetsFolder = File(assetsFilePath)
+            val buildPath = generationPath.replaceAfterLast("$BUILD_FOLDER_NAME$fileSeparator", "")
+            val kspInputFilePath = "$buildPath$fileSeparator$KSP_INPUT_BUILD_DIRECTORY"
+            val kspInputFolder = File(kspInputFilePath)
 
-            return assetsFolder.walk().firstOrNull { it.name == fileName }
+            return kspInputFolder
+                .walk()
+                .filter { it.isFile }
+                .toSet()
         }
 
         private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssSpecificationSpecModel>) {
@@ -184,10 +186,10 @@ class VssDefinitionProcessor(
     private companion object {
         private const val PACKAGE_NAME = "org.eclipse.kuksa.vss"
         private const val FILE_NAME_PROCESSOR_POSTFIX = "Processor"
+        private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput"
+        private const val BUILD_FOLDER_NAME = "build"
 
         private val fileSeparator = File.separator
-        private val assetsDir = "intermediates" + fileSeparator + "assets" + fileSeparator
-        private val buildDir = fileSeparator + "build" + fileSeparator
     }
 }
 

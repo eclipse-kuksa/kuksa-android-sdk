@@ -111,18 +111,12 @@ afterEvaluate {
         )
 
         sign(publishing.publications)
-    }
-}
 
-gradle.taskGraph.whenReady {
-    tasks.withType(Sign::class) {
-        val publishToMavenLocalTask = allTasks.find { it.name.contains("publishToMavenLocal") }
-        val isPublishingToMavenLocal = publishToMavenLocalTask != null
+        setRequired({
+            val publishToMavenLocalTask = gradle.taskGraph.allTasks.find { it.name.contains("ToMavenLocal") }
+            val isPublishingToMavenLocal = publishToMavenLocalTask != null
 
-        if (isPublishingToMavenLocal) {
-            println(":${project.name}:$name - Signing is disabled (publishToMavenLocal)")
-        }
-
-        onlyIf { !isPublishingToMavenLocal } // disable signing when publishing to MavenLocal
+            !isPublishingToMavenLocal // disable signing when publishing to MavenLocal
+        })
     }
 }
