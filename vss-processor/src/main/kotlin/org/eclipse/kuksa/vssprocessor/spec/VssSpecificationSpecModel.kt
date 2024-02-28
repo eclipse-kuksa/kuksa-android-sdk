@@ -32,7 +32,6 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
-import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.className
@@ -127,7 +126,7 @@ internal class VssSpecificationSpecModel(
             superInterfaces.add(vssPropertyInterface)
         }
 
-        val propertySpec = createVssSpecificationSpecs(className, packageName = packageName)
+        val propertySpec = createVssNodeSpecs(className, packageName = packageName)
         propertySpecs.addAll(propertySpec)
 
         // Parses all specifications into properties
@@ -137,7 +136,7 @@ internal class VssSpecificationSpecModel(
             val hasAmbiguousName = nestedClasses.contains(childSpecification.name)
             val uniquePackageName = if (hasAmbiguousName) "" else packageName
 
-            val childPropertySpec = createVssSpecificationSpecs(className, uniquePackageName, childSpecification)
+            val childPropertySpec = createVssNodeSpecs(className, uniquePackageName, childSpecification)
             propertySpecs.addAll(childPropertySpec)
 
             // Nested VssSpecification properties should be added as constructor parameters
@@ -168,7 +167,7 @@ internal class VssSpecificationSpecModel(
             }
         }
 
-        val nodeSpecs = createVssNodeSpecs(childSpecifications)
+        val nodeSpecs = createVssNodeTreeSpecs(childSpecifications)
         propertySpecs.addAll(nodeSpecs)
 
         val className = ClassName(packageName, className)
@@ -207,7 +206,7 @@ internal class VssSpecificationSpecModel(
         .defaultValue("%L()", defaultClassName)
         .build()
 
-    private fun createVssSpecificationSpecs(
+    private fun createVssNodeSpecs(
         className: String,
         packageName: String,
         specification: VssSpecificationSpecModel = this,
@@ -259,7 +258,7 @@ internal class VssSpecificationSpecModel(
         return listOf(objectTypeSpec)
     }
 
-    private fun createVssNodeSpecs(childSpecifications: List<VssSpecificationSpecModel>): List<PropertySpec> {
+    private fun createVssNodeTreeSpecs(childSpecifications: List<VssSpecificationSpecModel>): List<PropertySpec> {
         fun createSetSpec(memberName: String, memberType: TypeName): PropertySpec {
             val specificationNamesJoined = childSpecifications.joinToString(", ") { it.variableName }
 
@@ -291,7 +290,7 @@ internal class VssSpecificationSpecModel(
 
         val propertySpecs = mutableListOf<PropertySpec>()
 
-        val members = VssNode::class.declaredMemberProperties
+        val members = VssSpecification::class.declaredMemberProperties
         val setTypeName = Set::class.parameterizedBy(VssSpecification::class)
         val classTypeName = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
         members.forEach { member ->

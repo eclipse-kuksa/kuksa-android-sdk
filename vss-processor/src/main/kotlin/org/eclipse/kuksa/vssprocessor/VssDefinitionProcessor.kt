@@ -37,7 +37,6 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
-import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.parentClassName
 import org.eclipse.kuksa.vssprocessor.parser.YamlDefinitionParser
 import org.eclipse.kuksa.vssprocessor.spec.VssPath

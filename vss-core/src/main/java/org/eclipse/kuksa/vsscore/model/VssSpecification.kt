@@ -24,9 +24,16 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 
 /**
- * Represents a node inside a VSS specification file.
+ * Represents a node inside a VSS specification file. it represents the most common properties of a VSS specification.
+ * The [uuid] is a mandatory field and should never be empty.
  */
-interface VssNode {
+interface VssSpecification {
+    val uuid: String
+    val vssPath: String
+    val description: String
+    val type: String
+    val comment: String
+
     /**
      * A collection of all initialized children.
      */
@@ -38,18 +45,6 @@ interface VssNode {
      */
     val parentClass: KClass<*>?
         get() = null
-}
-
-/**
- * In addition of being a [VssNode] it represents the most common properties of a VSS specification. The [uuid] is a
- * mandatory field and should never be empty.
- */
-interface VssSpecification : VssNode {
-    val uuid: String
-    val vssPath: String
-    val description: String
-    val type: String
-    val comment: String
 }
 
 /**
