@@ -17,7 +17,21 @@
  *
  */
 
-import org.jetbrains.kotlin.incremental.createDirectory
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
+import java.nio.file.FileVisitResult
+import java.nio.file.Path
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.bufferedWriter
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.name
+import kotlin.io.path.useLines
+import kotlin.io.path.visitFileTree
+
+val versionDefaultPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
+rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
 
 plugins {
     base
@@ -47,6 +61,7 @@ subprojects {
     }
 }
 
+@OptIn(ExperimentalPathApi::class)
 tasks.register("mergeDashFiles") {
     group = "oss"
 
@@ -56,26 +71,30 @@ tasks.register("mergeDashFiles") {
         },
     )
 
-    doLast {
-        val sortedLinesSet = sortedSetOf<String>()
-        files("build/oss").asFileTree.forEach { file ->
-            if (file.name != "dependencies.txt") return@forEach
+    val buildDir = layout.buildDirectory.asFile.get()
+    val buildDirPath = Path.of(buildDir.path)
 
-            file.useLines {
-                sortedLinesSet.addAll(it)
+    doLast {
+        val ossDir = buildDirPath.resolve("oss").createDirectories()
+        val ossAllDir = ossDir.resolve("all").createDirectories()
+        val ossDependenciesFile = ossAllDir.resolve("all-dependencies.txt")
+        ossDependenciesFile.deleteIfExists()
+        ossDependenciesFile.createFile()
+
+        val sortedLinesSet = sortedSetOf<String>()
+        ossDir.visitFileTree {
+            onVisitFile { file, _ ->
+                if (file.name != "dependencies.txt") return@onVisitFile FileVisitResult.CONTINUE
+
+                file.useLines {
+                    sortedLinesSet.addAll(it)
+                }
+
+                FileVisitResult.CONTINUE
             }
         }
 
-        val folder = File("$rootDir/build/oss/all")
-        folder.createDirectory()
-
-        val file = File("$folder/all-dependencies.txt")
-        if (file.exists()) {
-            file.delete()
-        }
-        file.createNewFile()
-
-        val bufferedWriter = file.bufferedWriter()
+        val bufferedWriter = ossDependenciesFile.bufferedWriter()
         bufferedWriter.use { writer ->
             sortedLinesSet.forEach { line ->
                 writer.write(line + System.lineSeparator())

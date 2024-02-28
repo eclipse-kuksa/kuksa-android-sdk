@@ -14,7 +14,7 @@ within an Android App. The main functionality consists of fetching, updating and
 
 ## Integration
 
-*build.gradle*
+*app/build.gradle.kts*
 ```
 implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
 ```

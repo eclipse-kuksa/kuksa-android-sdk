@@ -20,6 +20,8 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.google.protobuf.gradle.id
+import org.eclipse.kuksa.version.SemanticVersion
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 plugins {
     id("com.android.library")
@@ -28,8 +30,10 @@ plugins {
     publish
 }
 
+val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
+val semanticVersion = SemanticVersion(versionPath)
+version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
-version = rootProject.extra["projectVersion"].toString()
 
 android {
     namespace = "org.eclipse.kuksa"
@@ -92,7 +96,7 @@ dependencies {
     testImplementation(libs.mockk)
 }
 
-configure<Publish_gradle.PublishPluginExtension> {
+publish {
     mavenPublicationName = "release"
     componentName = "release"
     description = "Android Connectivity Library for the KUKSA Databroker"

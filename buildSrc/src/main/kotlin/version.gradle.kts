@@ -18,51 +18,60 @@
  */
 
 import org.eclipse.kuksa.version.SemanticVersion
+import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 
-val file = File("$rootDir/version.txt")
-val fileContent = file.readText()
-val semanticVersion = SemanticVersion(fileContent)
+private val versionPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
+private val semanticVersion = SemanticVersion(versionPath)
 
-updateExtras()
+/**
+ * Writes the given [suffix] into the given [inputFileProperty] while keeping the semantic version intact.
+ * E.g. 1.2.3 -> 1.2.3-SNAPSHOT (suffix = SNAPSHOT). Leave the suffix empty to restore the initial version.
+ */
+abstract class SetVersionSuffixTask : DefaultTask() {
+    @get:Input
+    abstract val suffix: Property<String>
 
-// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
-tasks.register("setReleaseVersion") {
-    group = "version"
-    doLast {
-        semanticVersion.suffix = ""
+    @get:Incremental
+    @get:InputFile
+    abstract val inputFileProperty: RegularFileProperty
 
-        updateVersion()
+    @TaskAction
+    fun addVersionSuffix() {
+        val inputFile = inputFileProperty.asFile.get()
+
+        val newSemanticVersion = SemanticVersion(inputFile.path)
+        newSemanticVersion.suffix = suffix.get()
+
+        println("Applying version suffix: ${suffix.get()}")
+
+        inputFile.writeText(newSemanticVersion.versionName)
     }
 }
 
 // Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
-tasks.register("setSnapshotVersion") {
+tasks.register<SetVersionSuffixTask>("setSnapshotVersion") {
     group = "version"
-    doLast {
-        semanticVersion.suffix = "SNAPSHOT"
 
-        updateVersion()
-    }
+    inputFileProperty = semanticVersion.versionFile
+    suffix = "SNAPSHOT"
+}
+
+// Do not chain this command because it writes into a file which needs to be re-read inside the next gradle command
+tasks.register<SetVersionSuffixTask>("setReleaseVersion") {
+    group = "version"
+
+    inputFileProperty = semanticVersion.versionFile
+    suffix = ""
 }
 
 tasks.register("printVersion") {
     group = "version"
-    doLast {
-        val version = semanticVersion.versionString
 
-        println("VERSION=$version")
+    val versionFilePath = versionPath
+    doLast { // Prints the correct version if chained with SetVersionSuffix tasks
+        val currentSemanticVersion = SemanticVersion(versionFilePath)
+        println("Current version: ${currentSemanticVersion.versionName}")
     }
 
     mustRunAfter("setReleaseVersion", "setSnapshotVersion")
-}
-
-fun updateExtras() {
-    rootProject.extra["projectVersion"] = semanticVersion.versionString
-    rootProject.extra["projectVersionCode"] = semanticVersion.versionCode
-}
-
-fun updateVersion() {
-    updateExtras()
-
-    file.writeText(semanticVersion.versionString)
 }

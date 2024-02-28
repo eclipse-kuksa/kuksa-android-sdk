@@ -60,7 +60,7 @@ import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
-@VssDefinition("vss_rel_4.0.yaml")
+@VssDefinition
 class KuksaDataBrokerActivity : ComponentActivity() {
     private lateinit var connectionInfoRepository: ConnectionInfoRepository
 
