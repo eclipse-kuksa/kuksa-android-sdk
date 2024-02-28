@@ -21,7 +21,7 @@ package org.eclipse.kuksa
 
 import org.eclipse.kuksa.pattern.listener.Listener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
 /**
  * The Listener is used to notify about changes to subscribed [org.eclipse.kuksa.model.Property]. When registering the
@@ -41,10 +41,10 @@ interface PropertyListener : Listener {
 }
 
 /**
- * The Listener is used to notify about subscribed [VssSpecification]. If a [VssSpecification] has children
+ * The Listener is used to notify about subscribed [VssNode]. If a [VssNode] has children
  * then [onSpecificationChanged] will be called on every value change for every children.
  */
-interface VssSpecificationListener<T : VssSpecification> {
+interface VssSpecificationListener<T : VssNode> {
     /**
      * Will be triggered with the [vssSpecification] when the underlying vssPath changed it's value or to inform about
      * the initial state.

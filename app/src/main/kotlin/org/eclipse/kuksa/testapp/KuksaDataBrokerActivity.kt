@@ -58,7 +58,7 @@ import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
 @VssDefinition
 class KuksaDataBrokerActivity : ComponentActivity() {
@@ -109,8 +109,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
-    private val specificationListener = object : VssSpecificationListener<VssSpecification> {
-        override fun onSpecificationChanged(vssSpecification: VssSpecification) {
+    private val specificationListener = object : VssSpecificationListener<VssNode> {
+        override fun onSpecificationChanged(vssSpecification: VssNode) {
             outputViewModel.addOutputEntry("Updated specification: $vssSpecification")
         }
 
@@ -305,11 +305,11 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
-    private fun fetchSpecification(specification: VssSpecification) {
+    private fun fetchSpecification(specification: VssNode) {
         dataBrokerEngine.fetch(
             specification,
-            object : CoroutineCallback<VssSpecification>() {
-                override fun onSuccess(result: VssSpecification?) {
+            object : CoroutineCallback<VssNode>() {
+                override fun onSuccess(result: VssNode?) {
                     Log.d(TAG, "Fetched specification: $result")
                     outputViewModel.addOutputEntry("Fetched specification: $result")
                 }

@@ -38,7 +38,7 @@ import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.vsscore.model.VssLeaf
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.heritage
 import org.eclipse.kuksa.vsscore.model.vssProperties
 import kotlin.properties.Delegates
@@ -112,8 +112,8 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssLeaf]
-     * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
+     * Subscribes to the specified [VssNode] with the provided [VssSpecificationListener]. Only a [VssLeaf]
+     * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
      * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssLeaf]. The [fields] can be used to
      * subscribe to different information of the [specification]. The default for the [fields] parameter is a list with
@@ -122,7 +122,7 @@ class DataBrokerConnection internal constructor(
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     @JvmOverloads
-    fun <T : VssSpecification> subscribe(
+    fun <T : VssNode> subscribe(
         specification: T,
         fields: Collection<Field> = listOf(Field.FIELD_VALUE),
         listener: VssSpecificationListener<T>,
@@ -135,7 +135,7 @@ class DataBrokerConnection internal constructor(
     /**
      * Unsubscribes the [listener] from updates of the specified [fields] and [specification].
      */
-    fun <T : VssSpecification> unsubscribe(
+    fun <T : VssNode> unsubscribe(
         specification: T,
         fields: Collection<Field> = listOf(Field.FIELD_VALUE),
         listener: VssSpecificationListener<T>,
@@ -156,7 +156,7 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Retrieves the [VssSpecification] and returns it. The retrieved [VssSpecification]
+     * Retrieves the [VssNode] and returns it. The retrieved [VssNode]
      * is of the same type as the inputted one. All underlying heirs are changed to reflect the data broker state.
      * The [fields] can be used to subscribe to different information of the [specification]. The default for the
      * [fields] parameter is a list with a single [Types.Field.FIELD_VALUE] entry.
@@ -165,7 +165,7 @@ class DataBrokerConnection internal constructor(
      */
     @Suppress("exceptions:TooGenericExceptionCaught") // Handling is bundled together
     @JvmOverloads
-    suspend fun <T : VssSpecification> fetch(
+    suspend fun <T : VssNode> fetch(
         specification: T,
         fields: Collection<Field> = listOf(Field.FIELD_VALUE),
     ): T {
@@ -211,17 +211,17 @@ class DataBrokerConnection internal constructor(
 
     /**
      * Only a [VssLeaf] can be updated because they have an actual value. When provided with any parent
-     * [VssSpecification] then this [update] method will find all [VssLeaf] children and updates their corresponding
+     * [VssNode] then this [update] method will find all [VssLeaf] children and updates their corresponding
      * [fields] instead.
      * Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
-     * because a [VssSpecification] may consists of multiple values which may need to be updated.
+     * because a [VssNode] may consists of multiple values which may need to be updated.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      * @throws IllegalArgumentException if the [VssLeaf] could not be converted to a [Datapoint].
      */
     @JvmOverloads
     suspend fun update(
-        vssSpecification: VssSpecification,
+        vssSpecification: VssNode,
         fields: Collection<Field> = listOf(Field.FIELD_VALUE),
     ): Collection<SetResponse> {
         val responses = mutableListOf<SetResponse>()

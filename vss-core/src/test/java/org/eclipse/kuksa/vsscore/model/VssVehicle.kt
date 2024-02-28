@@ -30,8 +30,8 @@ data class VssVehicle(
     override val description: String = "High-level vehicle data.",
     override val type: String = "branch",
     override val comment: String = "",
-) : VssSpecification {
-    override val children: Set<VssSpecification>
+) : VssNode {
+    override val children: Set<VssNode>
         get() = setOf(driver, passenger, body)
 }
 
@@ -41,7 +41,7 @@ data class VssBody(
     override val description: String = "All body components.",
     override val type: String = "branch",
     override val comment: String = "",
-) : VssSpecification {
+) : VssNode {
     override val parentClass: KClass<*>
         get() = VssVehicle::class
 }
@@ -53,8 +53,8 @@ data class VssDriver(
     override val description: String = "Driver data.",
     override val type: String = "branch",
     override val comment: String = "",
-) : VssSpecification {
-    override val children: Set<VssSpecification>
+) : VssNode {
+    override val children: Set<VssNode>
         get() = setOf(heartRate)
     override val parentClass: KClass<*>
         get() = VssVehicle::class
@@ -79,8 +79,8 @@ data class VssPassenger(
     override val description: String = "Passenger data",
     override val type: String = "branch",
     override val comment: String = "",
-) : VssSpecification {
-    override val children: Set<VssSpecification>
+) : VssNode {
+    override val children: Set<VssNode>
         get() = setOf(heartRate)
     override val parentClass: KClass<*>
         get() = VssVehicle::class

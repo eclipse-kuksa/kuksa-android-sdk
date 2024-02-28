@@ -24,10 +24,10 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 
 /**
- * Represents a node inside a VSS specification file. it represents the most common properties of a VSS specification.
+ * Represents a node inside a VSS file. it represents the most common properties.
  * The [uuid] is a mandatory field and should never be empty.
  */
-interface VssSpecification {
+interface VssNode {
     val uuid: String
     val vssPath: String
     val description: String
@@ -37,7 +37,7 @@ interface VssSpecification {
     /**
      * A collection of all initialized children.
      */
-    val children: Set<VssSpecification>
+    val children: Set<VssNode>
         get() = emptySet()
 
     /**
@@ -48,23 +48,23 @@ interface VssSpecification {
 }
 
 /**
- * Some [VssSpecification] may have an additional [value] property. These are children which are not parents.
+ * Some [VssNode] may have an additional [value] property. These are children which are not parents.
  */
-interface VssLeaf<T : Any> : VssSpecification {
+interface VssLeaf<T : Any> : VssNode {
     val value: T
 }
 
 /**
- * Splits the [VssSpecification.vssPath] into its parts.
+ * Splits the [VssNode.vssPath] into its parts.
  */
-val VssSpecification.vssPathComponents: List<String>
+val VssNode.vssPathComponents: List<String>
     get() = vssPath.split(".")
 
 /**
- * Generates a heritage line with the [VssSpecification.vssPath] from the most known parent.
+ * Generates a heritage line with the [VssNode.vssPath] from the most known parent.
  * E.g. "Vehicle.OBD.Catalyst" -> [Vehicle, Vehicle.OBD, Vehicle.OBD.Catalyst]
  */
-val VssSpecification.vssPathHeritageLine: List<String>
+val VssNode.vssPathHeritageLine: List<String>
     get() {
         val components = vssPathComponents
         return components.foldIndexed(emptyList()) { index, accumulation, _ ->
@@ -74,21 +74,21 @@ val VssSpecification.vssPathHeritageLine: List<String>
     }
 
 /**
- * Parses a name from the [VssSpecification.vssPath].
+ * Parses a name from the [VssNode.vssPath].
  */
-val VssSpecification.name: String
+val VssNode.name: String
     get() = vssPath.substringAfterLast(".")
 
 /**
- * Return the parent [VssSpecification.vssPath].
+ * Return the parent [VssNode.vssPath].
  */
-val VssSpecification.parentVssPath: String
+val VssNode.parentVssPath: String
     get() = vssPath.substringBeforeLast(".", "")
 
 /**
- * Returns the parent key depending on the [VssSpecification.vssPath].
+ * Returns the parent key depending on the [VssNode.vssPath].
  */
-val VssSpecification.parentKey: String
+val VssNode.parentKey: String
     get() {
         val keys = vssPathComponents
         if (keys.size < 2) return ""
@@ -99,7 +99,7 @@ val VssSpecification.parentKey: String
 /**
  * Similar to the [variableName] but for the parent and does not lowercase the [name] wherever necessary.
  */
-val VssSpecification.parentClassName: String
+val VssNode.parentClassName: String
     get() {
         if (parentKey.isEmpty()) return ""
 
@@ -109,13 +109,13 @@ val VssSpecification.parentClassName: String
 /**
  * Iterates through all nested children which also may have children and aggregates them into one big collection.
  */
-val VssSpecification.heritage: Collection<VssSpecification>
+val VssNode.heritage: Collection<VssNode>
     get() = children.toList() + children.flatMap { it.heritage }
 
 /**
- * Finds the latest generation in the form of [VssLeaf] for the current [VssSpecification].
+ * Finds the latest generation in the form of [VssLeaf] for the current [VssNode].
  */
-val VssSpecification.vssProperties: Collection<VssLeaf<*>>
+val VssNode.vssProperties: Collection<VssLeaf<*>>
     get() = heritage
         .ifEmpty { setOf(this) }
         .filterIsInstance<VssLeaf<*>>()
@@ -124,7 +124,7 @@ val VssSpecification.vssProperties: Collection<VssLeaf<*>>
  * Uses the [variablePrefix] to generate a unique variable name. The first character is at least lowercased.
  * If the [name] is something like "ABS" then it is converted to "abs" instead of "aBS".
  */
-val VssSpecification.variableName: String // Fixes duplicates e.g. type as variable and nested type
+val VssNode.variableName: String // Fixes duplicates e.g. type as variable and nested type
     get() {
         val fullName = (variablePrefix + name).toCamelCase
 
@@ -134,7 +134,7 @@ val VssSpecification.variableName: String // Fixes duplicates e.g. type as varia
 /**
  * Similar to the [variableName] but does not lowercase the [name] wherever necessary.
  */
-val VssSpecification.className: String
+val VssNode.className: String
     get() {
         return (classNamePrefix + name).toCamelCase.replaceFirstChar { it.uppercase() }
     }
@@ -142,15 +142,15 @@ val VssSpecification.className: String
 /**
  * Used in case of conflicted naming with child properties.
  */
-private val VssSpecification.variablePrefix: String
+private val VssNode.variablePrefix: String
     get() = if (isVariableOccupied) classNamePrefix else ""
 
 /**
  * True if the [name] clashes with a property name.
  */
-private val VssSpecification.isVariableOccupied: Boolean
+private val VssNode.isVariableOccupied: Boolean
     get() {
-        val declaredMemberProperties = VssSpecification::class.declaredMemberProperties
+        val declaredMemberProperties = VssNode::class.declaredMemberProperties
         return declaredMemberProperties.find { member ->
             member.name.equals(name, true)
         } != null
@@ -161,16 +161,16 @@ private val classNamePrefix: String
 
 /**
  * Creates an inheritance line to the given [heir]. Similar to [vssPathHeritageLine] but the other way around. It
- * returns a [Collection] of the full heritage line in the form of [VssSpecification].
+ * returns a [Collection] of the full heritage line in the form of [VssNode].
  *
  * ### Hint
- * The given heir is only used to find the heir inside the [VssSpecification]. It may differ from the one which is
+ * The given heir is only used to find the heir inside the [VssNode]. It may differ from the one which is
  * returned. If you want the heritage replaced by the given [heir] parameter then use the [isReplacingHeir] parameter.
  */
-fun VssSpecification.findHeritageLine(
-    heir: VssSpecification,
+fun VssNode.findHeritageLine(
+    heir: VssNode,
     isReplacingHeir: Boolean = false,
-): Collection<VssSpecification> {
+): Collection<VssNode> {
     val specificationKeys = heir.vssPathHeritageLine
     val heritageLine = heritage.filter { child ->
         specificationKeys.contains(child.vssPath)
@@ -185,9 +185,9 @@ fun VssSpecification.findHeritageLine(
 }
 
 /**
- * Finds the given [property] inside the current [VssSpecification].
+ * Finds the given [property] inside the current [VssNode].
  */
-fun <T : VssLeaf<V>, V : Any> VssSpecification.findProperty(property: VssLeaf<V>): VssLeaf<V> {
+fun <T : VssLeaf<V>, V : Any> VssNode.findProperty(property: VssLeaf<V>): VssLeaf<V> {
     return heritage
         .filterIsInstance<VssLeaf<V>>()
         .first { it.uuid == property.uuid }
@@ -195,9 +195,9 @@ fun <T : VssLeaf<V>, V : Any> VssSpecification.findProperty(property: VssLeaf<V>
 
 /**
  * Finds all [VssLeaf] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
- * with the same Name exists but are pretty much the same besides the [VssSpecification.vssPath] etc.
+ * with the same Name exists but are pretty much the same besides the [VssNode.vssPath] etc.
  */
-fun <T : VssLeaf<V>, V : Any> VssSpecification.findProperties(type: KClass<T>): Map<String, VssLeaf<V>> {
+fun <T : VssLeaf<V>, V : Any> VssNode.findProperties(type: KClass<T>): Map<String, VssLeaf<V>> {
     return heritage
         .filterIsInstance<VssLeaf<V>>()
         .filter { it::class.simpleName == type.simpleName }

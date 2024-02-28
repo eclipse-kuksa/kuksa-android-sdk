@@ -26,15 +26,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.eclipse.kuksa.vss.VssVehicle
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.heritage
 
 class VssSpecificationsViewModel : ViewModel() {
-    var onGetSpecification: (specification: VssSpecification) -> Unit = { }
-    var onSubscribeSpecification: (specification: VssSpecification) -> Unit = { }
-    var onUnsubscribeSpecification: (specification: VssSpecification) -> Unit = { }
+    var onGetSpecification: (specification: VssNode) -> Unit = { }
+    var onSubscribeSpecification: (specification: VssNode) -> Unit = { }
+    var onUnsubscribeSpecification: (specification: VssNode) -> Unit = { }
 
-    var subscribedSpecifications = mutableStateListOf<VssSpecification>()
+    var subscribedSpecifications = mutableStateListOf<VssNode>()
 
     val isSubscribed by derivedStateOf {
         subscribedSpecifications.contains(specification)
@@ -43,10 +43,10 @@ class VssSpecificationsViewModel : ViewModel() {
     private val vssVehicle = VssVehicle()
     val specifications = listOf(vssVehicle) + vssVehicle.heritage
 
-    var specification: VssSpecification by mutableStateOf(vssVehicle)
+    var specification: VssNode by mutableStateOf(vssVehicle)
         private set
 
-    fun updateSpecification(specification: VssSpecification) {
+    fun updateSpecification(specification: VssNode) {
         this.specification = specification
     }
 }

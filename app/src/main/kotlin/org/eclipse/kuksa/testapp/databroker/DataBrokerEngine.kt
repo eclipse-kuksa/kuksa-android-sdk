@@ -30,7 +30,7 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
 @Suppress("complexity:TooManyFunctions") // required to test the api
 interface DataBrokerEngine {
@@ -47,7 +47,7 @@ interface DataBrokerEngine {
         callback: CoroutineCallback<GetResponse>,
     )
 
-    fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>)
+    fun <T : VssNode> fetch(specification: T, callback: CoroutineCallback<T>)
 
     fun update(
         property: Property,
@@ -59,12 +59,12 @@ interface DataBrokerEngine {
 
     fun unsubscribe(property: Property, propertyListener: PropertyListener)
 
-    fun <T : VssSpecification> subscribe(
+    fun <T : VssNode> subscribe(
         specification: T,
         specificationListener: VssSpecificationListener<T>,
     )
 
-    fun <T : VssSpecification> unsubscribe(
+    fun <T : VssNode> unsubscribe(
         specification: T,
         specificationListener: VssSpecificationListener<T>,
     )

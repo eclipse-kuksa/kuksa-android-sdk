@@ -28,7 +28,7 @@ import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.vsscore.model.VssLeaf
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
 /**
  * Creates [Subscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
@@ -76,8 +76,8 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     }
 
     /**
-     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssLeaf]
-     * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
+     * Subscribes to the specified [VssNode] with the provided [VssSpecificationListener]. Only a [VssLeaf]
+     * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
      * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssLeaf]. The [field] can be used to
      * subscribe to different information of the [specification]. The default for the [field] parameter is a single
@@ -85,7 +85,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    fun <T : VssSpecification> subscribe(
+    fun <T : VssNode> subscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
         listener: VssSpecificationListener<T>,
@@ -102,7 +102,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
      * canceled and removed. Gracefully ignores invalid input, e.g. when a [specification] and [field] of a
      * non-subscribed property is provided.
      */
-    fun <T : VssSpecification> unsubscribe(
+    fun <T : VssNode> unsubscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
         listener: VssSpecificationListener<T>,

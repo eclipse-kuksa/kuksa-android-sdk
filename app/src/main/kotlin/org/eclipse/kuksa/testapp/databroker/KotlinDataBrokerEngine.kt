@@ -35,7 +35,7 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
 @Suppress("complexity:TooManyFunctions")
 class KotlinDataBrokerEngine(
@@ -85,7 +85,7 @@ class KotlinDataBrokerEngine(
         }
     }
 
-    override fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>) {
+    override fun <T : VssNode> fetch(specification: T, callback: CoroutineCallback<T>) {
         lifecycleScope.launch {
             try {
                 val response = dataBrokerConnection?.fetch(specification) ?: return@launch
@@ -115,7 +115,7 @@ class KotlinDataBrokerEngine(
         dataBrokerConnection?.unsubscribe(property, propertyListener)
     }
 
-    override fun <T : VssSpecification> subscribe(
+    override fun <T : VssNode> subscribe(
         specification: T,
         specificationListener: VssSpecificationListener<T>,
     ) {
@@ -124,7 +124,7 @@ class KotlinDataBrokerEngine(
         }
     }
 
-    override fun <T : VssSpecification> unsubscribe(
+    override fun <T : VssNode> unsubscribe(
         specification: T,
         specificationListener: VssSpecificationListener<T>,
     ) {

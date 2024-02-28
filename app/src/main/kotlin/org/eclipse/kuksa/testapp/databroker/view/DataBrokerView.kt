@@ -91,7 +91,7 @@ import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 import org.eclipse.kuksa.vss.VssVehicle
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import java.time.format.DateTimeFormatter
 
 val SettingsMenuPadding = 16.dp
@@ -239,8 +239,8 @@ fun DataBrokerSpecifications(viewModel: VssSpecificationsViewModel) {
     Column {
         Headline(name = "Specifications")
 
-        val adapter = object : SuggestionAdapter<VssSpecification> {
-            override fun toString(item: VssSpecification): String {
+        val adapter = object : SuggestionAdapter<VssNode> {
+            override fun toString(item: VssNode): String {
                 return item.vssPath
             }
         }

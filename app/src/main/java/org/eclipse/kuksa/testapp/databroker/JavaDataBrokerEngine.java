@@ -36,7 +36,7 @@ import org.eclipse.kuksa.proto.v1.Types;
 import org.eclipse.kuksa.proto.v1.Types.Datapoint;
 import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory;
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
-import org.eclipse.kuksa.vsscore.model.VssSpecification;
+import org.eclipse.kuksa.vsscore.model.VssNode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -100,7 +100,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public <T extends VssSpecification> void fetch(
+    public <T extends VssNode> void fetch(
         @NonNull T specification,
         @NonNull CoroutineCallback<T> callback
     ) {
@@ -134,7 +134,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public <T extends VssSpecification> void subscribe(
+    public <T extends VssNode> void subscribe(
         @NonNull T specification,
         @NonNull VssSpecificationListener<T> specificationListener
     ) {
@@ -152,7 +152,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public <T extends VssSpecification> void unsubscribe(
+    public <T extends VssNode> void unsubscribe(
         @NonNull T specification,
         @NonNull VssSpecificationListener<T> specificationListener
     ) {

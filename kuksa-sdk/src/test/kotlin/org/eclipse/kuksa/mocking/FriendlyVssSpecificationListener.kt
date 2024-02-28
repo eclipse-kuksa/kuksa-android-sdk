@@ -20,9 +20,9 @@
 package org.eclipse.kuksa.mocking
 
 import org.eclipse.kuksa.VssSpecificationListener
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
-class FriendlyVssSpecificationListener<T : VssSpecification> : VssSpecificationListener<T> {
+class FriendlyVssSpecificationListener<T : VssNode> : VssSpecificationListener<T> {
     val updatedSpecifications = mutableListOf<T>()
     val errors = mutableListOf<Throwable>()
     override fun onSpecificationChanged(vssSpecification: T) {

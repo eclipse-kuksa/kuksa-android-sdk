@@ -23,14 +23,14 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase.*
 import org.eclipse.kuksa.vsscore.model.VssLeaf
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.findHeritageLine
 import org.eclipse.kuksa.vsscore.model.heritage
 import org.eclipse.kuksa.vsscore.model.variableName
 import kotlin.reflect.full.memberProperties
 
 /**
- * Creates a copy of the [VssSpecification] where the whole [VssSpecification.findHeritageLine] is replaced
+ * Creates a copy of the [VssNode] where the whole [VssNode.findHeritageLine] is replaced
  * with modified heirs.
  *
  * ### Example:
@@ -40,7 +40,7 @@ import kotlin.reflect.full.memberProperties
  *
  * A deep copy is necessary for a nested history tree with at least two generations. The VssWindowChildLockEngaged
  * is replaced inside VssCabin where this again is replaced inside VssVehicle. Use the [generation] to start copying
- * from the [VssSpecification] to the [deepCopy]. Returns a copy where every heir in the given [changedHeritage] is
+ * from the [VssNode] to the [deepCopy]. Returns a copy where every heir in the given [changedHeritage] is
  * replaced with another copy.
  *
  * @throws [IllegalArgumentException] if the copied types do not match. This can happen if the [heritage] is not
@@ -50,7 +50,7 @@ import kotlin.reflect.full.memberProperties
 // The suggested method to improve the performance can't be used here because we are already working with a full array.
 // https://detekt.dev/docs/rules/performance/
 @Suppress("performance:SpreadOperator")
-fun <T : VssSpecification> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssSpecification): T {
+fun <T : VssNode> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssNode): T {
     if (generation == changedHeritage.size) { // Reached the end, use the changed VssProperty
         return this
     }
@@ -137,21 +137,21 @@ fun <T : Any> VssLeaf<T>.copy(value: T): VssLeaf<T> {
 }
 
 /**
- * Creates a copy of the [VssSpecification] where the heir with a matching [vssPath] is replaced with the
+ * Creates a copy of the [VssNode] where the heir with a matching [vssPath] is replaced with the
  * [updatedValue].
  *
- * @param consideredHeritage the heritage of the [VssSpecification] which is considered for searching. The default
- * will always generate the up to date heritage of the current [VssSpecification]. For performance reason it may make
+ * @param consideredHeritage the heritage of the [VssNode] which is considered for searching. The default
+ * will always generate the up to date heritage of the current [VssNode]. For performance reason it may make
  * sense to cache the input and reuse the [Collection] here.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
 @Suppress("UNCHECKED_CAST")
-fun <T : VssSpecification> T.copy(
+fun <T : VssNode> T.copy(
     vssPath: String,
     updatedValue: Datapoint,
-    consideredHeritage: Collection<VssSpecification> = heritage,
+    consideredHeritage: Collection<VssNode> = heritage,
 ): T {
     val vssSpecifications = consideredHeritage + this
     val vssProperty = vssSpecifications
@@ -169,13 +169,13 @@ fun <T : VssSpecification> T.copy(
 // region Operators
 
 /**
- * Convenience operator for [deepCopy] with a [VssSpecification]. It will return the [VssSpecification] with the updated
- * [VssSpecification].
+ * Convenience operator for [deepCopy] with a [VssNode]. It will return the [VssNode] with the updated
+ * [VssNode].
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun <T : VssSpecification> T.invoke(vararg property: VssSpecification): T {
+operator fun <T : VssNode> T.invoke(vararg property: VssNode): T {
     return deepCopy(0, *property)
 }
 

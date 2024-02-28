@@ -33,7 +33,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import org.eclipse.kuksa.vsscore.model.VssLeaf
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.className
 import org.eclipse.kuksa.vsscore.model.name
 import org.eclipse.kuksa.vsscore.model.parentClassName
@@ -52,7 +52,7 @@ internal class VssSpecificationSpecModel(
     override var type: String = "",
     override var comment: String = "",
     @Suppress("MemberVisibilityCanBePrivate") var datatype: String = "",
-) : VssSpecification, SpecModel<VssSpecificationSpecModel> {
+) : VssNode, SpecModel<VssSpecificationSpecModel> {
     var logger: KSPLogger? = null
 
     private val datatypeProperty: TypeName
@@ -109,7 +109,7 @@ internal class VssSpecificationSpecModel(
         val constructorBuilder = FunSpec.constructorBuilder()
             .addAnnotation(JvmOverloads::class)
         val propertySpecs = mutableListOf<PropertySpec>()
-        val superInterfaces = mutableSetOf<TypeName>(VssSpecification::class.asTypeName())
+        val superInterfaces = mutableSetOf<TypeName>(VssNode::class.asTypeName())
 
         // The last element in the chain should have a value like "isLocked".
         if (childSpecifications.isEmpty()) {
@@ -212,9 +212,9 @@ internal class VssSpecificationSpecModel(
         specification: VssSpecificationSpecModel = this,
     ): List<PropertySpec> {
         val propertySpecs = mutableListOf<PropertySpec>()
-        val members = VssSpecification::class.declaredMemberProperties
+        val members = VssNode::class.declaredMemberProperties
 
-        fun createInterfaceDataTypeSpec(member: KProperty1<VssSpecification, *>): PropertySpec {
+        fun createInterfaceDataTypeSpec(member: KProperty1<VssNode, *>): PropertySpec {
             val memberName = member.name
             val memberType = member.returnType.asTypeName()
             val initialValue = member.get(specification) ?: ""

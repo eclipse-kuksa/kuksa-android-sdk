@@ -23,9 +23,9 @@ import org.eclipse.kuksa.PropertyListener
 import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.proto.v1.KuksaValV1
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
-internal class SpecificationPropertyListener<T : VssSpecification>(
+internal class SpecificationPropertyListener<T : VssNode>(
     specification: T,
     private val listener: VssSpecificationListener<T>,
 ) : PropertyListener {

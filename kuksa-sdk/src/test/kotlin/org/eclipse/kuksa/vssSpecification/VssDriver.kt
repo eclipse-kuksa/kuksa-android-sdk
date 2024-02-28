@@ -20,7 +20,7 @@
 package org.eclipse.kuksa.vssSpecification
 
 import org.eclipse.kuksa.vsscore.model.VssLeaf
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import kotlin.reflect.KClass
 
 data class VssDriver @JvmOverloads constructor(
@@ -31,7 +31,7 @@ data class VssDriver @JvmOverloads constructor(
     val identifier: VssIdentifier = VssIdentifier(),
     val isEyesOnRoad: VssIsEyesOnRoad = VssIsEyesOnRoad(),
     val isHandsOnWheel: VssIsHandsOnWheel = VssIsHandsOnWheel(),
-) : VssSpecification {
+) : VssNode {
     override val comment: String
         get() = ""
 
@@ -47,7 +47,7 @@ data class VssDriver @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf(
             attentiveProbability,
             distractionLevel,
@@ -79,7 +79,7 @@ data class VssDriver @JvmOverloads constructor(
         override val vssPath: String
             get() = "Vehicle.Driver.HeartRate"
 
-        override val children: Set<VssSpecification>
+        override val children: Set<VssNode>
             get() = setOf()
 
         override val parentClass: KClass<*>
@@ -105,7 +105,7 @@ data class VssAttentiveProbability @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.AttentiveProbability"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -130,7 +130,7 @@ data class VssDistractionLevel @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.DistractionLevel"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -155,7 +155,7 @@ data class VssFatigueLevel @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.FatigueLevel"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -165,7 +165,7 @@ data class VssFatigueLevel @JvmOverloads constructor(
 data class VssIdentifier @JvmOverloads constructor(
     val issuer: VssIssuer = VssIssuer(),
     val subject: VssSubject = VssSubject(),
-) : VssSpecification {
+) : VssNode {
     override val comment: String
         get() = ""
 
@@ -181,7 +181,7 @@ data class VssIdentifier @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.Identifier"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf(issuer, subject)
 
     override val parentClass: KClass<*>
@@ -207,7 +207,7 @@ data class VssIssuer @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.Identifier.Issuer"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -232,7 +232,7 @@ data class VssSubject @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.Identifier.Subject"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -257,7 +257,7 @@ data class VssIsEyesOnRoad @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.IsEyesOnRoad"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -282,7 +282,7 @@ data class VssIsHandsOnWheel @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Driver.IsHandsOnWheel"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>

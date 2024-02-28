@@ -19,7 +19,7 @@
 
 package org.eclipse.kuksa.vssprocessor.parser
 
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
 import kotlin.reflect.KMutableProperty
@@ -102,7 +102,7 @@ internal class YamlDefinitionParser : VssDefinitionParser {
  * @param fields to set via reflection. Pair<PropertyName, anyValue>.
  * @param remapNames which can be used if the propertyName does not match with the input name
  */
-private fun VssSpecification.setFields(
+private fun VssNode.setFields(
     fields: List<Pair<String, Any?>>,
     remapNames: Map<String, String> = emptyMap(),
 ) {
