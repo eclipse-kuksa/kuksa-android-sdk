@@ -27,7 +27,7 @@ import org.eclipse.kuksa.VssSpecificationListener
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
-import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 /**
@@ -76,10 +76,10 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     }
 
     /**
-     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssProperty]
+     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssLeaf]
      * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
-     * [subscribe] method will find all [VssProperty] children and subscribes them instead. Once subscribed the
-     * application will be notified about any changes to every subscribed [VssProperty]. The [field] can be used to
+     * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
+     * application will be notified about any changes to every subscribed [VssLeaf]. The [field] can be used to
      * subscribe to different information of the [specification]. The default for the [field] parameter is a single
      * [Types.Field.FIELD_VALUE] entry.
      *

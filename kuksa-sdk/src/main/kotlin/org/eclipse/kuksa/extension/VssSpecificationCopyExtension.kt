@@ -22,7 +22,7 @@ package org.eclipse.kuksa.extension
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase.*
-import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.findHeritageLine
 import org.eclipse.kuksa.vsscore.model.heritage
@@ -71,11 +71,11 @@ fun <T : VssSpecification> T.deepCopy(generation: Int = 0, vararg changedHeritag
 }
 
 /**
- * Creates a copy of a [VssProperty] where the [VssProperty.value] is changed to the given [Datapoint].
+ * Creates a copy of a [VssLeaf] where the [VssLeaf.value] is changed to the given [Datapoint].
  */
 // The actual value type is unknown but it is expected that the casted [valueCase] is valid if no exception was thrown.
 @Suppress("UNCHECKED_CAST")
-fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
+fun <T : Any> VssLeaf<T>.copy(datapoint: Datapoint): VssLeaf<T> {
     with(datapoint) {
         val value: Any = when (valueCase) {
             STRING -> string
@@ -123,13 +123,13 @@ fun <T : Any> VssProperty<T>.copy(datapoint: Datapoint): VssProperty<T> {
 }
 
 /**
- * Calls the generated copy method of the data class for the [VssProperty] and returns a new copy with the new [value].
+ * Calls the generated copy method of the data class for the [VssLeaf] and returns a new copy with the new [value].
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-fun <T : Any> VssProperty<T>.copy(value: T): VssProperty<T> {
-    val memberProperties = VssProperty::class.memberProperties
+fun <T : Any> VssLeaf<T>.copy(value: T): VssLeaf<T> {
+    val memberProperties = VssLeaf::class.memberProperties
     val firstPropertyName = memberProperties.first().name
     val valueMap = mapOf(firstPropertyName to value)
 
@@ -155,7 +155,7 @@ fun <T : VssSpecification> T.copy(
 ): T {
     val vssSpecifications = consideredHeritage + this
     val vssProperty = vssSpecifications
-        .filterIsInstance<VssProperty<*>>()
+        .filterIsInstance<VssLeaf<*>>()
         .find { it.vssPath == vssPath } ?: return this
 
     val updatedVssProperty = vssProperty.copy(updatedValue)
@@ -185,7 +185,7 @@ operator fun <T : VssSpecification> T.invoke(vararg property: VssSpecification):
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun <T : Any> VssProperty<T>.invoke(value: T): VssProperty<T> {
+operator fun <T : Any> VssLeaf<T>.invoke(value: T): VssLeaf<T> {
     return copy(value)
 }
 

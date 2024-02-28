@@ -32,7 +32,7 @@ data class Property(
     val vssPath: String,
 
     /**
-     * The corresponding field type of the Property. The default is [FIELD_VALUE].
+     * The corresponding field type of the [Property]. The default is [FIELD_VALUE].
      */
     val fields: Collection<Field> = listOf(FIELD_VALUE),
 )

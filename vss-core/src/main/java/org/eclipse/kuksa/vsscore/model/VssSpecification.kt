@@ -55,7 +55,7 @@ interface VssSpecification : VssNode {
 /**
  * Some [VssSpecification] may have an additional [value] property. These are children which are not parents.
  */
-interface VssProperty<T : Any> : VssSpecification {
+interface VssLeaf<T : Any> : VssSpecification {
     val value: T
 }
 
@@ -118,12 +118,12 @@ val VssSpecification.heritage: Collection<VssSpecification>
     get() = children.toList() + children.flatMap { it.heritage }
 
 /**
- * Finds the latest generation in the form of [VssProperty] for the current [VssSpecification].
+ * Finds the latest generation in the form of [VssLeaf] for the current [VssSpecification].
  */
-val VssSpecification.vssProperties: Collection<VssProperty<*>>
+val VssSpecification.vssProperties: Collection<VssLeaf<*>>
     get() = heritage
         .ifEmpty { setOf(this) }
-        .filterIsInstance<VssProperty<*>>()
+        .filterIsInstance<VssLeaf<*>>()
 
 /**
  * Uses the [variablePrefix] to generate a unique variable name. The first character is at least lowercased.
@@ -192,19 +192,19 @@ fun VssSpecification.findHeritageLine(
 /**
  * Finds the given [property] inside the current [VssSpecification].
  */
-fun <T : VssProperty<V>, V : Any> VssSpecification.findProperty(property: VssProperty<V>): VssProperty<V> {
+fun <T : VssLeaf<V>, V : Any> VssSpecification.findProperty(property: VssLeaf<V>): VssLeaf<V> {
     return heritage
-        .filterIsInstance<VssProperty<V>>()
+        .filterIsInstance<VssLeaf<V>>()
         .first { it.uuid == property.uuid }
 }
 
 /**
- * Finds all [VssProperty] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
+ * Finds all [VssLeaf] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
  * with the same Name exists but are pretty much the same besides the [VssSpecification.vssPath] etc.
  */
-fun <T : VssProperty<V>, V : Any> VssSpecification.findProperties(type: KClass<T>): Map<String, VssProperty<V>> {
+fun <T : VssLeaf<V>, V : Any> VssSpecification.findProperties(type: KClass<T>): Map<String, VssLeaf<V>> {
     return heritage
-        .filterIsInstance<VssProperty<V>>()
+        .filterIsInstance<VssLeaf<V>>()
         .filter { it::class.simpleName == type.simpleName }
         .associateBy { it.vssPath }
 }

@@ -24,9 +24,9 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 
 /**
- * The Listener is used to notify about changes to subscribed properties. When registering the listener to
- * Vehicle.ADAS.ABS this listener will also be notified about changes of sub-properties e.g. Vehicle.ADAS.ABS.IsEnabled
- * or Vehicle.ADAS.ABS.IsEngaged.
+ * The Listener is used to notify about changes to subscribed [org.eclipse.kuksa.model.Property]. When registering the
+ * listener to Vehicle.ADAS.ABS this listener will also be notified about changes of children e.g.
+ * Vehicle.ADAS.ABS.IsEnabled or Vehicle.ADAS.ABS.IsEngaged.
  */
 interface PropertyListener : Listener {
     /**

@@ -19,7 +19,7 @@
 
 package org.eclipse.kuksa.vssSpecification
 
-import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import kotlin.reflect.KClass
 
@@ -63,7 +63,7 @@ data class VssDriver @JvmOverloads constructor(
 
     data class VssHeartRate @JvmOverloads constructor(
         override val `value`: Int = 0,
-    ) : VssProperty<Int> {
+    ) : VssLeaf<Int> {
         override val comment: String
             get() = ""
 
@@ -89,7 +89,7 @@ data class VssDriver @JvmOverloads constructor(
 
 data class VssAttentiveProbability @JvmOverloads constructor(
     override val `value`: Float = 0f,
-) : VssProperty<Float> {
+) : VssLeaf<Float> {
     override val comment: String
         get() = ""
 
@@ -114,7 +114,7 @@ data class VssAttentiveProbability @JvmOverloads constructor(
 
 data class VssDistractionLevel @JvmOverloads constructor(
     override val `value`: Float = 0f,
-) : VssProperty<Float> {
+) : VssLeaf<Float> {
     override val comment: String
         get() = ""
 
@@ -139,7 +139,7 @@ data class VssDistractionLevel @JvmOverloads constructor(
 
 data class VssFatigueLevel @JvmOverloads constructor(
     override val `value`: Float = 0f,
-) : VssProperty<Float> {
+) : VssLeaf<Float> {
     override val comment: String
         get() = ""
 
@@ -190,7 +190,7 @@ data class VssIdentifier @JvmOverloads constructor(
 
 data class VssIssuer @JvmOverloads constructor(
     override val `value`: String = "",
-) : VssProperty<String> {
+) : VssLeaf<String> {
     override val comment: String
         get() = ""
 
@@ -216,7 +216,7 @@ data class VssIssuer @JvmOverloads constructor(
 
 data class VssSubject @JvmOverloads constructor(
     override val `value`: String = "",
-) : VssProperty<String> {
+) : VssLeaf<String> {
     override val comment: String
         get() = ""
 
@@ -241,7 +241,7 @@ data class VssSubject @JvmOverloads constructor(
 
 data class VssIsEyesOnRoad @JvmOverloads constructor(
     override val `value`: Boolean = false,
-) : VssProperty<Boolean> {
+) : VssLeaf<Boolean> {
     override val comment: String
         get() = ""
 
@@ -266,7 +266,7 @@ data class VssIsEyesOnRoad @JvmOverloads constructor(
 
 data class VssIsHandsOnWheel @JvmOverloads constructor(
     override val `value`: Boolean = false,
-) : VssProperty<Boolean> {
+) : VssLeaf<Boolean> {
     override val comment: String
         get() = ""
 

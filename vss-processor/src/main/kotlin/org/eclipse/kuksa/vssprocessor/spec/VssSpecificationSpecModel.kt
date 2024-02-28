@@ -33,7 +33,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import org.eclipse.kuksa.vsscore.model.VssNode
-import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.className
 import org.eclipse.kuksa.vsscore.model.name
@@ -121,7 +121,7 @@ internal class VssSpecificationSpecModel(
 
             // Final leafs should ONLY implement the vss property interface
             superInterfaces.clear()
-            val vssPropertyInterface = VssProperty::class
+            val vssPropertyInterface = VssLeaf::class
                 .asTypeName()
                 .plusParameter(datatypeProperty)
             superInterfaces.add(vssPropertyInterface)
@@ -292,13 +292,12 @@ internal class VssSpecificationSpecModel(
         val propertySpecs = mutableListOf<PropertySpec>()
 
         val members = VssNode::class.declaredMemberProperties
+        val setTypeName = Set::class.parameterizedBy(VssSpecification::class)
+        val classTypeName = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
         members.forEach { member ->
             val memberName = member.name
-            val memberType = member.returnType.asTypeName()
 
-            val setTypeName = Set::class.parameterizedBy(VssSpecification::class)
-            val classTypeName = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
-            val propertySpec: PropertySpec? = when (memberType) {
+            val propertySpec: PropertySpec? = when (val memberType = member.returnType.asTypeName()) {
                 setTypeName -> createSetSpec(memberName, memberType)
                 classTypeName -> createParentSpec(memberName, memberType)
                 else -> null

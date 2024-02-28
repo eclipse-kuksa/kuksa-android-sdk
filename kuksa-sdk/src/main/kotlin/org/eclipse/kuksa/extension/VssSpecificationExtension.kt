@@ -20,12 +20,12 @@ package org.eclipse.kuksa.extension
 
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.vssProperties
 
 /**
- * Finds all [VssProperty] heirs for the [VssSpecification] and converts them into a collection of [Property].
+ * Finds all [VssLeaf] heirs for the [VssSpecification] and converts them into a collection of [Property].
  */
 fun VssSpecification.createProperties(
     vararg fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),

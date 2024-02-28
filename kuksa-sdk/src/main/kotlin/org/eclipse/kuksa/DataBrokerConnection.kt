@@ -37,7 +37,7 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.subscription.DataBrokerSubscriber
-import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssSpecification
 import org.eclipse.kuksa.vsscore.model.heritage
 import org.eclipse.kuksa.vsscore.model.vssProperties
@@ -112,10 +112,10 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssProperty]
+     * Subscribes to the specified [VssSpecification] with the provided [VssSpecificationListener]. Only a [VssLeaf]
      * can be subscribed because they have an actual value. When provided with any parent [VssSpecification] then this
-     * [subscribe] method will find all [VssProperty] children and subscribes them instead. Once subscribed the
-     * application will be notified about any changes to every subscribed [VssProperty]. The [fields] can be used to
+     * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
+     * application will be notified about any changes to every subscribed [VssLeaf]. The [fields] can be used to
      * subscribe to different information of the [specification]. The default for the [fields] parameter is a list with
      * a single [Types.Field.FIELD_VALUE] entry.
      *
@@ -210,14 +210,14 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Only a [VssProperty] can be updated because they have an actual value. When provided with any parent
-     * [VssSpecification] then this [update] method will find all [VssProperty] children and updates their corresponding
+     * Only a [VssLeaf] can be updated because they have an actual value. When provided with any parent
+     * [VssSpecification] then this [update] method will find all [VssLeaf] children and updates their corresponding
      * [fields] instead.
      * Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
      * because a [VssSpecification] may consists of multiple values which may need to be updated.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
-     * @throws IllegalArgumentException if the [VssProperty] could not be converted to a [Datapoint].
+     * @throws IllegalArgumentException if the [VssLeaf] could not be converted to a [Datapoint].
      */
     @JvmOverloads
     suspend fun update(

@@ -30,14 +30,14 @@ import org.eclipse.kuksa.extension.invoke
 import org.eclipse.kuksa.extension.vssProperty.not
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Unit
-import org.eclipse.kuksa.vsscore.model.VssProperty
+import org.eclipse.kuksa.vsscore.model.VssLeaf
 
 class VssSpecificationCopyTest : BehaviorSpec({
     tags(Unit)
 
     given("A specification") {
         val vehicle = VssVehicle()
-        val driverHeartRate: VssProperty<Int> = vehicle.driver.heartRate
+        val driverHeartRate: VssLeaf<Int> = vehicle.driver.heartRate
 
         and("a changed heritage line") {
             val newValue = 70
