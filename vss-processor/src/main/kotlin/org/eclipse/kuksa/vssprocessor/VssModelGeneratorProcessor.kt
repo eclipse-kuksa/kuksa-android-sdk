@@ -44,7 +44,7 @@ import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
 
 /**
- * Generates a [VssNode] for every specification listed in the input file.
+ * Generates a [org.eclipse.kuksa.vsscore.model.VssNode] for every specification listed in the input file.
  * These nodes are a usable kotlin data class reflection of the specification.
  *
  * @param codeGenerator to generate class files with

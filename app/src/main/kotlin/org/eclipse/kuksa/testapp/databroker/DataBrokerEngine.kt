@@ -24,7 +24,7 @@ import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.VssNodeListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -61,12 +61,12 @@ interface DataBrokerEngine {
 
     fun <T : VssNode> subscribe(
         specification: T,
-        specificationListener: VssSpecificationListener<T>,
+        specificationListener: VssNodeListener<T>,
     )
 
     fun <T : VssNode> unsubscribe(
         specification: T,
-        specificationListener: VssSpecificationListener<T>,
+        specificationListener: VssNodeListener<T>,
     )
 
     fun disconnect()

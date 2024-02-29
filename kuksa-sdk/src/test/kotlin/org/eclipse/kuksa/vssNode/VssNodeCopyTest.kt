@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.vssSpecification
+package org.eclipse.kuksa.vssNode
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -32,7 +32,7 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Unit
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 
-class VssSpecificationCopyTest : BehaviorSpec({
+class VssNodeCopyTest : BehaviorSpec({
     tags(Unit)
 
     given("A specification") {
@@ -44,10 +44,10 @@ class VssSpecificationCopyTest : BehaviorSpec({
             val updatedHeartRate = VssDriver.VssHeartRate(value = newValue)
 
             `when`("a deep copy is done with a changed heritage line") {
-                val deepCopiedSpecification = vehicle.deepCopy(0, updatedHeartRate)
+                val deepCopiedNode = vehicle.deepCopy(0, updatedHeartRate)
 
                 then("it should return the new children as a copy") {
-                    val heartRate = deepCopiedSpecification.driver.heartRate
+                    val heartRate = deepCopiedNode.driver.heartRate
 
                     heartRate shouldBeSameInstanceAs updatedHeartRate
                 }
@@ -55,10 +55,10 @@ class VssSpecificationCopyTest : BehaviorSpec({
         }
 
         `when`("a value copy is done via the not operator") {
-            val invertedSpecification = !vehicle.driver.isEyesOnRoad
+            val invertedNode = !vehicle.driver.isEyesOnRoad
 
             then("it should return a copy with the inverted value") {
-                invertedSpecification.value shouldBe true
+                invertedNode.value shouldBe true
             }
         }
 
@@ -67,10 +67,10 @@ class VssSpecificationCopyTest : BehaviorSpec({
 
             `when`("a deep copy is done via the invoke operator") {
                 val copiedHeartRate = driverHeartRate(newValue)
-                val copiedSpecification = vehicle(copiedHeartRate)
+                val copiedNode = vehicle(copiedHeartRate)
 
                 then("it should return a copy with the updated value") {
-                    val heartRate = copiedSpecification.driver.heartRate
+                    val heartRate = copiedNode.driver.heartRate
 
                     heartRate shouldBeSameInstanceAs copiedHeartRate
                 }
@@ -82,10 +82,10 @@ class VssSpecificationCopyTest : BehaviorSpec({
             val datapoint = Types.Datapoint.newBuilder().setInt32(newValue).build()
 
             `when`("a copy is done") {
-                val copiedSpecification = driverHeartRate.copy(datapoint)
+                val copiedNode = driverHeartRate.copy(datapoint)
 
                 then("it should return a copy with the updated value") {
-                    val heartRateValue = copiedSpecification.value
+                    val heartRateValue = copiedNode.value
 
                     heartRateValue shouldBe newValue
                 }
@@ -95,10 +95,10 @@ class VssSpecificationCopyTest : BehaviorSpec({
                 val vssPath = driverHeartRate.vssPath
 
                 `when`("a copy is done") {
-                    val copiedSpecification = driverHeartRate.copy(vssPath, datapoint)
+                    val copiedNode = driverHeartRate.copy(vssPath, datapoint)
 
                     then("it should return a copy with the updated value") {
-                        val heartRateValue = copiedSpecification.value
+                        val heartRateValue = copiedNode.value
 
                         heartRateValue shouldBe newValue
                     }
@@ -109,7 +109,7 @@ class VssSpecificationCopyTest : BehaviorSpec({
         and("an empty DataPoint") {
             val datapoint = Types.Datapoint.newBuilder().build()
 
-            and("an invalid VssSpecification") {
+            and("an invalid VssLeaf") {
                 val invalidSpecification = VssInvalid()
 
                 `when`("a copy is done") {

@@ -29,7 +29,7 @@ import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.heritage
 
-class VssSpecificationsViewModel : ViewModel() {
+class VssViewModel : ViewModel() {
     var onGetSpecification: (specification: VssNode) -> Unit = { }
     var onSubscribeSpecification: (specification: VssNode) -> Unit = { }
     var onUnsubscribeSpecification: (specification: VssNode) -> Unit = { }

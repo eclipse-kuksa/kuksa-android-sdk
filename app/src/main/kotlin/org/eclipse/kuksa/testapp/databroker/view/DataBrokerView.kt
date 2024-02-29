@@ -84,7 +84,7 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VssViewModel
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
@@ -99,13 +99,12 @@ val DefaultEdgePadding = 25.dp
 val DefaultElementPadding = 10.dp
 val MinimumButtonWidth = 150.dp
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DataBrokerView(
     topAppBarViewModel: TopAppBarViewModel,
     connectionViewModel: ConnectionViewModel,
     vssPropertiesViewModel: VSSPropertiesViewModel,
-    vssSpecificationsViewModel: VssSpecificationsViewModel,
+    vssViewModel: VssViewModel,
     outputViewModel: OutputViewModel,
 ) {
     Scaffold(
@@ -128,7 +127,7 @@ fun DataBrokerView(
                 if (connectionViewModel.isConnected) {
                     when (dataBrokerMode) {
                         DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
-                        DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssSpecificationsViewModel)
+                        DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssViewModel)
                     }
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
@@ -235,7 +234,7 @@ private fun ConnectionStatusIcon(
 }
 
 @Composable
-fun DataBrokerSpecifications(viewModel: VssSpecificationsViewModel) {
+fun DataBrokerSpecifications(viewModel: VssViewModel) {
     Column {
         Headline(name = "Specifications")
 
@@ -501,7 +500,7 @@ fun Preview() {
             TopAppBarViewModel(),
             ConnectionViewModel(connectionInfoRepository),
             VSSPropertiesViewModel(),
-            VssSpecificationsViewModel(),
+            VssViewModel(),
             OutputViewModel(),
         )
     }

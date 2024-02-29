@@ -28,7 +28,7 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.VssNodeListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -117,7 +117,7 @@ class KotlinDataBrokerEngine(
 
     override fun <T : VssNode> subscribe(
         specification: T,
-        specificationListener: VssSpecificationListener<T>,
+        specificationListener: VssNodeListener<T>,
     ) {
         lifecycleScope.launch {
             dataBrokerConnection?.subscribe(specification, listener = specificationListener)
@@ -126,7 +126,7 @@ class KotlinDataBrokerEngine(
 
     override fun <T : VssNode> unsubscribe(
         specification: T,
-        specificationListener: VssSpecificationListener<T>,
+        specificationListener: VssNodeListener<T>,
     ) {
         dataBrokerConnection?.unsubscribe(specification, listener = specificationListener)
     }

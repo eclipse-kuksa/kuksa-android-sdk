@@ -21,7 +21,7 @@ package org.eclipse.kuksa.vsscore.model
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 
-class VssSpecificationTest : BehaviorSpec({
+class VssNodeTest : BehaviorSpec({
     given("The root level specification") {
         val vssVehicle = VssVehicle()
         `when`("finding the whole heritage") {
@@ -62,7 +62,7 @@ class VssSpecificationTest : BehaviorSpec({
         }
     }
 
-    given("A child VssSpecification") {
+    given("A child VssNode") {
         val vssDriver = VssDriver()
         `when`("splitting it into path components") {
             val pathComponents = vssDriver.vssPathComponents

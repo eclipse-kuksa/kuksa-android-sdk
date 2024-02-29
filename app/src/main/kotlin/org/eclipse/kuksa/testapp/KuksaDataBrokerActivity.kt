@@ -33,13 +33,12 @@ import org.eclipse.kuksa.CoroutineCallback
 import org.eclipse.kuksa.DataBrokerConnection
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.VssNodeListener
 import org.eclipse.kuksa.extension.entriesMetadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
-import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
@@ -53,7 +52,7 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputEntry
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VssViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
@@ -69,7 +68,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         ConnectionViewModel.Factory(connectionInfoRepository)
     }
     private val vssPropertiesViewModel: VSSPropertiesViewModel by viewModels()
-    private val vssSpecificationsViewModel: VssSpecificationsViewModel by viewModels()
+    private val vssViewModel: VssViewModel by viewModels()
     private val outputViewModel: OutputViewModel by viewModels()
 
     private val dataBrokerConnectionCallback = object : CoroutineCallback<DataBrokerConnection>() {
@@ -109,9 +108,9 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
-    private val specificationListener = object : VssSpecificationListener<VssNode> {
-        override fun onSpecificationChanged(vssSpecification: VssNode) {
-            outputViewModel.addOutputEntry("Updated specification: $vssSpecification")
+    private val specificationListener = object : VssNodeListener<VssNode> {
+        override fun onNodeChanged(vssNode: VssNode) {
+            outputViewModel.addOutputEntry("Updated specification: $vssNode")
         }
 
         override fun onError(throwable: Throwable) {
@@ -141,7 +140,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                         topAppBarViewModel,
                         connectionViewModel,
                         vssPropertiesViewModel,
-                        vssSpecificationsViewModel,
+                        vssViewModel,
                         outputViewModel,
                     )
                 }
@@ -187,15 +186,15 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             dataBrokerEngine.unsubscribe(property, propertyListener)
         }
 
-        vssSpecificationsViewModel.onSubscribeSpecification = { specification ->
+        vssViewModel.onSubscribeSpecification = { specification ->
             dataBrokerEngine.subscribe(specification, specificationListener)
         }
 
-        vssSpecificationsViewModel.onUnsubscribeSpecification = { specification ->
+        vssViewModel.onUnsubscribeSpecification = { specification ->
             dataBrokerEngine.unsubscribe(specification, specificationListener)
         }
 
-        vssSpecificationsViewModel.onGetSpecification = { specification ->
+        vssViewModel.onGetSpecification = { specification ->
             fetchSpecification(specification)
         }
     }
@@ -233,7 +232,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                     val automaticValueType = if (entriesMetadata.size == 1) {
                         entriesMetadata.first().valueType
                     } else {
-                        Types.Datapoint.ValueCase.VALUE_NOT_SET
+                        Datapoint.ValueCase.VALUE_NOT_SET
                     }
 
                     Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")

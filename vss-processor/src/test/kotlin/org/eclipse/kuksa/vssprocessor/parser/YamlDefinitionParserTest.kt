@@ -24,7 +24,7 @@ import java.io.File
 
 class YamlDefinitionParserTest : BehaviorSpec({
     given("A parser for yaml files") {
-        val parser = YamlDefinitionParser()
+        val parser = YamlVssParser()
         val classLoader = parser::class.java.classLoader!!
 
         and("a specification file of version 4") {
@@ -32,7 +32,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             val specificationFile = File(resourceUrl.path)
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseSpecifications(specificationFile)
+                val parsedSpecifications = parser.parseNodes(specificationFile)
 
                 then("the correct number of specification models should be parsed") {
                     // These are exactly the specifications defined in the 4.0 file
@@ -45,7 +45,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             val incompatibleFile = File(incompatibleResourceUrl.path)
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseSpecifications(incompatibleFile)
+                val parsedSpecifications = parser.parseNodes(incompatibleFile)
 
                 then("no entries should be returned") {
                     parsedSpecifications.size shouldBe 0
@@ -57,7 +57,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             val invalidFile = File(invalidResourceUrl.path)
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseSpecifications(invalidFile)
+                val parsedSpecifications = parser.parseNodes(invalidFile)
 
                 then("no entries should be returned") {
                     parsedSpecifications.size shouldBe 0

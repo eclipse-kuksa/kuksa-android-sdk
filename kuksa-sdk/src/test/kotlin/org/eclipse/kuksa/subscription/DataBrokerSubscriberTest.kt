@@ -35,14 +35,14 @@ import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.extensions.updateRandomUint32Value
 import org.eclipse.kuksa.mocking.FriendlyPropertyListener
-import org.eclipse.kuksa.mocking.FriendlyVssSpecificationListener
+import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
-import org.eclipse.kuksa.vssSpecification.VssDriver
+import org.eclipse.kuksa.vssNode.VssDriver
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -230,12 +230,12 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
             val specification = VssDriver.VssHeartRate()
 
-            `when`("Subscribing using VssSpecification to Vehicle.Driver.HeartRate with Field FIELD_VALUE") {
-                val friendlyVssSpecificationListener = FriendlyVssSpecificationListener<VssDriver.VssHeartRate>()
+            `when`("Subscribing using a VSS node to Vehicle.Driver.HeartRate with Field FIELD_VALUE") {
+                val friendlyVssNodeListener = FriendlyVssNodeListener<VssDriver.VssHeartRate>()
                 classUnderTest.subscribe(
                     specification,
                     Types.Field.FIELD_VALUE,
-                    friendlyVssSpecificationListener,
+                    friendlyVssNodeListener,
                 )
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
@@ -244,10 +244,10 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
                     then("The Observer should be triggered") {
                         eventually(1.seconds) {
-                            friendlyVssSpecificationListener.updatedSpecifications.size shouldBe 2
+                            friendlyVssNodeListener.updatedSpecifications.size shouldBe 2
                         }
 
-                        val count = friendlyVssSpecificationListener.updatedSpecifications
+                        val count = friendlyVssNodeListener.updatedSpecifications
                             .count { it.value == randomIntValue }
                         count shouldBe 1
                     }
@@ -255,7 +255,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             }
 
             `when`("Subscribing the same SpecificationObserver twice to Vehicle.Driver.HeartRate") {
-                val specificationObserverMock = FriendlyVssSpecificationListener<VssDriver.VssHeartRate>()
+                val specificationObserverMock = FriendlyVssNodeListener<VssDriver.VssHeartRate>()
                 classUnderTest.subscribe(
                     specification,
                     Types.Field.FIELD_VALUE,

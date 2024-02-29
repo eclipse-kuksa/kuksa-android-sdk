@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.vssSpecification
+package org.eclipse.kuksa.vssNode
 
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode

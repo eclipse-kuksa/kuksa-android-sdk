@@ -24,9 +24,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 
-class VssSpecificationSpecModelTest : BehaviorSpec({
+class VssNodeSpecModelTest : BehaviorSpec({
     given("String spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "string", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "string", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
@@ -40,7 +40,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("int64 spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "int64", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "int64", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
@@ -54,7 +54,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("uint32 spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "uint32", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "uint32", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
@@ -68,7 +68,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("int32 spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "int32", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "int32", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
@@ -82,7 +82,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("uint64[] spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "uint64[]", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "uint64[]", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
@@ -96,7 +96,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("String[] spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "string[]", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "string[]", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
@@ -110,7 +110,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("Boolean[] spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "boolean[]", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "boolean[]", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
@@ -124,7 +124,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("Any spec model") {
-        val specModel = VssSpecificationSpecModel(datatype = "any", vssPath = "Vehicle.IgnitionType")
+        val specModel = VssNodeSpecModel(datatype = "any", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val exception = shouldThrow<IllegalArgumentException> {
@@ -138,7 +138,7 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
     }
 
     given("Parent Spec model") {
-        val specModel = VssSpecificationSpecModel(vssPath = "Vehicle")
+        val specModel = VssNodeSpecModel(vssPath = "Vehicle")
 
         `when`("creating a class spec without children and nested classes") {
             val exception = shouldThrow<IllegalArgumentException> {
@@ -150,14 +150,14 @@ class VssSpecificationSpecModelTest : BehaviorSpec({
             }
         }
         and("related specifications") {
-            val vehicleSpeedSpecModel = VssSpecificationSpecModel(datatype = "float", vssPath = "Vehicle.Speed")
+            val vehicleSpeedSpecModel = VssNodeSpecModel(datatype = "float", vssPath = "Vehicle.Speed")
             val relatedSpecifications = listOf(
-                VssSpecificationSpecModel(vssPath = "Vehicle.SmartphoneProjection"),
-                VssSpecificationSpecModel(datatype = "boolean", vssPath = "Vehicle.IsBrokenDown"),
+                VssNodeSpecModel(vssPath = "Vehicle.SmartphoneProjection"),
+                VssNodeSpecModel(datatype = "boolean", vssPath = "Vehicle.IsBrokenDown"),
                 vehicleSpeedSpecModel,
-                VssSpecificationSpecModel(datatype = "string[]", vssPath = "Vehicle.SupportedMode"),
-                VssSpecificationSpecModel(datatype = "boolean[]", vssPath = "Vehicle.AreSeatsHeated"),
-                VssSpecificationSpecModel(datatype = "invalid", vssPath = "Vehicle.Invalid"),
+                VssNodeSpecModel(datatype = "string[]", vssPath = "Vehicle.SupportedMode"),
+                VssNodeSpecModel(datatype = "boolean[]", vssPath = "Vehicle.AreSeatsHeated"),
+                VssNodeSpecModel(datatype = "invalid", vssPath = "Vehicle.Invalid"),
             )
 
             `when`("creating a class spec with children") {

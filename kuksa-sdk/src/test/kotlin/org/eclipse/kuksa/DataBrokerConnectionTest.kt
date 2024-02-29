@@ -32,14 +32,14 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
-import org.eclipse.kuksa.mocking.FriendlyVssSpecificationListener
+import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
-import org.eclipse.kuksa.vssSpecification.VssDriver
+import org.eclipse.kuksa.vssNode.VssDriver
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -165,7 +165,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             }
 
             `when`("Subscribing to the specification") {
-                val specificationListener = FriendlyVssSpecificationListener<VssDriver>()
+                val specificationListener = FriendlyVssNodeListener<VssDriver>()
                 dataBrokerConnection.subscribe(specification, listener = specificationListener)
 
                 then("The #onSpecificationChanged method is triggered") {

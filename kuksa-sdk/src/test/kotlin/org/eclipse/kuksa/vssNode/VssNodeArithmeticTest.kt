@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.kuksa.vssSpecification
+package org.eclipse.kuksa.vssNode
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -28,10 +28,10 @@ import org.eclipse.kuksa.extension.vssProperty.plus
 import org.eclipse.kuksa.extension.vssProperty.times
 import org.eclipse.kuksa.test.kotest.Unit
 
-class VssSpecificationArithmeticTest : BehaviorSpec({
+class VssNodeArithmeticTest : BehaviorSpec({
     tags(Unit)
 
-    given("VssSpecification values for arithmetic operations") {
+    given("VssNode values for arithmetic operations") {
         val valueInt = VssValueInt(value = 100)
         val valueFloat = VssValueFloat(value = 100f)
         val valueLong = VssValueLong(value = 100L)
