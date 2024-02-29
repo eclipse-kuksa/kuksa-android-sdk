@@ -1,0 +1,58 @@
+name: Run Tests
+description: Runs Unit and Integration Test. Tests will be executed on a Databroker instance.
+
+inputs:
+  upload-test-reports:
+    description: "Uploads the resulting test reports if enabled"
+    required: false
+    default: 'false'
+  upload-code-coverage-reports:
+    description: "Executes Code Coverage Generation and uploads the resulting reports if enabled"
+    required: false
+    default: 'false'
+  databroker-version:
+    description: "Databroker Version"
+    required: false
+    default: 'master'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: "Run Docker Container of Databroker in detached mode"
+      run: docker run --pull=always --rm --publish 55556:55556/tcp --detach --name databroker ghcr.io/eclipse/kuksa.val/databroker:${{ inputs.databroker-version }} --port 55556 --insecure
+      shell: bash
+
+    - name: Run 'test' with Gradle Wrapper
+      run: ./gradlew test -Dkotest.tags="!CustomDatabroker"
+      shell: bash
+
+    - name: Upload Test Reports
+      if: ${{ inputs.upload-test-reports == 'true' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-reports
+        path: ${{ github.workspace }}/**/reports/tests/*/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Create Code Coverage Reports
+      if: ${{ inputs.upload-code-coverage-reports == 'true' }}
+      run: ./gradlew jacocoRootReport
+      shell: bash
+
+    - name: Upload Code Coverage Report
+      if: ${{ inputs.upload-code-coverage-reports == 'true' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-coverage
+        path: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/html/*
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: "Stop Docker Container of Databroker"
+      if: always()
+      run: docker stop databroker
+      shell: bash
