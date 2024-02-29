@@ -17,6 +17,8 @@
  *
  */
 
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 import java.nio.file.FileVisitResult
@@ -38,6 +40,7 @@ plugins {
     detekt
     version
     kotlin("jvm")
+    jacoco
 }
 
 subprojects {
@@ -102,3 +105,80 @@ tasks.register("mergeDashFiles") {
         }
     }
 }
+
+// region jacoco coverage report
+
+subprojects {
+    apply {
+        plugin("jacoco")
+    }
+
+    if (plugins.hasPlugin("com.android.library")) {
+        configure<LibraryExtension> {
+            @Suppress("UnstableApiUsage")
+            testOptions {
+                buildTypes {
+                    named("debug") {
+                        enableUnitTestCoverage = true
+                        enableAndroidTestCoverage = true
+                    }
+                }
+            }
+        }
+    }
+
+    if (plugins.hasPlugin("com.android.application")) {
+        configure<BaseAppModuleExtension> {
+            @Suppress("UnstableApiUsage")
+            testOptions {
+                buildTypes {
+                    named("debug") {
+                        enableUnitTestCoverage = true
+                        enableAndroidTestCoverage = true
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.create("jacocoRootReport", JacocoReport::class.java) {
+    group = "report"
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(false)
+    }
+
+    val excludes = listOf(
+        "**/buildSrc/**",
+        "**/app/**",
+        "**/samples/**",
+        "**/build/**/org/eclipse/kuksa/vss/**", // generated
+        "**/test*/**/*.*",
+    )
+
+    val sourcesKotlin = subprojects.map { it.layout.projectDirectory.dir("src/main/kotlin") }
+    val sourcesJava = subprojects.map { it.layout.projectDirectory.dir("src/main/java") }
+
+    val classes = fileTree(rootDir) {
+        include(
+            "**/build/classes/kotlin/**/*.class", // kotlin-jvm modules
+            "**/build/tmp/kotlin-classes/debug/**/*.class", // android modules (application, libraries)
+        )
+        exclude(excludes)
+    }.toSet()
+
+    val executionPaths = fileTree(rootDir) {
+        include("**/*.exec", "**/*.ec")
+        exclude(excludes)
+    }.toSet()
+
+    additionalSourceDirs.setFrom(sourcesKotlin, sourcesJava)
+    sourceDirectories.setFrom(sourcesKotlin, sourcesJava)
+    classDirectories.setFrom(classes)
+    executionData.setFrom(executionPaths)
+}
+
+// endregion jacoco
