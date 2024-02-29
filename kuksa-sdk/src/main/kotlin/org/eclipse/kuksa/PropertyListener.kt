@@ -42,14 +42,14 @@ interface PropertyListener : Listener {
 
 /**
  * The Listener is used to notify about subscribed [VssNode]. If a [VssNode] has children
- * then [onSpecificationChanged] will be called on every value change for every children.
+ * then [onNodeChanged] will be called on every value change for every children.
  */
-interface VssSpecificationListener<T : VssNode> {
+interface VssNodeListener<T : VssNode> {
     /**
-     * Will be triggered with the [vssSpecification] when the underlying vssPath changed it's value or to inform about
+     * Will be triggered with the [vssNode] when the underlying vssPath changed it's value or to inform about
      * the initial state.
      */
-    fun onSpecificationChanged(vssSpecification: T)
+    fun onNodeChanged(vssNode: T)
 
     /**
      * Will be triggered when an error happens during subscription and forwards the [throwable].

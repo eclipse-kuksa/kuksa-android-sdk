@@ -22,12 +22,12 @@ package org.eclipse.kuksa.vssprocessor.parser
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
 
-internal interface VssDefinitionParser {
+internal interface VssParser {
     /**
      * @param definitionFile to parse [VssNodeSpecModel] with
      * @param elementDelimiter which is the separator string between the specifications. The default is an empty line.
      */
-    fun parseSpecifications(
+    fun parseNodes(
         definitionFile: File,
         elementDelimiter: String = "",
     ): List<VssNodeSpecModel>

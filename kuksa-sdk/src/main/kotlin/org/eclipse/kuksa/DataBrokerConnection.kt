@@ -112,7 +112,7 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [VssNode] with the provided [VssSpecificationListener]. Only a [VssLeaf]
+     * Subscribes to the specified [VssNode] with the provided [VssNodeListener]. Only a [VssLeaf]
      * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
      * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssLeaf]. The [fields] can be used to
@@ -125,7 +125,7 @@ class DataBrokerConnection internal constructor(
     fun <T : VssNode> subscribe(
         specification: T,
         fields: Collection<Field> = listOf(Field.FIELD_VALUE),
-        listener: VssSpecificationListener<T>,
+        listener: VssNodeListener<T>,
     ) {
         fields.forEach { field ->
             dataBrokerSubscriber.subscribe(specification, field, listener)
@@ -138,7 +138,7 @@ class DataBrokerConnection internal constructor(
     fun <T : VssNode> unsubscribe(
         specification: T,
         fields: Collection<Field> = listOf(Field.FIELD_VALUE),
-        listener: VssSpecificationListener<T>,
+        listener: VssNodeListener<T>,
     ) {
         fields.forEach { field ->
             dataBrokerSubscriber.unsubscribe(specification, field, listener)
@@ -221,12 +221,12 @@ class DataBrokerConnection internal constructor(
      */
     @JvmOverloads
     suspend fun update(
-        vssSpecification: VssNode,
+        vssNode: VssNode,
         fields: Collection<Field> = listOf(Field.FIELD_VALUE),
     ): Collection<SetResponse> {
         val responses = mutableListOf<SetResponse>()
 
-        vssSpecification.vssProperties.forEach { vssProperty ->
+        vssNode.vssProperties.forEach { vssProperty ->
             val property = Property(vssProperty.vssPath, fields)
             val response = update(property, vssProperty.datapoint)
             responses.add(response)

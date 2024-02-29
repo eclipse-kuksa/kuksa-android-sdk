@@ -31,18 +31,18 @@ import org.eclipse.kuksa.DataBrokerConnector
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DisconnectListener
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.VssNodeListener
 import org.eclipse.kuksa.authentication.JsonWebToken
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.vss.VssVehicle
-import org.eclipse.kuksa.vsscore.annotation.VssDefinition
+import org.eclipse.kuksa.vsscore.annotation.VssModelGenerator
 import java.io.IOException
 
 @Suppress("UNUSED_VARIABLE", "SwallowedException")
-@VssDefinition
+@VssModelGenerator
 class KotlinActivity : AppCompatActivity() {
 
     private var disconnectListener = DisconnectListener {
@@ -184,8 +184,8 @@ class KotlinActivity : AppCompatActivity() {
         dataBrokerConnection?.subscribe(
             vssSpeed,
             listOf(Types.Field.FIELD_VALUE),
-            listener = object : VssSpecificationListener<VssVehicle.VssSpeed> {
-                override fun onSpecificationChanged(vssSpecification: VssVehicle.VssSpeed) {
+            listener = object : VssNodeListener<VssVehicle.VssSpeed> {
+                override fun onNodeChanged(vssNode: VssVehicle.VssSpeed) {
                     val speed = vssSpeed.value
                 }
 

@@ -54,9 +54,9 @@ package kuksa {
 
     class DataBrokerSubscriber {
         + subscribe(vssPath: String, Field, PropertyListener)
-        + subscribe<T : VssSpecification>(T, Field, VssSpecificationListener<T>)
+        + subscribe<T : VssNode>(T, Field, VssNodeListener<T>)
         + unsubscribe(vssPath: String, Field, PropertyListener)
-        + unsubscribe<T : VssSpecification>(T, Field, VssSpecificationListener<T>)
+        + unsubscribe<T : VssNode>(T, Field, VssNodeListener<T>)
     }
 
     class DataBrokerConnection {
@@ -64,13 +64,13 @@ package kuksa {
         + jsonWebToken: JsonWebToken
 
         + subscribe(Property, PropertyListener)
-        + subscribe<T : VssSpecification>(T, Collection<Field>, VssSpecificationListener<T>)
+        + subscribe<T : VssNode>(T, Collection<Field>, VssNodeListener<T>)
         + unsubscribe(Property, PropertyListener)
-        + unsubscribe<T : VssSpecification>(T, Collection<Field>, VssSpecificationListener<T>)
+        + unsubscribe<T : VssNode>(T, Collection<Field>, VssNodeListener<T>)
         + fetch(Property): GetResponse
-        + fetch<T : VssSpecification>(T, Collection<Field>)
+        + fetch<T : VssNode>(T, Collection<Field>)
         + update(Property, Datapoint): SetResponse
-        + update(VssSpecification, Collection<Field>): SetResponse
+        + update(VssNode, Collection<Field>): SetResponse
         + disconnect()
     }
     

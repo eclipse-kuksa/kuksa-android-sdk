@@ -23,7 +23,7 @@ import android.util.Log
 import org.eclipse.kuksa.DataBrokerException
 import org.eclipse.kuksa.DataBrokerTransporter
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.VssNodeListener
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
@@ -76,7 +76,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     }
 
     /**
-     * Subscribes to the specified [VssNode] with the provided [VssSpecificationListener]. Only a [VssLeaf]
+     * Subscribes to the specified [VssNode] with the provided [VssNodeListener]. Only a [VssLeaf]
      * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
      * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssLeaf]. The [field] can be used to
@@ -88,7 +88,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     fun <T : VssNode> subscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
-        listener: VssSpecificationListener<T>,
+        listener: VssNodeListener<T>,
     ) {
         val vssPath = specification.vssPath
 
@@ -105,7 +105,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     fun <T : VssNode> unsubscribe(
         specification: T,
         field: Field = Field.FIELD_VALUE,
-        listener: VssSpecificationListener<T>,
+        listener: VssNodeListener<T>,
     ) {
         val vssPath = specification.vssPath
 

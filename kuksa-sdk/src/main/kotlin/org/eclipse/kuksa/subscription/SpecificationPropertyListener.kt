@@ -20,26 +20,26 @@
 package org.eclipse.kuksa.subscription
 
 import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.VssNodeListener
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.vsscore.model.VssNode
 
 internal class SpecificationPropertyListener<T : VssNode>(
-    specification: T,
-    private val listener: VssSpecificationListener<T>,
+    node: T,
+    private val listener: VssNodeListener<T>,
 ) : PropertyListener {
     // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we
     // would override the last heir value with every new response.
-    private var updatedVssSpecification: T = specification
+    private var updatedVssNode: T = node
 
     override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
         entryUpdates.forEach { entryUpdate ->
             val dataEntry = entryUpdate.entry
-            updatedVssSpecification = updatedVssSpecification.copy(dataEntry.path, dataEntry.value)
+            updatedVssNode = updatedVssNode.copy(dataEntry.path, dataEntry.value)
         }
 
-        listener.onSpecificationChanged(updatedVssSpecification)
+        listener.onNodeChanged(updatedVssNode)
     }
 
     override fun onError(throwable: Throwable) {

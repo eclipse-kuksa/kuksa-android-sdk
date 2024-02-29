@@ -26,8 +26,8 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 
-internal class YamlDefinitionParser : VssDefinitionParser {
-    override fun parseSpecifications(definitionFile: File, elementDelimiter: String): List<VssNodeSpecModel> {
+internal class YamlVssParser : VssParser {
+    override fun parseNodes(definitionFile: File, elementDelimiter: String): List<VssNodeSpecModel> {
         val specificationElements = mutableListOf<VssNodeSpecModel>()
         definitionFile.useLines { lines ->
             val yamlAttributes = mutableListOf<String>()

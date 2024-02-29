@@ -36,11 +36,11 @@ import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
-import org.eclipse.kuksa.vsscore.annotation.VssDefinition
+import org.eclipse.kuksa.vsscore.annotation.VssModelGenerator
 import org.eclipse.kuksa.vsscore.model.parentClassName
-import org.eclipse.kuksa.vssprocessor.parser.YamlDefinitionParser
+import org.eclipse.kuksa.vssprocessor.parser.YamlVssParser
+import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import org.eclipse.kuksa.vssprocessor.spec.VssPath
-import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
 
 /**
@@ -50,15 +50,15 @@ import java.io.File
  * @param codeGenerator to generate class files with
  * @param logger to log output with
  */
-class VssDefinitionProcessor(
+class VssModelGeneratorProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
 ) : SymbolProcessor {
-    private val visitor = VssDefinitionVisitor()
-    private val yamlParser = YamlDefinitionParser()
+    private val visitor = VssModelGeneratorVisitor()
+    private val yamlParser = YamlVssParser()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(VssDefinition::class.qualifiedName.toString())
+        val symbols = resolver.getSymbolsWithAnnotation(VssModelGenerator::class.qualifiedName.toString())
         val deferredSymbols = symbols.filterNot { it.validate() }
 
         symbols.forEach { it.accept(visitor, Unit) }
@@ -67,7 +67,7 @@ class VssDefinitionProcessor(
         return emptyList()
     }
 
-    private inner class VssDefinitionVisitor : KSVisitorVoid() {
+    private inner class VssModelGeneratorVisitor : KSVisitorVoid() {
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             val containingFile = classDeclaration.containingFile ?: return
 
@@ -79,24 +79,24 @@ class VssDefinitionProcessor(
                 annotatedProcessorFileName,
             )
 
-            val definitionFiles = loadVssDefinitionFiles()
-            if (definitionFiles.isEmpty()) {
-                logger.error("No VSS definition files were found! Is the plugin correctly configured?")
+            val vssFiles = loadVssFiles()
+            if (vssFiles.isEmpty()) {
+                logger.error("No VSS files were found! Is the plugin correctly configured?")
                 return
             }
 
-            definitionFiles.forEach { definitionFile ->
-                val simpleSpecificationElements = yamlParser.parseSpecifications(definitionFile)
-                val vssPathToSpecificationElement = simpleSpecificationElements
+            vssFiles.forEach { vssFile ->
+                val simpleVssNodeElements = yamlParser.parseNodes(vssFile)
+                val vssPathToVssNodeElement = simpleVssNodeElements
                     .associateBy({ VssPath(it.vssPath) }, { it })
 
-                logger.info("Generating models for definition file: ${definitionFile.name}")
-                generateModelFiles(vssPathToSpecificationElement)
+                logger.info("Generating models for VSS file: ${vssFile.name}")
+                generateModelFiles(vssPathToVssNodeElement)
             }
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.
-        private fun loadVssDefinitionFiles(): Collection<File> {
+        private fun loadVssFiles(): Collection<File> {
             val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return emptySet()
             val generationPath = generatedFile.absolutePath
             val buildPath = generationPath.replaceAfterLast("$BUILD_FOLDER_NAME$fileSeparator", "")
@@ -109,7 +109,7 @@ class VssDefinitionProcessor(
                 .toSet()
         }
 
-        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssSpecificationSpecModel>) {
+        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssNodeSpecModel>) {
             val duplicateSpecificationNames = vssPathToSpecification.keys
                 .groupBy { it.leaf }
                 .filter { it.value.size > 1 }
@@ -152,7 +152,7 @@ class VssDefinitionProcessor(
         // If the actual parent is a sub class (Driver) in another class file (e.g. Vehicle) then this method returns
         // a sub import e.g. "Vehicle.Driver". Otherwise just "Vehicle" is returned.
         private fun buildParentImport(
-            specModel: VssSpecificationSpecModel,
+            specModel: VssNodeSpecModel,
             parentVssPathToClassName: Map<String, String>,
         ): String {
             var availableParentVssPath = specModel.vssPath
@@ -193,12 +193,12 @@ class VssDefinitionProcessor(
 }
 
 /**
- * Provides the environment for the [VssDefinitionProcessor].
+ * Provides the environment for the [VssModelGeneratorProcessor].
  */
-class VssDefinitionProcessorProvider : SymbolProcessorProvider {
+class VssModelGeneratorProcessorProvider : SymbolProcessorProvider {
     override fun create(
         environment: SymbolProcessorEnvironment,
     ): SymbolProcessor {
-        return VssDefinitionProcessor(environment.codeGenerator, environment.logger)
+        return VssModelGeneratorProcessor(environment.codeGenerator, environment.logger)
     }
 }

@@ -27,7 +27,7 @@ import org.eclipse.kuksa.DataBrokerConnection;
 import org.eclipse.kuksa.DataBrokerConnector;
 import org.eclipse.kuksa.DisconnectListener;
 import org.eclipse.kuksa.PropertyListener;
-import org.eclipse.kuksa.VssSpecificationListener;
+import org.eclipse.kuksa.VssNodeListener;
 import org.eclipse.kuksa.authentication.JsonWebToken;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1;
@@ -53,7 +53,7 @@ import io.grpc.TlsChannelCredentials;
 /**
  * @noinspection unused
  */
-//@VssDefinition // Commented out to prevent conflicts with the Kotlin activity
+//@VssModelGenerator // Commented out to prevent conflicts with the Kotlin activity
 public class JavaActivity extends AppCompatActivity {
 
     private final DisconnectListener disconnectListener = () -> {
@@ -245,10 +245,10 @@ public class JavaActivity extends AppCompatActivity {
         dataBrokerConnection.subscribe(
             vssSpeed,
             Collections.singleton(Types.Field.FIELD_VALUE),
-            new VssSpecificationListener<VssVehicle.VssSpeed>() {
+            new VssNodeListener<VssVehicle.VssSpeed>() {
                 @Override
-                public void onSpecificationChanged(@NonNull VssVehicle.VssSpeed vssSpecification) {
-                    Float speed = vssSpecification.getValue();
+                public void onNodeChanged(@NonNull VssVehicle.VssSpeed vssNode) {
+                    Float speed = vssNode.getValue();
                 }
 
                 @Override

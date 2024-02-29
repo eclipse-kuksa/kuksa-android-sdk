@@ -55,7 +55,7 @@ fun <T : VssNode> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssNod
         return this
     }
 
-    // Create the missing link between this (VssSpecification) and the given property (VssSpecifications inbetween)
+    // Create the missing link between this [VssNode] and the given property (node inbetween)
     var heritageLine = changedHeritage
     if (changedHeritage.size == 1) {
         heritageLine = findHeritageLine(changedHeritage.first(), true)
@@ -153,8 +153,8 @@ fun <T : VssNode> T.copy(
     updatedValue: Datapoint,
     consideredHeritage: Collection<VssNode> = heritage,
 ): T {
-    val vssSpecifications = consideredHeritage + this
-    val vssProperty = vssSpecifications
+    val vssNodes = consideredHeritage + this
+    val vssProperty = vssNodes
         .filterIsInstance<VssLeaf<*>>()
         .find { it.vssPath == vssPath } ?: return this
 

@@ -178,20 +178,14 @@ vssProcessor {
 }
 ```
 
-Use the new [`VssDefinition`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssDefinition.kt) annotation and provide the path to the specification file (Inside the assets folder).
+Use the [`VssModelGenerator`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssModelGenerator.kt) annotation and provide the path to the specification file (Inside the assets folder).
 Doing so will generate a complete tree of Kotlin models which can be used in combination with the SDK API. This way you can
 work with safe types and the SDK takes care of all the model parsing for you. There is also a whole set of 
-convenience operators and extension methods to work with to manipulate the tree data. See the `VssSpecification` class documentation for this.
+convenience operators and extension methods to work with to manipulate the tree data. See the `VssNode` class documentation for this.
 
-*Kotlin*
-```kotlin
-@VssDefinition 
-class KotlinActivity
-```
-*Java*
-```java
-@VssDefinition
-public class JavaActivity
+```kotlin / Java
+@VssModelGenerator 
+class Activity
 ```
 > [!IMPORTANT]
 > Keep in mind to always synchronize the specification file between the client and the Databroker.
@@ -228,7 +222,7 @@ data class VssSpeed @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Speed"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -257,8 +251,8 @@ fun update() {
 
 fun subscribe() {
     val vssSpeed = VssVehicle.VssSpeed(value = 100f)
-    dataBrokerConnection?.subscribe(vssSpeed, listener = object : VssSpecificationListener<VssVehicle.VssSpeed> {
-        override fun onSpecificationChanged(vssSpecification: VssVehicle.VssSpeed) {
+    dataBrokerConnection?.subscribe(vssSpeed, listener = object : VssNodeListener<VssVehicle.VssSpeed> {
+        override fun onNodeChanged(vssNode: VssVehicle.VssSpeed) {
             val speed = vssSpeed.value
         }
 
@@ -313,10 +307,10 @@ void subscribe() {
     dataBrokerConnection.subscribe(
         vssSpeed,
         Collections.singleton(Types.Field.FIELD_VALUE),
-        new VssSpecificationListener<VssVehicle.VssSpeed>() {
+        new VssNodeListener<VssVehicle.VssSpeed>() {
             @Override
-            public void onSpecificationChanged(@NonNull VssVehicle.VssSpeed vssSpecification) {
-                Float speed = vssSpecification.getValue();
+            public void onSpecificationChanged(@NonNull VssVehicle.VssSpeed vssNode) {
+                Float speed = vssNode.getValue();
             }
     
             @Override

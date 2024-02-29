@@ -21,8 +21,8 @@ package org.eclipse.kuksa.vsscore.annotation
 
 /**
  * Add this annotation to any class to trigger the model generation (Kotlin Symbol Processing) for the given
- * Vehicle Signal Specification definition file by the "vss-processor-plugin". Only .yaml files are currently supported.
- * Use the "VSS Processor Plugin" to provide the Symbol Processor with the necessary definition file(s).
+ * Vehicle Signal Specification file by the "vss-processor-plugin". Only .yaml files are currently supported.
+ * Use the "VSS Processor Plugin" to provide the Symbol Processor with the necessary VSS file(s).
  *
  * ### Plugin Example
  *
@@ -41,7 +41,7 @@ package org.eclipse.kuksa.vsscore.annotation
  * ### Annotation Example
  *
  * ```
- * @VssDefinition
+ * @VssModelGenerator
  * class Activity
  * ```
  *
@@ -55,4 +55,4 @@ package org.eclipse.kuksa.vsscore.annotation
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class VssDefinition
+annotation class VssModelGenerator
