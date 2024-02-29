@@ -55,6 +55,10 @@ internal class VssSpecificationSpecModel(
 ) : VssNode, SpecModel<VssSpecificationSpecModel> {
     var logger: KSPLogger? = null
 
+    private val stringTypeName = String::class.asTypeName()
+    private val vssNodeSetTypeName = Set::class.parameterizedBy(VssNode::class)
+    private val genericClassTypeName = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
+
     private val datatypeProperty: TypeName
         get() {
             return when (datatype) {
@@ -246,8 +250,12 @@ internal class VssSpecificationSpecModel(
         // Add primitive data types
         if (specification.className == className) {
             members.forEach { member ->
-                val primitiveDataTypeSpec = createInterfaceDataTypeSpec(member)
-                propertySpecs.add(primitiveDataTypeSpec)
+                when (member.returnType.asTypeName()) {
+                    stringTypeName -> createInterfaceDataTypeSpec(member)
+                    else -> null
+                }?.let { primitiveDataTypeSpec ->
+                    propertySpecs.add(primitiveDataTypeSpec)
+                }
             }
 
             return propertySpecs
@@ -290,19 +298,16 @@ internal class VssSpecificationSpecModel(
 
         val propertySpecs = mutableListOf<PropertySpec>()
 
-        val members = VssSpecification::class.declaredMemberProperties
-        val setTypeName = Set::class.parameterizedBy(VssSpecification::class)
-        val classTypeName = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
+        val members = VssNode::class.declaredMemberProperties
         members.forEach { member ->
             val memberName = member.name
-
-            val propertySpec: PropertySpec? = when (val memberType = member.returnType.asTypeName()) {
-                setTypeName -> createSetSpec(memberName, memberType)
-                classTypeName -> createParentSpec(memberName, memberType)
+            when (val memberType = member.returnType.asTypeName()) {
+                vssNodeSetTypeName -> createSetSpec(memberName, memberType)
+                genericClassTypeName -> createParentSpec(memberName, memberType)
                 else -> null
+            }?.let { propertySpec ->
+                propertySpecs.add(propertySpec)
             }
-
-            propertySpec?.let { propertySpecs.add(it) }
         }
 
         return propertySpecs
