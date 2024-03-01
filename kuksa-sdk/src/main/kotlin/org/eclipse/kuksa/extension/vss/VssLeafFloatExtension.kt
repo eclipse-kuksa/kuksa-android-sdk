@@ -16,9 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.kuksa.extension.vssProperty
+package org.eclipse.kuksa.extension.vss
 
-import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 
 /**
@@ -27,8 +26,8 @@ import org.eclipse.kuksa.vsscore.model.VssLeaf
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Double>.plusAssign(value: Number) {
-    copy(this.value + value.toDouble())
+operator fun VssLeaf<Float>.plusAssign(value: Number) {
+    copy(this.value + value.toFloat())
 }
 
 /**
@@ -37,8 +36,8 @@ operator fun VssLeaf<Double>.plusAssign(value: Number) {
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Double>.plus(value: Number): VssLeaf<Double> {
-    return copy(this.value + value.toDouble())
+operator fun VssLeaf<Float>.plus(value: Number): VssLeaf<Float> {
+    return copy(this.value + value.toFloat())
 }
 
 /**
@@ -47,8 +46,8 @@ operator fun VssLeaf<Double>.plus(value: Number): VssLeaf<Double> {
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Double>.minusAssign(value: Number) {
-    copy(this.value - value.toDouble())
+operator fun VssLeaf<Float>.minusAssign(value: Number) {
+    copy(this.value - +value.toFloat())
 }
 
 /**
@@ -57,8 +56,8 @@ operator fun VssLeaf<Double>.minusAssign(value: Number) {
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Double>.minus(value: Number): VssLeaf<Double> {
-    return copy(this.value - value.toDouble())
+operator fun VssLeaf<Float>.minus(value: Number): VssLeaf<Float> {
+    return copy(this.value - +value.toFloat())
 }
 
 /**
@@ -68,8 +67,8 @@ operator fun VssLeaf<Double>.minus(value: Number): VssLeaf<Double> {
  * @throws [NoSuchElementException] if no copy method was found for the class.
  * @throws [ArithmeticException] if divided by zero.
  */
-operator fun VssLeaf<Double>.divAssign(value: Number) {
-    copy(this.value / value.toDouble())
+operator fun VssLeaf<Float>.divAssign(value: Number) {
+    copy(this.value / +value.toFloat())
 }
 
 /**
@@ -79,26 +78,26 @@ operator fun VssLeaf<Double>.divAssign(value: Number) {
  * @throws [NoSuchElementException] if no copy method was found for the class.
  * @throws [ArithmeticException] if divided by zero.
  */
-operator fun VssLeaf<Double>.div(value: Number): VssLeaf<Double> {
-    return copy(this.value / value.toDouble())
+operator fun VssLeaf<Float>.div(value: Number): VssLeaf<Float> {
+    return copy(this.value / +value.toFloat())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by multiplying [value] to it.
+ * Convenience operator for [copy] which updates the [VssLeaf.value] by dividing [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Double>.timesAssign(value: Number) {
-    copy(this.value * value.toDouble())
+operator fun VssLeaf<Float>.timesAssign(value: Number) {
+    copy(this.value * +value.toFloat())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by multiplying [value] to it.
+ * Convenience operator for [copy] which updates the [VssLeaf.value] by dividing [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Double>.times(value: Number): VssLeaf<Double> {
-    return copy(this.value * value.toDouble())
+operator fun VssLeaf<Float>.times(value: Number): VssLeaf<Float> {
+    return copy(this.value * +value.toFloat())
 }

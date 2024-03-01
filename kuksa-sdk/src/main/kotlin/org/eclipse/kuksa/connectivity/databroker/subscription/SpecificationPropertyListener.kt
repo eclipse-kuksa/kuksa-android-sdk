@@ -20,7 +20,7 @@ package org.eclipse.kuksa.connectivity.databroker.subscription
 
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
-import org.eclipse.kuksa.extension.copy
+import org.eclipse.kuksa.extension.vss.copy
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.vsscore.model.VssNode
 

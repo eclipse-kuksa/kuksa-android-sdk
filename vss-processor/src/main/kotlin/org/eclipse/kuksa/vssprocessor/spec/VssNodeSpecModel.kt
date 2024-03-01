@@ -124,10 +124,10 @@ internal class VssNodeSpecModel(
 
             // Final leafs should ONLY implement the vss property interface
             superInterfaces.clear()
-            val vssPropertyInterface = VssLeaf::class
+            val vssLeafInterface = VssLeaf::class
                 .asTypeName()
                 .plusParameter(datatypeProperty)
-            superInterfaces.add(vssPropertyInterface)
+            superInterfaces.add(vssLeafInterface)
         }
 
         val propertySpec = createVssNodeSpecs(className, packageName = packageName)

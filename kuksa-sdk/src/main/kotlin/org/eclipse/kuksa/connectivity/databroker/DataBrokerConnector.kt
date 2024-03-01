@@ -25,9 +25,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.eclipse.kuksa.model.TimeoutConfig
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.extension.TAG
+import org.eclipse.kuksa.model.TimeoutConfig
 
 /**
  * The DataBrokerConnector is used to establish a successful connection to the DataBroker. The communication takes
@@ -38,7 +38,6 @@ class DataBrokerConnector @JvmOverloads constructor(
     private val jsonWebToken: JsonWebToken? = null,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
-
     /**
      * Configuration to be used during connection.
      */

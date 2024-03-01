@@ -30,23 +30,23 @@ import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.heritage
 
 class VssViewModel : ViewModel() {
-    var onGetSpecification: (specification: VssNode) -> Unit = { }
-    var onSubscribeSpecification: (specification: VssNode) -> Unit = { }
-    var onUnsubscribeSpecification: (specification: VssNode) -> Unit = { }
+    var onGetNode: (node: VssNode) -> Unit = { }
+    var onSubscribeNode: (node: VssNode) -> Unit = { }
+    var onUnsubscribeNode: (node: VssNode) -> Unit = { }
 
-    var subscribedSpecifications = mutableStateListOf<VssNode>()
+    var subscribedNodes = mutableStateListOf<VssNode>()
 
     val isSubscribed by derivedStateOf {
-        subscribedSpecifications.contains(specification)
+        subscribedNodes.contains(node)
     }
 
     private val vssVehicle = VssVehicle()
-    val specifications = listOf(vssVehicle) + vssVehicle.heritage
+    val vssNodes = listOf(vssVehicle) + vssVehicle.heritage
 
-    var specification: VssNode by mutableStateOf(vssVehicle)
+    var node: VssNode by mutableStateOf(vssVehicle)
         private set
 
-    fun updateSpecification(specification: VssNode) {
-        this.specification = specification
+    fun updateNode(node: VssNode) {
+        this.node = node
     }
 }

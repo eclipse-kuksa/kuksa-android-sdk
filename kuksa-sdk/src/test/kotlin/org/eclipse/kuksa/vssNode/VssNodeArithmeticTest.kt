@@ -22,10 +22,10 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
-import org.eclipse.kuksa.extension.vssProperty.div
-import org.eclipse.kuksa.extension.vssProperty.minus
-import org.eclipse.kuksa.extension.vssProperty.plus
-import org.eclipse.kuksa.extension.vssProperty.times
+import org.eclipse.kuksa.extension.vss.div
+import org.eclipse.kuksa.extension.vss.minus
+import org.eclipse.kuksa.extension.vss.plus
+import org.eclipse.kuksa.extension.vss.times
 import org.eclipse.kuksa.test.kotest.Unit
 
 class VssNodeArithmeticTest : BehaviorSpec({

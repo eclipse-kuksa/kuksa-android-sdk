@@ -26,13 +26,13 @@ import io.grpc.Grpc
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import kotlinx.coroutines.launch
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
-import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
@@ -159,8 +159,8 @@ class KotlinActivity : AppCompatActivity() {
         dataBrokerConnection?.subscribe(property, propertyListener)
     }
 
-    // region: Specifications
-    fun fetchSpecification() {
+    // region: VSS generated models
+    fun fetchNode() {
         lifecycleScope.launch {
             try {
                 val vssSpeed = VssVehicle.VssSpeed()
@@ -172,19 +172,19 @@ class KotlinActivity : AppCompatActivity() {
         }
     }
 
-    fun updateSpecification() {
+    fun updateNode() {
         lifecycleScope.launch {
             val vssSpeed = VssVehicle.VssSpeed(value = 100f)
             dataBrokerConnection?.update(vssSpeed, listOf(Types.Field.FIELD_VALUE))
         }
     }
 
-    fun subscribeSpecification() {
+    fun subscribeNode() {
         val vssSpeed = VssVehicle.VssSpeed(value = 100f)
         dataBrokerConnection?.subscribe(
             vssSpeed,
             listOf(Types.Field.FIELD_VALUE),
-            listener = object : VssNodeListener<VssVehicle.VssSpeed> {
+            object : VssNodeListener<VssVehicle.VssSpeed> {
                 override fun onNodeChanged(vssNode: VssVehicle.VssSpeed) {
                     val speed = vssSpeed.value
                 }

@@ -16,9 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.kuksa.extension.vssProperty
+package org.eclipse.kuksa.extension.vss
 
-import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 
 /**
@@ -27,8 +26,8 @@ import org.eclipse.kuksa.vsscore.model.VssLeaf
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Float>.plusAssign(value: Number) {
-    copy(this.value + value.toFloat())
+operator fun VssLeaf<Long>.plusAssign(value: Number) {
+    copy(this.value + value.toLong())
 }
 
 /**
@@ -37,8 +36,8 @@ operator fun VssLeaf<Float>.plusAssign(value: Number) {
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Float>.plus(value: Number): VssLeaf<Float> {
-    return copy(this.value + value.toFloat())
+operator fun VssLeaf<Long>.plus(value: Number): VssLeaf<Long> {
+    return copy(this.value + value.toLong())
 }
 
 /**
@@ -47,8 +46,8 @@ operator fun VssLeaf<Float>.plus(value: Number): VssLeaf<Float> {
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Float>.minusAssign(value: Number) {
-    copy(this.value - +value.toFloat())
+operator fun VssLeaf<Long>.minusAssign(value: Number) {
+    copy(this.value - value.toLong())
 }
 
 /**
@@ -57,8 +56,8 @@ operator fun VssLeaf<Float>.minusAssign(value: Number) {
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Float>.minus(value: Number): VssLeaf<Float> {
-    return copy(this.value - +value.toFloat())
+operator fun VssLeaf<Long>.minus(value: Number): VssLeaf<Long> {
+    return copy(this.value - value.toLong())
 }
 
 /**
@@ -68,8 +67,8 @@ operator fun VssLeaf<Float>.minus(value: Number): VssLeaf<Float> {
  * @throws [NoSuchElementException] if no copy method was found for the class.
  * @throws [ArithmeticException] if divided by zero.
  */
-operator fun VssLeaf<Float>.divAssign(value: Number) {
-    copy(this.value / +value.toFloat())
+operator fun VssLeaf<Long>.divAssign(value: Number) {
+    copy(this.value / value.toLong())
 }
 
 /**
@@ -79,26 +78,26 @@ operator fun VssLeaf<Float>.divAssign(value: Number) {
  * @throws [NoSuchElementException] if no copy method was found for the class.
  * @throws [ArithmeticException] if divided by zero.
  */
-operator fun VssLeaf<Float>.div(value: Number): VssLeaf<Float> {
-    return copy(this.value / +value.toFloat())
+operator fun VssLeaf<Long>.div(value: Number): VssLeaf<Long> {
+    return copy(this.value / value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by dividing [value] to it.
+ * Convenience operator for [copy] which updates the [VssLeaf.value] by multiplying [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Float>.timesAssign(value: Number) {
-    copy(this.value * +value.toFloat())
+operator fun VssLeaf<Long>.timesAssign(value: Number) {
+    copy(this.value * value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by dividing [value] to it.
+ * Convenience operator for [copy] which updates the [VssLeaf.value] by multiplying [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Float>.times(value: Number): VssLeaf<Float> {
-    return copy(this.value * +value.toFloat())
+operator fun VssLeaf<Long>.times(value: Number): VssLeaf<Long> {
+    return copy(this.value * value.toLong())
 }

@@ -22,7 +22,7 @@ import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
-import org.eclipse.kuksa.vsscore.model.vssProperties
+import org.eclipse.kuksa.vsscore.model.vssLeafs
 
 /**
  * Finds all [VssLeaf] heirs for the [VssNode] and converts them into a collection of [Property].
@@ -30,6 +30,6 @@ import org.eclipse.kuksa.vsscore.model.vssProperties
 fun VssNode.createProperties(
     vararg fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
 ): Collection<Property> {
-    return vssProperties
+    return vssLeafs
         .map { Property(it.vssPath, fields.toSet()) }
 }

@@ -14,11 +14,11 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.extension
+package org.eclipse.kuksa.extension.vss
 
+import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase.*
@@ -51,7 +51,7 @@ import kotlin.reflect.full.memberProperties
 // https://detekt.dev/docs/rules/performance/
 @Suppress("performance:SpreadOperator")
 fun <T : VssNode> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssNode): T {
-    if (generation == changedHeritage.size) { // Reached the end, use the changed VssProperty
+    if (generation == changedHeritage.size) { // Reached the end, use the changed [VssLeaf]
         return this
     }
 
@@ -63,9 +63,9 @@ fun <T : VssNode> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssNod
             .ifEmpty { changedHeritage }
     }
 
-    val childSpecification = heritageLine[generation]
-    val childCopy = childSpecification.deepCopy(generation + 1, *heritageLine)
-    val parameterNameToChild = mapOf(childSpecification.variableName to childCopy)
+    val childNode = heritageLine[generation]
+    val childCopy = childNode.deepCopy(generation + 1, *heritageLine)
+    val parameterNameToChild = mapOf(childNode.variableName to childCopy)
 
     return copy(parameterNameToChild)
 }
@@ -154,16 +154,16 @@ fun <T : VssNode> T.copy(
     consideredHeritage: Collection<VssNode> = heritage,
 ): T {
     val vssNodes = consideredHeritage + this
-    val vssProperty = vssNodes
+    val vssNode = vssNodes
         .filterIsInstance<VssLeaf<*>>()
         .find { it.vssPath == vssPath } ?: return this
 
-    val updatedVssProperty = vssProperty.copy(updatedValue)
+    val updatedVssNode = vssNode.copy(updatedValue)
 
     // Same property with no heirs, no deep copy is needed
-    if (this.vssPath == updatedVssProperty.vssPath) return updatedVssProperty as T
+    if (this.vssPath == updatedVssNode.vssPath) return updatedVssNode as T
 
-    return deepCopy(0, updatedVssProperty)
+    return deepCopy(0, updatedVssNode)
 }
 
 // region Operators

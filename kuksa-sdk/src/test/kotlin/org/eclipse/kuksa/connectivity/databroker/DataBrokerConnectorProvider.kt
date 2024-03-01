@@ -23,8 +23,8 @@ import io.grpc.Grpc
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
-import org.eclipse.kuksa.model.TimeoutConfig
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
+import org.eclipse.kuksa.model.TimeoutConfig
 import java.io.IOException
 import java.io.InputStream
 

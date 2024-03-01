@@ -22,13 +22,13 @@ package org.eclipse.kuksa.testapp.databroker
 import android.content.Context
 import androidx.lifecycle.LifecycleCoroutineScope
 import kotlinx.coroutines.launch
-import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -85,10 +85,10 @@ class KotlinDataBrokerEngine(
         }
     }
 
-    override fun <T : VssNode> fetch(specification: T, callback: CoroutineCallback<T>) {
+    override fun <T : VssNode> fetch(vssNode: T, callback: CoroutineCallback<T>) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.fetch(specification) ?: return@launch
+                val response = dataBrokerConnection?.fetch(vssNode) ?: return@launch
                 callback.onSuccess(response)
             } catch (e: DataBrokerException) {
                 callback.onError(e)
@@ -116,19 +116,19 @@ class KotlinDataBrokerEngine(
     }
 
     override fun <T : VssNode> subscribe(
-        specification: T,
-        specificationListener: VssNodeListener<T>,
+        vssNode: T,
+        vssNodeListener: VssNodeListener<T>,
     ) {
         lifecycleScope.launch {
-            dataBrokerConnection?.subscribe(specification, listener = specificationListener)
+            dataBrokerConnection?.subscribe(vssNode, listener = vssNodeListener)
         }
     }
 
     override fun <T : VssNode> unsubscribe(
-        specification: T,
-        specificationListener: VssNodeListener<T>,
+        vssNode: T,
+        vssNodeListener: VssNodeListener<T>,
     ) {
-        dataBrokerConnection?.unsubscribe(specification, listener = specificationListener)
+        dataBrokerConnection?.unsubscribe(vssNode, listener = vssNodeListener)
     }
 
     override fun disconnect() {

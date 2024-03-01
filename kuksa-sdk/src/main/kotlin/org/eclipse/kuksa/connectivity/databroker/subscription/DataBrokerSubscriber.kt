@@ -19,10 +19,10 @@
 package org.eclipse.kuksa.connectivity.databroker.subscription
 
 import android.util.Log
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
-import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
@@ -30,14 +30,15 @@ import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
 
 /**
- * Creates [DataBrokerSubscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
- * If no [DataBrokerSubscription] for a given vssPath and field does exist the DataBrokerSubscriber will create a new one. If it
- * was already requested before, the same [DataBrokerSubscription] will be re-used.
- * When the last [PropertyListener] of a [DataBrokerSubscription] unsubscribes the [DataBrokerSubscription] will be automatically canceled
- * and removed from the active [DataBrokerSubscription]s.
+ * Creates [DataBrokerSubscription]s to the DataBroker to get notified about changes on the underlying vssPaths and
+ * fields.If no [DataBrokerSubscription] for a given vssPath and field does exist the DataBrokerSubscriber will create
+ * a new one. If it was already requested before, the same [DataBrokerSubscription] will be re-used. When the last
+ * [PropertyListener] of a [DataBrokerSubscription] unsubscribes the [DataBrokerSubscription] will be automatically
+ * canceled and removed from the active [DataBrokerSubscription]s.
  */
 internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBrokerTransporter) {
-    private val subscriptions = mutableMapOf<String, DataBrokerSubscription>() // String(Subscription#identifier) -> Subscription
+    private val subscriptions =
+        mutableMapOf<String, DataBrokerSubscription>() // String(Subscription#identifier) -> Subscription
 
     /**
      * Checks if the SDK is already subscribed to the corresponding [vssPath] and [field], if the SDK is already
@@ -79,36 +80,36 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
      * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
      * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
      * application will be notified about any changes to every subscribed [VssLeaf]. The [field] can be used to
-     * subscribe to different information of the [specification]. The default for the [field] parameter is a single
+     * subscribe to different information of the [node]. The default for the [field] parameter is a single
      * [Types.Field.FIELD_VALUE] entry.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     fun <T : VssNode> subscribe(
-        specification: T,
+        node: T,
         field: Field = Field.FIELD_VALUE,
         listener: VssNodeListener<T>,
     ) {
-        val vssPath = specification.vssPath
+        val vssPath = node.vssPath
 
-        val specificationPropertyListener = SpecificationPropertyListener(specification, listener)
+        val specificationPropertyListener = SpecificationPropertyListener(node, listener)
         subscribe(vssPath, field, specificationPropertyListener)
     }
 
     /**
-     * Removes the specified [listener] for the specified [specification] and [field] from an already existing
+     * Removes the specified [listener] for the specified [node] and [field] from an already existing
      * Subscription to the DataBroker. If the given Subscription has no more Listeners after unsubscribing it will be
-     * canceled and removed. Gracefully ignores invalid input, e.g. when a [specification] and [field] of a
+     * canceled and removed. Gracefully ignores invalid input, e.g. when a [node] and [field] of a
      * non-subscribed property is provided.
      */
     fun <T : VssNode> unsubscribe(
-        specification: T,
+        node: T,
         field: Field = Field.FIELD_VALUE,
         listener: VssNodeListener<T>,
     ) {
-        val vssPath = specification.vssPath
+        val vssPath = node.vssPath
 
-        val specificationPropertyListener = SpecificationPropertyListener(specification, listener)
+        val specificationPropertyListener = SpecificationPropertyListener(node, listener)
         unsubscribe(vssPath, field, specificationPropertyListener)
     }
 

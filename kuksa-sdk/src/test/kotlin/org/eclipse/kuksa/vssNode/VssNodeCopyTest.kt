@@ -24,10 +24,10 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeSameInstanceAs
-import org.eclipse.kuksa.extension.copy
-import org.eclipse.kuksa.extension.deepCopy
-import org.eclipse.kuksa.extension.invoke
-import org.eclipse.kuksa.extension.vssProperty.not
+import org.eclipse.kuksa.extension.vss.copy
+import org.eclipse.kuksa.extension.vss.deepCopy
+import org.eclipse.kuksa.extension.vss.invoke
+import org.eclipse.kuksa.extension.vss.not
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Unit
 import org.eclipse.kuksa.vsscore.model.VssLeaf

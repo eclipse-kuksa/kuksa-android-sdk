@@ -22,47 +22,53 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import java.io.File
 
-class YamlDefinitionParserTest : BehaviorSpec({
+class YamlVssParserTest : BehaviorSpec({
     given("A parser for yaml files") {
         val parser = YamlVssParser()
         val classLoader = parser::class.java.classLoader!!
 
-        and("a specification file of version 4") {
-            val resourceUrl = classLoader.getResource("vss_rel_4.0.yaml")!!
-            val specificationFile = File(resourceUrl.path)
+        and("a VSS file of version 4") {
+            val resourceUrl = classLoader.getResource(VALID_VSS_FILE_NAME)!!
+            val vssFile = File(resourceUrl.path)
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseNodes(specificationFile)
+                val parsedNodes = parser.parseNodes(vssFile)
 
-                then("the correct number of specification models should be parsed") {
-                    // These are exactly the specifications defined in the 4.0 file
-                    parsedSpecifications.size shouldBe 1197
+                then("the correct number of VSS models should be parsed") {
+                    // These are exactly the VSS models defined in the 4.0 file
+                    parsedNodes.size shouldBe 1197
                 }
             }
         }
         and("an incompatible yaml file") {
-            val incompatibleResourceUrl = classLoader.getResource("incompatible.yaml")!!
+            val incompatibleResourceUrl = classLoader.getResource(INCOMPATIBLE_VSS_FILE_NAME)!!
             val incompatibleFile = File(incompatibleResourceUrl.path)
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseNodes(incompatibleFile)
+                val parsedNodes = parser.parseNodes(incompatibleFile)
 
                 then("no entries should be returned") {
-                    parsedSpecifications.size shouldBe 0
+                    parsedNodes.size shouldBe 0
                 }
             }
         }
         and("an invalid yaml file") {
-            val invalidResourceUrl = classLoader.getResource("invalid.yaml")!!
+            val invalidResourceUrl = classLoader.getResource(INVALID_VSS_FILE_NAME)!!
             val invalidFile = File(invalidResourceUrl.path)
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseNodes(invalidFile)
+                val parsedNodes = parser.parseNodes(invalidFile)
 
                 then("no entries should be returned") {
-                    parsedSpecifications.size shouldBe 0
+                    parsedNodes.size shouldBe 0
                 }
             }
         }
     }
-})
+}) {
+    companion object {
+        private const val VALID_VSS_FILE_NAME = "vss_rel_4.0.yaml"
+        private const val INVALID_VSS_FILE_NAME = "invalid.yaml"
+        private const val INCOMPATIBLE_VSS_FILE_NAME = "incompatible.yaml"
+    }
+}

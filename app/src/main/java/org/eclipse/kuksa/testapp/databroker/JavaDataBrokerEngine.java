@@ -101,14 +101,14 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
     @Override
     public <T extends VssNode> void fetch(
-        @NonNull T specification,
+        @NonNull T vssNode,
         @NonNull CoroutineCallback<T> callback
     ) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.fetch(specification, callback);
+        dataBrokerConnection.fetch(vssNode, callback);
     }
 
     @Override
@@ -135,8 +135,8 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
     @Override
     public <T extends VssNode> void subscribe(
-        @NonNull T specification,
-        @NonNull VssNodeListener<T> specificationListener
+        @NonNull T vssNode,
+        @NonNull VssNodeListener<T> vssNodeListener
     ) {
         if (dataBrokerConnection == null) {
             return;
@@ -148,13 +148,13 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             }
         };
 
-        dataBrokerConnection.subscribe(specification, fields, specificationListener);
+        dataBrokerConnection.subscribe(vssNode, fields, vssNodeListener);
     }
 
     @Override
     public <T extends VssNode> void unsubscribe(
-        @NonNull T specification,
-        @NonNull VssNodeListener<T> specificationListener
+        @NonNull T vssNode,
+        @NonNull VssNodeListener<T> vssNodeListener
     ) {
         if (dataBrokerConnection == null) {
             return;
@@ -166,7 +166,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             }
         };
 
-        dataBrokerConnection.unsubscribe(specification, fields, specificationListener);
+        dataBrokerConnection.unsubscribe(vssNode, fields, vssNodeListener);
     }
 
     public void disconnect() {

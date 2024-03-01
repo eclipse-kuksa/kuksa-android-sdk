@@ -24,14 +24,14 @@ import io.grpc.ManagedChannel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
-import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.connectivity.databroker.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.extension.TAG
-import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.datapoint
+import org.eclipse.kuksa.extension.vss.copy
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
@@ -42,7 +42,7 @@ import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.heritage
-import org.eclipse.kuksa.vsscore.model.vssProperties
+import org.eclipse.kuksa.vsscore.model.vssLeafs
 import kotlin.properties.Delegates
 
 /**
@@ -228,9 +228,9 @@ class DataBrokerConnection internal constructor(
     ): Collection<SetResponse> {
         val responses = mutableListOf<SetResponse>()
 
-        vssNode.vssProperties.forEach { vssProperty ->
-            val property = Property(vssProperty.vssPath, fields)
-            val response = update(property, vssProperty.datapoint)
+        vssNode.vssLeafs.forEach { vssLeaf ->
+            val property = Property(vssLeaf.vssPath, fields)
+            val response = update(property, vssLeaf.datapoint)
             responses.add(response)
         }
 

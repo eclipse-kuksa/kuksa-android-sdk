@@ -152,7 +152,7 @@ void subscribe() {
 }
 ```
 
-## Specifications Symbol Processing
+## VSS Symbol Processing
 
 The generic nature of using the `Property` API will result into an information loss of the type which can be seen in 
 the `subscribe` example. You may choose to reuse the same listener for multiple properties. Then it requires an additional check 
@@ -178,7 +178,7 @@ vssProcessor {
 }
 ```
 
-Use the [`VssModelGenerator`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssModelGenerator.kt) annotation and provide the path to the specification file (Inside the assets folder).
+Use the [`VssModelGenerator`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssModelGenerator.kt) annotation and provide the path to the VSS file (Inside the assets folder).
 Doing so will generate a complete tree of Kotlin models which can be used in combination with the SDK API. This way you can
 work with safe types and the SDK takes care of all the model parsing for you. There is also a whole set of 
 convenience operators and extension methods to work with to manipulate the tree data. See the `VssNode` class documentation for this.
@@ -188,10 +188,10 @@ convenience operators and extension methods to work with to manipulate the tree 
 class Activity
 ```
 > [!IMPORTANT]
-> Keep in mind to always synchronize the specification file between the client and the Databroker.
+> Keep in mind to always synchronize the VSS file between the client and the Databroker.
 
 
-*Example .yaml specification file*
+*Example .yaml VSS file*
 ```yaml
 Vehicle.Speed:
   datatype: float
@@ -206,7 +206,7 @@ Vehicle.Speed:
 ```kotlin
 data class VssSpeed @JvmOverloads constructor(
     override val `value`: Float = 0f,
-) : VssProperty<Float> {
+) : VssNode<Float> {
     override val comment: String
         get() = ""
 
@@ -230,7 +230,7 @@ data class VssSpeed @JvmOverloads constructor(
 }
 ```
 
-### Specification API
+### API for generated VSS models
 
 *Kotlin*
 ```kotlin
@@ -309,7 +309,7 @@ void subscribe() {
         Collections.singleton(Types.Field.FIELD_VALUE),
         new VssNodeListener<VssVehicle.VssSpeed>() {
             @Override
-            public void onSpecificationChanged(@NonNull VssVehicle.VssSpeed vssNode) {
+            public void onNodeChanged(@NonNull VssVehicle.VssSpeed vssNode) {
                 Float speed = vssNode.getValue();
             }
     

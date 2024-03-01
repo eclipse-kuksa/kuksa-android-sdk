@@ -20,11 +20,11 @@
 package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
-import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -47,7 +47,7 @@ interface DataBrokerEngine {
         callback: CoroutineCallback<GetResponse>,
     )
 
-    fun <T : VssNode> fetch(specification: T, callback: CoroutineCallback<T>)
+    fun <T : VssNode> fetch(vssNode: T, callback: CoroutineCallback<T>)
 
     fun update(
         property: Property,
@@ -60,13 +60,13 @@ interface DataBrokerEngine {
     fun unsubscribe(property: Property, propertyListener: PropertyListener)
 
     fun <T : VssNode> subscribe(
-        specification: T,
-        specificationListener: VssNodeListener<T>,
+        vssNode: T,
+        vssNodeListener: VssNodeListener<T>,
     )
 
     fun <T : VssNode> unsubscribe(
-        specification: T,
-        specificationListener: VssNodeListener<T>,
+        vssNode: T,
+        vssNodeListener: VssNodeListener<T>,
     )
 
     fun disconnect()

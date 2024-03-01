@@ -27,7 +27,7 @@ import org.eclipse.kuksa.proto.v1.Types.Field.FIELD_VALUE
  */
 data class Property(
     /**
-     * The VehicleSignalSpecification path.
+     * The VehicleSignalSpecification (VSS) path.
      */
     val vssPath: String,
 

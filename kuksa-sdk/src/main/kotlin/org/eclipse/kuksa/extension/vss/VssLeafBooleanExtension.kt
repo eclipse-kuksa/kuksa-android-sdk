@@ -16,9 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.kuksa.extension.vssProperty
+package org.eclipse.kuksa.extension.vss
 
-import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 
 /**

@@ -115,7 +115,7 @@ val VssNode.heritage: Collection<VssNode>
 /**
  * Finds the latest generation in the form of [VssLeaf] for the current [VssNode].
  */
-val VssNode.vssProperties: Collection<VssLeaf<*>>
+val VssNode.vssLeafs: Collection<VssLeaf<*>>
     get() = heritage
         .ifEmpty { setOf(this) }
         .filterIsInstance<VssLeaf<*>>()

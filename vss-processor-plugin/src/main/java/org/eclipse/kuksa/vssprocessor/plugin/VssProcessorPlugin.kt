@@ -54,7 +54,7 @@ internal constructor(objectFactory: ObjectFactory) {
 private val fileSeparator = File.separator
 
 /**
- * This Plugin searches for compatible specification files and copies them into an input folder for the
+ * This Plugin searches for compatible VSS files and copies them into an input folder for the
  * KSP VSS Processor. This is necessary because the Symbol Processor does not have access to the android assets folder.
  */
 class VssProcessorPlugin : Plugin<Project> {

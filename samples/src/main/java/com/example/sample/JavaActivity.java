@@ -194,7 +194,7 @@ public class JavaActivity extends AppCompatActivity {
     }
 
     // region: Specifications
-    public void fetchSpecification() {
+    public void fetchNode() {
         if (dataBrokerConnection == null) return;
 
         VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
@@ -217,7 +217,7 @@ public class JavaActivity extends AppCompatActivity {
         );
     }
 
-    public void updateSpecification() {
+    public void updateNode() {
         if (dataBrokerConnection == null) return;
 
         VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed(100f);
@@ -238,7 +238,7 @@ public class JavaActivity extends AppCompatActivity {
         );
     }
 
-    public void subscribeSpecification() {
+    public void subscribeNode() {
         if (dataBrokerConnection == null) return;
 
         VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();

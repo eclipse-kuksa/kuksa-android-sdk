@@ -23,7 +23,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -127,7 +126,7 @@ fun DataBrokerView(
                 if (connectionViewModel.isConnected) {
                     when (dataBrokerMode) {
                         DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
-                        DataBrokerMode.SPECIFICATION -> DataBrokerSpecifications(vssViewModel)
+                        DataBrokerMode.VSS_FILE -> DataBrokerVssNodes(vssViewModel)
                     }
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
@@ -187,8 +186,8 @@ private fun SettingsMenu(
         Row(
             modifier = Modifier
                 .clickable {
-                    val newMode = if (!topAppBarViewModel.isSpecificationModeEnabled) {
-                        DataBrokerMode.SPECIFICATION
+                    val newMode = if (!topAppBarViewModel.isVssFileModeEnabled) {
+                        DataBrokerMode.VSS_FILE
                     } else {
                         DataBrokerMode.VSS_PATH
                     }
@@ -197,10 +196,10 @@ private fun SettingsMenu(
                 .padding(horizontal = SettingsMenuPadding),
         ) {
             Checkbox(
-                checked = topAppBarViewModel.isSpecificationModeEnabled,
+                checked = topAppBarViewModel.isVssFileModeEnabled,
                 onCheckedChange = null,
             )
-            Text(text = "Specification Mode", modifier = Modifier.padding(start = SettingsMenuPadding))
+            Text(text = "VSS Mode", modifier = Modifier.padding(start = SettingsMenuPadding))
         }
     }
 }
@@ -234,9 +233,9 @@ private fun ConnectionStatusIcon(
 }
 
 @Composable
-fun DataBrokerSpecifications(viewModel: VssViewModel) {
+fun DataBrokerVssNodes(viewModel: VssViewModel) {
     Column {
-        Headline(name = "Specifications")
+        Headline(name = "VSS Nodes")
 
         val adapter = object : SuggestionAdapter<VssNode> {
             override fun toString(item: VssNode): String {
@@ -246,11 +245,11 @@ fun DataBrokerSpecifications(viewModel: VssViewModel) {
 
         SuggestionTextView(
             value = "Vehicle",
-            suggestions = viewModel.specifications,
+            suggestions = viewModel.vssNodes,
             adapter = adapter,
             onItemSelected = {
-                val specification = it ?: VssVehicle()
-                viewModel.updateSpecification(specification)
+                val vssNode = it ?: VssVehicle()
+                viewModel.updateNode(vssNode)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -263,7 +262,7 @@ fun DataBrokerSpecifications(viewModel: VssViewModel) {
         ) {
             Button(
                 onClick = {
-                    viewModel.onGetSpecification(viewModel.specification)
+                    viewModel.onGetNode(viewModel.node)
                 },
                 modifier = Modifier.requiredWidth(80.dp),
             ) {
@@ -271,15 +270,15 @@ fun DataBrokerSpecifications(viewModel: VssViewModel) {
             }
             if (viewModel.isSubscribed) {
                 Button(onClick = {
-                    viewModel.subscribedSpecifications.remove(viewModel.specification)
-                    viewModel.onUnsubscribeSpecification(viewModel.specification)
+                    viewModel.subscribedNodes.remove(viewModel.node)
+                    viewModel.onUnsubscribeNode(viewModel.node)
                 }) {
                     Text(text = "Unsubscribe")
                 }
             } else {
                 Button(onClick = {
-                    viewModel.subscribedSpecifications.add(viewModel.specification)
-                    viewModel.onSubscribeSpecification(viewModel.specification)
+                    viewModel.subscribedNodes.add(viewModel.node)
+                    viewModel.onSubscribeNode(viewModel.node)
                 }) {
                     Text(text = "Subscribe")
                 }

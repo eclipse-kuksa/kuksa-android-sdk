@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.connectivity.authentication.withAuthenticationInterceptor
+import org.eclipse.kuksa.connectivity.databroker.subscription.DataBrokerSubscription
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.applyDatapoint
 import org.eclipse.kuksa.proto.v1.KuksaValV1
@@ -36,7 +37,6 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.proto.v1.VALGrpc
-import org.eclipse.kuksa.connectivity.databroker.subscription.DataBrokerSubscription
 
 /**
  * Encapsulates the Protobuf-specific interactions with the DataBroker send over gRPC. Provides fetch, update and
@@ -134,8 +134,8 @@ internal class DataBrokerTransporter(
 
     /**
      * Sends a request to the DataBroker to subscribe to updates of the specified [vssPath] and [field].
-     * Returns a [DataBrokerSubscription] which can be used to register or unregister additional listeners or cancel / closing
-     * the subscription.
+     * Returns a [DataBrokerSubscription] which can be used to register or unregister additional listeners or
+     * cancel / closing the subscription.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */

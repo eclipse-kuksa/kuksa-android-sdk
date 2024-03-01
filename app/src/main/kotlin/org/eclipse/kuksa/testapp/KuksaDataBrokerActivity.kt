@@ -29,11 +29,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.extension.entriesMetadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property
@@ -108,13 +108,13 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
-    private val specificationListener = object : VssNodeListener<VssNode> {
+    private val vssNodeListener = object : VssNodeListener<VssNode> {
         override fun onNodeChanged(vssNode: VssNode) {
-            outputViewModel.addOutputEntry("Updated specification: $vssNode")
+            outputViewModel.addOutputEntry("Updated node: $vssNode")
         }
 
         override fun onError(throwable: Throwable) {
-            outputViewModel.addOutputEntry("Updated specification: ${throwable.message}")
+            outputViewModel.addOutputEntry("Updated node: ${throwable.message}")
         }
     }
 
@@ -186,16 +186,16 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             dataBrokerEngine.unsubscribe(property, propertyListener)
         }
 
-        vssViewModel.onSubscribeSpecification = { specification ->
-            dataBrokerEngine.subscribe(specification, specificationListener)
+        vssViewModel.onSubscribeNode = { vssNode ->
+            dataBrokerEngine.subscribe(vssNode, vssNodeListener)
         }
 
-        vssViewModel.onUnsubscribeSpecification = { specification ->
-            dataBrokerEngine.unsubscribe(specification, specificationListener)
+        vssViewModel.onUnsubscribeNode = { vssNode ->
+            dataBrokerEngine.unsubscribe(vssNode, vssNodeListener)
         }
 
-        vssViewModel.onGetSpecification = { specification ->
-            fetchSpecification(specification)
+        vssViewModel.onGetNode = { vssNode ->
+            fetchVssNode(vssNode)
         }
     }
 
@@ -304,17 +304,17 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
-    private fun fetchSpecification(specification: VssNode) {
+    private fun fetchVssNode(vssNode: VssNode) {
         dataBrokerEngine.fetch(
-            specification,
+            vssNode,
             object : CoroutineCallback<VssNode>() {
                 override fun onSuccess(result: VssNode?) {
-                    Log.d(TAG, "Fetched specification: $result")
-                    outputViewModel.addOutputEntry("Fetched specification: $result")
+                    Log.d(TAG, "Fetched node: $result")
+                    outputViewModel.addOutputEntry("Fetched node: $result")
                 }
 
                 override fun onError(error: Throwable) {
-                    outputViewModel.addOutputEntry("Could not fetch specification: ${error.message}")
+                    outputViewModel.addOutputEntry("Could not fetch node: ${error.message}")
                 }
             },
         )
