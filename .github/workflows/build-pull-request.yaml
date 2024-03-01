@@ -10,9 +10,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: "Run Docker Container of Databroker in detached mode"
-        run: docker run --pull=always --rm --publish 55556:55556/tcp --detach --name databroker ghcr.io/eclipse/kuksa.val/databroker:master --port 55556 --insecure
-
       - name: Setup Project
         uses: ./.github/actions/setup-project
 
@@ -23,6 +20,7 @@ jobs:
         run: ./gradlew ktlintCheck detekt
 
       - name: Upload Detekt Reports
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: detekt-reports
@@ -30,17 +28,8 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Run 'test' with Gradle Wrapper
-        run: ./gradlew test -Dkotest.tags="!CustomDatabroker"
-
-      - name: Upload Test Reports
-        uses: actions/upload-artifact@v3
+      - name: Execute Tests
+        uses: ./.github/actions/run-tests
         with:
-          name: test-reports
-          path: ${{ github.workspace }}/**/reports/tests/*/
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: "Stop Docker Container of Databroker"
-        if: always()
-        run: docker stop databroker
+          upload-test-reports: true
+          upload-code-coverage-reports: true

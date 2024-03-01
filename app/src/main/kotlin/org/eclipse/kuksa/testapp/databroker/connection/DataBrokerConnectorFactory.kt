@@ -45,7 +45,10 @@ class DataBrokerConnectorFactory {
             createInsecureManagedChannel(connectionInfo)
         }
 
-        val jsonWebToken = loadJsonWebToken(context, connectionInfo)
+        var jsonWebToken: JsonWebToken? = null
+        if (connectionInfo.isAuthenticationEnabled) {
+            jsonWebToken = loadJsonWebToken(context, connectionInfo.jwtUriPath)
+        }
 
         return DataBrokerConnector(managedChannel, jsonWebToken).apply {
             timeoutConfig = this@DataBrokerConnectorFactory.timeoutConfig
@@ -86,10 +89,8 @@ class DataBrokerConnectorFactory {
     }
 
     @Throws(IOException::class)
-    private fun loadJsonWebToken(context: Context, connectionInfo: ConnectionInfo): JsonWebToken? {
-        val isAuthenticationDisabled = !connectionInfo.isAuthenticationEnabled
-        val jwtUriPath = connectionInfo.jwtUriPath
-        if (isAuthenticationDisabled || jwtUriPath.isNullOrEmpty()) {
+    private fun loadJsonWebToken(context: Context, jwtUriPath: String?): JsonWebToken? {
+        if (jwtUriPath.isNullOrEmpty()) {
             return null
         }
 
