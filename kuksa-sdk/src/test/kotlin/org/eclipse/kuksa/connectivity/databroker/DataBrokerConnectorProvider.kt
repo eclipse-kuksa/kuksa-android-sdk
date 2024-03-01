@@ -14,19 +14,17 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.databroker
+package org.eclipse.kuksa.connectivity.databroker
 
 import io.grpc.ChannelCredentials
 import io.grpc.Grpc
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
-import org.eclipse.kuksa.DataBrokerConnector
-import org.eclipse.kuksa.TimeoutConfig
-import org.eclipse.kuksa.authentication.JsonWebToken
+import org.eclipse.kuksa.model.TimeoutConfig
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import java.io.IOException
 import java.io.InputStream
 

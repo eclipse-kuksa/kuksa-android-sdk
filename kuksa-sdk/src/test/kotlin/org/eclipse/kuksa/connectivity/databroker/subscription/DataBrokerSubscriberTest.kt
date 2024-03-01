@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.subscription
+package org.eclipse.kuksa.connectivity.databroker.subscription
 
 import io.kotest.assertions.nondeterministic.continually
 import io.kotest.assertions.nondeterministic.eventually
@@ -28,9 +27,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.delay
-import org.eclipse.kuksa.DataBrokerTransporter
-import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.extensions.updateRandomUint32Value
@@ -285,7 +284,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
     }
 
     given("An Instance of DataBrokerSubscriber with a mocked DataBrokerTransporter") {
-        val subscriptionMock = mockk<Subscription>(relaxed = true)
+        val subscriptionMock = mockk<DataBrokerSubscription>(relaxed = true)
         val dataBrokerTransporterMock = mockk<DataBrokerTransporter>(relaxed = true)
         val multiListener = MultiListener<PropertyListener>()
         every { dataBrokerTransporterMock.subscribe(any(), any()) } returns subscriptionMock

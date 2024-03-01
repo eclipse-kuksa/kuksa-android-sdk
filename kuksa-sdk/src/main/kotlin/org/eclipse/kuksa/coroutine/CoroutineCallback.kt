@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.coroutine
 
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext

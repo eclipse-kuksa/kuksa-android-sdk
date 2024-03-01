@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.connectivity.databroker
 
 import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
@@ -31,18 +30,16 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.vssNode.VssDriver
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
@@ -77,7 +74,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                     val random = Random(System.currentTimeMillis())
                     val newValue = random.nextFloat()
-                    val datapoint = Datapoint.newBuilder().setFloat(newValue).build()
+                    val datapoint = Types.Datapoint.newBuilder().setFloat(newValue).build()
                     dataBrokerConnection.update(property, datapoint)
 
                     then("The #onPropertyChanged callback is triggered with the new value") {
@@ -91,7 +88,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         val capturedDatapoint = entryUpdates[0].entry.value
                         val float = capturedDatapoint.float
 
-                        assertEquals(newValue, float, 0.0001f)
+                        Assertions.assertEquals(newValue, float, 0.0001f)
                     }
                 }
             }
@@ -102,7 +99,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val response = dataBrokerConnection.update(property, validDatapoint)
 
                 then("No error should appear") {
-                    assertFalse(response.hasError())
+                    Assertions.assertFalse(response.hasError())
                 }
 
                 and("When fetching it afterwards") {
@@ -112,7 +109,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         val entriesList = response1.entriesList
                         val first = entriesList.first()
                         val capturedValue = first.value
-                        assertEquals(validDatapoint.float, capturedValue.float, 0.0001F)
+                        Assertions.assertEquals(validDatapoint.float, capturedValue.float, 0.0001F)
                     }
                 }
             }
@@ -123,7 +120,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                 then("It should fail with an errorCode 400 (type mismatch)") {
                     val errorsList = response.errorsList
-                    assertTrue(errorsList.size > 0)
+                    Assertions.assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
 
@@ -137,7 +134,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         val entriesList = getResponse.entriesList
                         val first = entriesList.first()
                         val capturedValue = first.value
-                        assertEquals(validDatapoint.float, capturedValue.float, 0.0001F)
+                        Assertions.assertEquals(validDatapoint.float, capturedValue.float, 0.0001F)
                     }
                 }
             }
@@ -151,7 +148,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                 and("The initial value is different from the default for a child") {
                     val newHeartRateValue = 60
-                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+                    val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
 
                     dataBrokerConnection.update(property, datapoint)
 
@@ -176,7 +173,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                 and("The initial value is different from the default for a child") {
                     val newHeartRateValue = 70
-                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+                    val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
 
                     dataBrokerConnection.update(property, datapoint)
 
@@ -194,7 +191,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                 and("Any subscribed Property was changed") {
                     val newHeartRateValue = 50
-                    val datapoint = Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+                    val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
 
                     dataBrokerConnection.update(property, datapoint)
 
@@ -235,7 +232,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                 then("It should fail with an errorCode 404 (path not found)") {
                     val errorsList = response.errorsList
-                    assertTrue(errorsList.size > 0)
+                    Assertions.assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
 
@@ -247,12 +244,12 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val response = dataBrokerConnection.fetch(property)
 
                 then("The response should not contain any entries") {
-                    assertEquals(0, response.entriesList.size)
+                    Assertions.assertEquals(0, response.entriesList.size)
                 }
 
                 then("The response should contain an error with errorCode 404 (path not found)") {
                     val errorsList = response.errorsList
-                    assertTrue(errorsList.size > 0)
+                    Assertions.assertTrue(errorsList.size > 0)
 
                     val error = errorsList[0].error
 
@@ -292,16 +289,16 @@ class DataBrokerConnectionTest : BehaviorSpec({
     }
 })
 
-private fun createRandomFloatDatapoint(): Datapoint {
+private fun createRandomFloatDatapoint(): Types.Datapoint {
     val random = Random(System.currentTimeMillis())
     val newValue = random.nextFloat()
-    return Datapoint.newBuilder().setFloat(newValue).build()
+    return Types.Datapoint.newBuilder().setFloat(newValue).build()
 }
 
-private fun createRandomIntDatapoint(): Datapoint {
+private fun createRandomIntDatapoint(): Types.Datapoint {
     val random = Random(System.currentTimeMillis())
     val newValue = random.nextInt()
-    return Datapoint.newBuilder().setInt32(newValue).build()
+    return Types.Datapoint.newBuilder().setInt32(newValue).build()
 }
 
 private fun connectToDataBrokerBlocking(): DataBrokerConnection {

@@ -14,25 +14,18 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa
-
-import java.util.concurrent.TimeUnit
-import javax.annotation.concurrent.Immutable
+package org.eclipse.kuksa.connectivity.databroker
 
 /**
- * Configuration used to set timeout duration and unit.
+ * An Exception which will be thrown when there are problems with the connection to the DataBroker.
+ *
+ * @param message the detail message (which is saved for later retrieval by the {@link #getMessage()} method).
+ * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method).  (A {@code null}
+ * value is permitted, and indicates that the cause is nonexistent or unknown.)
  */
-@Immutable
-data class TimeoutConfig(
-    /**
-     * The Timeout Duration.
-     */
-    val timeout: Long = 10,
-    /**
-     * The TimeUnit of the set Timeout Duration.
-     */
-    val timeUnit: TimeUnit = TimeUnit.SECONDS,
-)
+class DataBrokerException(
+    override val message: String? = null,
+    override val cause: Throwable? = null,
+) : Exception(message, cause)

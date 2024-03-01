@@ -17,17 +17,22 @@
  *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.model
 
-import org.eclipse.kuksa.pattern.listener.Listener
+import java.util.concurrent.TimeUnit
+import javax.annotation.concurrent.Immutable
 
 /**
- * The [DisconnectListener] can be registered to [DataBrokerConnection.disconnectListeners]
- * When registered it will notify about manual or unexpected connection disconnects from the DataBroker.
+ * Configuration used to set timeout duration and unit.
  */
-fun interface DisconnectListener : Listener {
+@Immutable
+data class TimeoutConfig(
     /**
-     * Will be triggered, when the connection to the DataBroker was closed manually or unexpectedly.
+     * The Timeout Duration.
      */
-    fun onDisconnect()
-}
+    val timeout: Long = 10,
+    /**
+     * The TimeUnit of the set Timeout Duration.
+     */
+    val timeUnit: TimeUnit = TimeUnit.SECONDS,
+)

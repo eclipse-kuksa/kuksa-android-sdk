@@ -14,16 +14,15 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.subscription
+package org.eclipse.kuksa.connectivity.databroker.subscription
 
 import android.util.Log
-import org.eclipse.kuksa.DataBrokerException
-import org.eclipse.kuksa.DataBrokerTransporter
-import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
@@ -31,14 +30,14 @@ import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
 
 /**
- * Creates [Subscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
- * If no [Subscription] for a given vssPath and field does exist the DataBrokerSubscriber will create a new one. If it
- * was already requested before, the same [Subscription] will be re-used.
- * When the last [PropertyListener] of a [Subscription] unsubscribes the [Subscription] will be automatically canceled
- * and removed from the active [Subscription]s.
+ * Creates [DataBrokerSubscription]s to the DataBroker to get notified about changes on the underlying vssPaths and fields.
+ * If no [DataBrokerSubscription] for a given vssPath and field does exist the DataBrokerSubscriber will create a new one. If it
+ * was already requested before, the same [DataBrokerSubscription] will be re-used.
+ * When the last [PropertyListener] of a [DataBrokerSubscription] unsubscribes the [DataBrokerSubscription] will be automatically canceled
+ * and removed from the active [DataBrokerSubscription]s.
  */
 internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBrokerTransporter) {
-    private val subscriptions = mutableMapOf<String, Subscription>() // String(Subscription#identifier) -> Subscription
+    private val subscriptions = mutableMapOf<String, DataBrokerSubscription>() // String(Subscription#identifier) -> Subscription
 
     /**
      * Checks if the SDK is already subscribed to the corresponding [vssPath] and [field], if the SDK is already

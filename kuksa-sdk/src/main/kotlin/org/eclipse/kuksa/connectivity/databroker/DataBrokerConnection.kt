@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.connectivity.databroker
 
 import android.util.Log
 import io.grpc.ConnectivityState
@@ -25,7 +24,11 @@ import io.grpc.ManagedChannel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.eclipse.kuksa.authentication.JsonWebToken
+import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
+import org.eclipse.kuksa.connectivity.databroker.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.extension.datapoint
@@ -36,7 +39,6 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Field
-import org.eclipse.kuksa.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.heritage

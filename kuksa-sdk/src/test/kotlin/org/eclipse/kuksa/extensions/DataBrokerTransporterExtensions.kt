@@ -20,7 +20,7 @@
 package org.eclipse.kuksa.extensions
 
 import io.kotest.assertions.fail
-import org.eclipse.kuksa.DataBrokerTransporter
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
 import org.eclipse.kuksa.proto.v1.Types
 import kotlin.random.Random
 

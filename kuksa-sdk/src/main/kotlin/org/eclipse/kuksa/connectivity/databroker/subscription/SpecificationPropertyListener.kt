@@ -14,13 +14,12 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.subscription
+package org.eclipse.kuksa.connectivity.databroker.subscription
 
-import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.vsscore.model.VssNode

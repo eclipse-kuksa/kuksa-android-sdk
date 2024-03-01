@@ -14,19 +14,20 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.connectivity.databroker.listener
+
+import org.eclipse.kuksa.pattern.listener.Listener
 
 /**
- * An Exception which will be thrown when there are problems with the connection to the DataBroker.
- *
- * @param message the detail message (which is saved for later retrieval by the {@link #getMessage()} method).
- * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method).  (A {@code null}
- * value is permitted, and indicates that the cause is nonexistent or unknown.)
+ * The [DisconnectListener] can be registered to
+ * [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.disconnectListeners]
+ * When registered it will notify about manual or unexpected connection disconnects from the DataBroker.
  */
-class DataBrokerException(
-    override val message: String? = null,
-    override val cause: Throwable? = null,
-) : Exception(message, cause)
+fun interface DisconnectListener : Listener {
+    /**
+     * Will be triggered, when the connection to the DataBroker was closed manually or unexpectedly.
+     */
+    fun onDisconnect()
+}

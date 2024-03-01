@@ -23,12 +23,12 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import org.eclipse.kuksa.CoroutineCallback;
-import org.eclipse.kuksa.DataBrokerConnection;
-import org.eclipse.kuksa.DataBrokerConnector;
-import org.eclipse.kuksa.DisconnectListener;
-import org.eclipse.kuksa.PropertyListener;
-import org.eclipse.kuksa.VssNodeListener;
+import org.eclipse.kuksa.coroutine.CoroutineCallback;
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection;
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector;
+import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener;
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener;
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener;
 import org.eclipse.kuksa.model.Property;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;

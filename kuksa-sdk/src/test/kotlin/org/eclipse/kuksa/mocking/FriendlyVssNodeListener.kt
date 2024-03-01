@@ -19,7 +19,7 @@
 
 package org.eclipse.kuksa.mocking
 
-import org.eclipse.kuksa.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.vsscore.model.VssNode
 
 class FriendlyVssNodeListener<T : VssNode> : VssNodeListener<T> {

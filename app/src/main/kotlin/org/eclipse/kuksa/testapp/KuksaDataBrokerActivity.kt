@@ -29,11 +29,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import org.eclipse.kuksa.CoroutineCallback
-import org.eclipse.kuksa.DataBrokerConnection
-import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssNodeListener
+import org.eclipse.kuksa.coroutine.CoroutineCallback
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.extension.entriesMetadata
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.model.Property

@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.connectivity.databroker
 
 import android.util.Log
 import io.grpc.ConnectivityState
@@ -26,7 +25,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.eclipse.kuksa.authentication.JsonWebToken
+import org.eclipse.kuksa.model.TimeoutConfig
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.extension.TAG
 
 /**

@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.databroker
+package org.eclipse.kuksa.connectivity.databroker
 
 import java.util.concurrent.TimeUnit
 

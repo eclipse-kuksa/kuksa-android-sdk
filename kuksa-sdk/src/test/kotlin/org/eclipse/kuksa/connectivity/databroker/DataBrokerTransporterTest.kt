@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.connectivity.databroker
 
 import io.grpc.ManagedChannelBuilder
 import io.kotest.core.spec.style.BehaviorSpec
@@ -26,12 +25,10 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.instanceOf
 import io.mockk.mockk
 import io.mockk.verify
-import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.proto.v1.KuksaValV1
-import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
@@ -55,7 +52,7 @@ class DataBrokerTransporterTest : BehaviorSpec({
                 val valueToSet = random.nextInt(250).toFloat()
 
                 `when`("Updating the $fields of $vssPath to $valueToSet km/h") {
-                    val updatedDatapoint = Datapoint.newBuilder().setFloat(valueToSet).build()
+                    val updatedDatapoint = Types.Datapoint.newBuilder().setFloat(valueToSet).build()
                     val result = kotlin.runCatching {
                         classUnderTest.update(vssPath, fields, updatedDatapoint)
                     }
@@ -67,7 +64,7 @@ class DataBrokerTransporterTest : BehaviorSpec({
                     then("It should return a valid SetResponse") {
                         val response = result.getOrNull()
                         response shouldNotBe null
-                        response shouldBe instanceOf(SetResponse::class)
+                        response shouldBe instanceOf(KuksaValV1.SetResponse::class)
                     }
                 }
 

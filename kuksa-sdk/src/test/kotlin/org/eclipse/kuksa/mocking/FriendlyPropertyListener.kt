@@ -19,7 +19,7 @@
 
 package org.eclipse.kuksa.mocking
 
-import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 
 class FriendlyPropertyListener : PropertyListener {

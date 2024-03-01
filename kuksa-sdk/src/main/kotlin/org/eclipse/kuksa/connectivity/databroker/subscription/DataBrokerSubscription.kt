@@ -14,13 +14,12 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.subscription
+package org.eclipse.kuksa.connectivity.databroker.subscription
 
 import io.grpc.Context
-import org.eclipse.kuksa.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types.Field
@@ -35,7 +34,7 @@ import org.eclipse.kuksa.proto.v1.Types.Field
  * existing, resp. add the observer to the corresponding Subscription. If all Listeners are unregistered the
  * Subscription will be automatically canceled.
  */
-internal class Subscription(
+internal class DataBrokerSubscription(
     val vssPath: String,
     val field: Field,
     private val cancellableContext: Context.CancellableContext,

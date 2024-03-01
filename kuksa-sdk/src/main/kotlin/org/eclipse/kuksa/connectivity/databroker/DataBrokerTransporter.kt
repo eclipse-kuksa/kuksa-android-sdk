@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa
+package org.eclipse.kuksa.connectivity.databroker
 
 import android.util.Log
 import io.grpc.ConnectivityState
@@ -28,8 +27,8 @@ import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.eclipse.kuksa.authentication.JsonWebToken
-import org.eclipse.kuksa.authentication.withAuthenticationInterceptor
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
+import org.eclipse.kuksa.connectivity.authentication.withAuthenticationInterceptor
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.applyDatapoint
 import org.eclipse.kuksa.proto.v1.KuksaValV1
@@ -37,12 +36,12 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.SubscribeResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.proto.v1.VALGrpc
-import org.eclipse.kuksa.subscription.Subscription
+import org.eclipse.kuksa.connectivity.databroker.subscription.DataBrokerSubscription
 
 /**
  * Encapsulates the Protobuf-specific interactions with the DataBroker send over gRPC. Provides fetch, update and
  * subscribe methods to retrieve and update data, as well as registering to be notified about external data updates
- * using a [Subscription].
+ * using a [DataBrokerSubscription].
  * The DataBrokerTransporter requires a [managedChannel] which is already connected to the corresponding DataBroker.
  *
  * @throws IllegalStateException in case the state of the [managedChannel] is not [ConnectivityState.READY]
@@ -135,7 +134,7 @@ internal class DataBrokerTransporter(
 
     /**
      * Sends a request to the DataBroker to subscribe to updates of the specified [vssPath] and [field].
-     * Returns a [Subscription] which can be used to register or unregister additional listeners or cancel / closing
+     * Returns a [DataBrokerSubscription] which can be used to register or unregister additional listeners or cancel / closing
      * the subscription.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
@@ -143,7 +142,7 @@ internal class DataBrokerTransporter(
     fun subscribe(
         vssPath: String,
         field: Field,
-    ): Subscription {
+    ): DataBrokerSubscription {
         val asyncStub = VALGrpc.newStub(managedChannel)
 
         val subscribeEntry = KuksaValV1.SubscribeEntry.newBuilder()
@@ -158,7 +157,7 @@ internal class DataBrokerTransporter(
         val currentContext = Context.current()
         val cancellableContext = currentContext.withCancellation()
 
-        val subscription = Subscription(vssPath, field, cancellableContext)
+        val subscription = DataBrokerSubscription(vssPath, field, cancellableContext)
         val streamObserver = object : StreamObserver<SubscribeResponse> {
             override fun onNext(value: SubscribeResponse) {
                 subscription.listeners.forEach { observer ->
