@@ -38,6 +38,12 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Execute Tests
+        uses: ./.github/actions/run-tests
+        with:
+          upload-test-reports: true
+          upload-code-coverage-reports: true
+
       - name: Archive changelog
         uses: actions/upload-artifact@v3
         with:

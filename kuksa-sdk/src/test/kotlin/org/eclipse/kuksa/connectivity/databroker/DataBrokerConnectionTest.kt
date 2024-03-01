@@ -260,7 +260,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
         // this test closes the connection, the connection can't be used afterward anymore
         `when`("A DisconnectListener is registered successfully") {
-            val disconnectListener = mockk<DisconnectListener>()
+            val disconnectListener = mockk<DisconnectListener>(relaxed = true)
             val disconnectListeners = dataBrokerConnection.disconnectListeners
             disconnectListeners.register(disconnectListener)
 
