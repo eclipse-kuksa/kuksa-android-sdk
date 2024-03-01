@@ -1,6 +1,6 @@
 [versions]
 activityKtx = "1.8.2"
-androidGradlePlugin = "8.2.2" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
+androidGradlePlugin = "8.3.0" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
 detekt = "1.23.5"
 datastore = "1.0.0"
 constraintlayoutCompose = "1.0.1"
@@ -9,7 +9,7 @@ dokka = "1.9.10"
 kotlin = "1.9.22"
 kotlinpoet = "1.16.0"
 kotlinxSerializationJson = "1.6.1"
-runtimeLivedata = "1.6.0"
+runtimeLivedata = "1.6.2"
 symbolProcessingApi = "1.9.22-1.0.17"
 tomcatAnnotations = "6.0.53"
 ktlint = "0.0" # Maintained inside ktlint.gradle.kts
@@ -22,7 +22,7 @@ mockk = "1.13.7"
 androidxLifecycle = "2.7.0"
 kotlinxCoroutines = "1.7.3"
 kotlinCompilerExtension = "1.5.9"
-composeBom = "2024.01.00"
+composeBom = "2024.02.01"
 jvmTarget = "17"
 
 [libraries]
