@@ -25,7 +25,6 @@ plugins {
     kotlin("jvm")
     publish
     alias(libs.plugins.dokka)
-    jacoco
 }
 
 val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String

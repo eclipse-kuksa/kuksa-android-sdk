@@ -147,7 +147,7 @@ tasks.create("jacocoRootReport", JacocoReport::class.java) {
 
     reports {
         html.required.set(true)
-        xml.required.set(true)
+        xml.required.set(false)
         csv.required.set(false)
     }
 
@@ -155,7 +155,8 @@ tasks.create("jacocoRootReport", JacocoReport::class.java) {
         "**/buildSrc/**",
         "**/app/**",
         "**/samples/**",
-        "**/build/**/org/eclipse/kuksa/vss/**", // generated
+        "**/vssprocessor/plugin/**", // code coverage not supported for Gradle Plugins / Gradle TestKit tests
+        "**/build/**/org/eclipse/kuksa/vss/**", // generated code
         "**/test*/**/*.*",
     )
 
