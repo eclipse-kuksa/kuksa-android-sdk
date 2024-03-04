@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  */
-plugins {
-    kotlin("jvm")
-}
 
-dependencies {
-    implementation(libs.kotest)
-}
+package org.eclipse.kuksa.test
+
+import java.io.File
+
+private val classLoader: ClassLoader? = TestResourceFile::class.java.classLoader
+
+class TestResourceFile(path: String) : File(
+    classLoader!!.getResource(path)?.file ?: error("File does not exist: '$path'"),
+)

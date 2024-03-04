@@ -23,19 +23,17 @@ import io.kotest.assertions.fail
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
-import java.io.File
+import org.eclipse.kuksa.test.TestResourceFile
 import java.io.IOException
 
 class JsonDefinitionParserTest : BehaviorSpec({
 
     given("A JsonDefinitionParser") {
         val classUnderTest = JsonDefinitionParser()
-        val classLoader = JsonDefinitionParserTest::class.java.classLoader
 
         `when`("Parsing the SpecModels of vss_rel_4.0.partial.json") {
-            val urlToPartialSpec = classLoader.getResource("json/vss_rel_4.0.partial.json")!!
-            val file = File(urlToPartialSpec.path)
-            val specModels = classUnderTest.parseSpecifications(file)
+            val partialSpecFile = TestResourceFile("json/vss_rel_4.0.partial.json")
+            val specModels = classUnderTest.parseSpecifications(partialSpecFile)
 
             then("The following SpecModels should be parsed") {
                 val validVssPaths = listOf(
@@ -89,9 +87,8 @@ class JsonDefinitionParserTest : BehaviorSpec({
         }
 
         `when`("Parsing the SpecModels of vss_rel_4.0.json") {
-            val urlToFullSpec = classLoader.getResource("json/vss_rel_4.0.json")!!
-            val file = File(urlToFullSpec.path)
-            val specModels = classUnderTest.parseSpecifications(file)
+            val fullSpecFile = TestResourceFile("json/vss_rel_4.0.json")
+            val specModels = classUnderTest.parseSpecifications(fullSpecFile)
 
             then("the correct number of specification models should be parsed") {
                 specModels.size shouldBe 1197 // counted occurrences of '"uuid":' in specFile
@@ -99,11 +96,10 @@ class JsonDefinitionParserTest : BehaviorSpec({
         }
 
         `when`("Parsing an incompatible / non-vss json file") {
-            val urlToFullSpec = classLoader.getResource("json/incompatible.json")!!
-            val file = File(urlToFullSpec.path)
+            val incompatibleFile = TestResourceFile("json/incompatible.json")
 
             val result = runCatching {
-                classUnderTest.parseSpecifications(file)
+                classUnderTest.parseSpecifications(incompatibleFile)
             }
 
             then("An IOException is thrown") {
@@ -112,11 +108,10 @@ class JsonDefinitionParserTest : BehaviorSpec({
         }
 
         `when`("Parsing a non-json file") {
-            val urlToFullSpec = classLoader.getResource("yaml/vss_rel_4.0.yaml")!!
-            val file = File(urlToFullSpec.path)
+            val nonJsonFile = TestResourceFile("yaml/vss_rel_4.0.yaml")
 
             val result = runCatching {
-                classUnderTest.parseSpecifications(file)
+                classUnderTest.parseSpecifications(nonJsonFile)
             }
 
             then("An IOException is thrown") {

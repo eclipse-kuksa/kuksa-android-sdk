@@ -21,19 +21,17 @@ package org.eclipse.kuksa.vssprocessor.parser.yaml
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import java.io.File
+import org.eclipse.kuksa.test.TestResourceFile
 
 class YamlDefinitionParserTest : BehaviorSpec({
     given("A parser for yaml files") {
         val parser = YamlDefinitionParser()
-        val classLoader = parser::class.java.classLoader!!
 
         and("a specification file of version 4") {
-            val resourceUrl = classLoader.getResource("yaml/vss_rel_4.0.yaml")!!
-            val specificationFile = File(resourceUrl.path)
+            val fullSpecificationFile = TestResourceFile("yaml/vss_rel_4.0.yaml")
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseSpecifications(specificationFile)
+                val parsedSpecifications = parser.parseSpecifications(fullSpecificationFile)
 
                 then("the correct number of specification models should be parsed") {
                     parsedSpecifications.size shouldBe 1197 // counted occurrences of '"uuid":' in specFile
@@ -41,8 +39,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             }
         }
         and("an incompatible yaml file") {
-            val incompatibleResourceUrl = classLoader.getResource("yaml/incompatible.yaml")!!
-            val incompatibleFile = File(incompatibleResourceUrl.path)
+            val incompatibleFile = TestResourceFile("yaml/incompatible.yaml")
 
             `when`("parsing the file") {
                 val parsedSpecifications = parser.parseSpecifications(incompatibleFile)
@@ -53,8 +50,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             }
         }
         and("an invalid yaml file") {
-            val invalidResourceUrl = classLoader.getResource("yaml/invalid.yaml")!!
-            val invalidFile = File(invalidResourceUrl.path)
+            val invalidFile = TestResourceFile("yaml/invalid.yaml")
 
             `when`("parsing the file") {
                 val parsedSpecifications = parser.parseSpecifications(invalidFile)

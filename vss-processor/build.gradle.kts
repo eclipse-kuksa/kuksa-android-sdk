@@ -43,6 +43,8 @@ dependencies {
     implementation(libs.kotlinpoet.ksp)
     implementation(libs.symbol.processing.api)
 
+    testImplementation(project(":test"))
+
     testImplementation(libs.kotest)
     testImplementation(libs.mockk)
 }
