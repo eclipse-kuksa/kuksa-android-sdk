@@ -24,14 +24,34 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 
 /**
- * Represents a node inside a VSS file. it represents the most common properties.
- * The [uuid] is a mandatory field and should never be empty.
+ * Represents a node inside a VSS (file) data structure. it represents the most common properties.
  */
 interface VssNode {
+    /**
+     * The [uuid] is a mandatory field and should never be empty.
+     */
     val uuid: String
+
+    /**
+     * Defines the path to the property inside the VSS tree structure.
+     * Example: Vehicle.Body.Horn.IsActive
+     */
     val vssPath: String
+
+    /**
+     * Simple description of the property.
+     */
     val description: String
+
+    /**
+     * Most relevant for [VssLeaf] nodes. They can be of the type "Sensor" or "Actuator".
+     * For Nodes with children this will always be "branch".
+     */
     val type: String
+
+    /**
+     * An optional additional comment for the [VssNode].
+     */
     val comment: String
 
     /**
@@ -48,9 +68,13 @@ interface VssNode {
 }
 
 /**
- * Some [VssNode] may have an additional [value] property. These are children which are not parents.
+ * Some [VssNode] may have an additional [value] property. These are children [VssLeaf] which do not have other
+ * children.
  */
 interface VssLeaf<T : Any> : VssNode {
+    /**
+     * A primitive type value.
+     */
     val value: T
 }
 

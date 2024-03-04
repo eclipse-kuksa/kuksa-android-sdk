@@ -68,8 +68,8 @@ void connectInsecure(String host, int port) {
 ```kotlin
 fun fetch() {
     lifecycleScope.launch {
-        val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
-        val response = dataBrokerConnection?.fetch(property) ?: return@launch
+        val request = FetchRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
+        val response = dataBrokerConnection?.fetch(request) ?: return@launch
         val entry = response.entriesList.first() // Don't forget to handle empty responses
         val value = entry.value
         val speed = value.float
@@ -78,14 +78,14 @@ fun fetch() {
 
 fun update() {
     lifecycleScope.launch {
-        val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
+        val request = UpdateRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
         val datapoint = Datapoint.newBuilder().setFloat(100f).build()
         dataBrokerConnection?.update(property, datapoint)
     }
 }
 
 fun subscribe() {
-    val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
+    val request = SubscribeRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
     val propertyListener = object : PropertyListener {
         override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
             entryUpdates.forEach { entryUpdate ->
@@ -100,14 +100,14 @@ fun subscribe() {
         }
     }
 
-    dataBrokerConnection?.subscribe(property, propertyListener)
+    dataBrokerConnection?.subscribe(request, propertyListener)
 }
 ```
 *Java*
 ```java
 void fetch() {
-    Property property = new Property("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
-    dataBrokerConnection.fetch(property, new CoroutineCallback<GetResponse>() {
+    FetchRequest request = new FetchRequest("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
+    dataBrokerConnection.fetch(request, new CoroutineCallback<GetResponse>() {
         @Override
         public void onSuccess(GetResponse result) {
             result.entriesList.first() // Don't forget to handle empty responses
@@ -119,19 +119,19 @@ void fetch() {
 }
 
 void update() {
-    Property property = new Property("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
     Datapoint datapoint = Datapoint.newBuilder().setFloat(100f).build();
-    dataBrokerConnection.update(property, datapoint, new CoroutineCallback<KuksaValV1.SetResponse>() {
+    UpdateRequest request = new UpdateRequest("Vehicle.Speed", datapoint, Collections.singleton(Types.Field.FIELD_VALUE));
+    dataBrokerConnection.update(request, new CoroutineCallback<KuksaValV1.SetResponse>() {
         @Override
         public void onSuccess(KuksaValV1.SetResponse result) {
-          // handle result
+        // handle result
         }
     });
 }
 
 void subscribe() {
-    Property property = new Property("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
-    dataBrokerConnection.subscribe(property, new PropertyListener() {
+    SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
+    dataBrokerConnection.subscribe(request, new PropertyListener() {
         @Override
         public void onPropertyChanged(@NonNull List<EntryUpdate> entryUpdates) {
             for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
@@ -163,7 +163,7 @@ of the same specification the Databroker uses. For starters you can retrieve an 
 release page of the [COVESA Vehicle Signal Specification GitHub repository](https://github.com/COVESA/vehicle_signal_specification/releases).
 
 *app/build.gradle.kts*
-```
+```kotlin
 plugins {
     id("org.eclipse.kuksa.vss-processor-plugin")
 }
@@ -188,7 +188,7 @@ convenience operators and extension methods to work with to manipulate the tree 
 class Activity
 ```
 > [!IMPORTANT]
-> Keep in mind to always synchronize the VSS file between the client and the Databroker.
+> Keep in mind to always synchronize a compatible (e.g. subset) VSS file between the client and the Databroker.
 
 
 *Example .yaml VSS file*
@@ -237,7 +237,8 @@ data class VssSpeed @JvmOverloads constructor(
 fun fetch() {
     lifecycleScope.launch {
         val vssSpeed = VssVehicle.VssSpeed()
-        val updatedSpeed = dataBrokerConnection?.fetch(vssSpeed)
+        val request = VssNodeFetchRequest(vssSpeed)
+        val updatedSpeed = dataBrokerConnection?.fetch(request)
         val speed = updatedSpeed?.value
     }
 }
@@ -245,13 +246,15 @@ fun fetch() {
 fun update() {
     lifecycleScope.launch {
         val vssSpeed = VssVehicle.VssSpeed(value = 100f)
-        dataBrokerConnection?.update(vssSpeed)
+        val request = VssNodeUpdateRequest(vssSpeed)
+        dataBrokerConnection?.update(request)
     }
 }
 
 fun subscribe() {
     val vssSpeed = VssVehicle.VssSpeed(value = 100f)
-    dataBrokerConnection?.subscribe(vssSpeed, listener = object : VssNodeListener<VssVehicle.VssSpeed> {
+    val request = VssNodeSubscribeRequest(vssSpeed)
+    dataBrokerConnection?.subscribe(request, listener = object : VssNodeListener<VssVehicle.VssSpeed> {
         override fun onNodeChanged(vssNode: VssVehicle.VssSpeed) {
             val speed = vssSpeed.value
         }
@@ -266,9 +269,9 @@ fun subscribe() {
 ```java
 void fetch() {
     VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
+    VssNodeFetchRequest request = new VssNodeFetchRequest(vssSpeed)
     dataBrokerConnection.fetch(
-        vssSpeed,
-        Collections.singleton(Types.Field.FIELD_VALUE),
+        request,
         new CoroutineCallback<VssVehicle.VssSpeed>() {
             @Override
             public void onSuccess(@Nullable VssVehicle.VssSpeed result) {
@@ -285,9 +288,9 @@ void fetch() {
 
 void update() {
     VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed(100f);
+    VssNodeUpdateRequest request = new VssNodeUpdateRequest(vssSpeed)
     dataBrokerConnection.update(
-        vssSpeed,
-        Collections.singleton(Types.Field.FIELD_VALUE),
+        request,
         new CoroutineCallback<Collection<? extends KuksaValV1.SetResponse>>() {
             @Override
             public void onSuccess(@Nullable Collection<? extends KuksaValV1.SetResponse> result) {
@@ -304,9 +307,9 @@ void update() {
 
 void subscribe() {
     VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
+    VssNodeSubscribeRequest request = new VssNodeSubscribeRequest(vssSpeed)
     dataBrokerConnection.subscribe(
-        vssSpeed,
-        Collections.singleton(Types.Field.FIELD_VALUE),
+        request,
         new VssNodeListener<VssVehicle.VssSpeed>() {
             @Override
             public void onNodeChanged(@NonNull VssVehicle.VssSpeed vssNode) {

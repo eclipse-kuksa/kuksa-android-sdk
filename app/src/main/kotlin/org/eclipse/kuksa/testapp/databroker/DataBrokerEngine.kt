@@ -24,11 +24,14 @@ import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
 import org.eclipse.kuksa.coroutine.CoroutineCallback
-import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.vsscore.model.VssNode
 
@@ -43,29 +46,28 @@ interface DataBrokerEngine {
     )
 
     fun fetch(
-        property: Property,
+        request: FetchRequest,
         callback: CoroutineCallback<GetResponse>,
     )
 
-    fun <T : VssNode> fetch(vssNode: T, callback: CoroutineCallback<T>)
+    fun <T : VssNode> fetch(request: VssNodeFetchRequest<T>, callback: CoroutineCallback<T>)
 
     fun update(
-        property: Property,
-        datapoint: Datapoint,
+        request: UpdateRequest,
         callback: CoroutineCallback<SetResponse>,
     )
 
-    fun subscribe(property: Property, propertyListener: PropertyListener)
+    fun subscribe(request: SubscribeRequest, propertyListener: PropertyListener)
 
-    fun unsubscribe(property: Property, propertyListener: PropertyListener)
+    fun unsubscribe(request: SubscribeRequest, propertyListener: PropertyListener)
 
     fun <T : VssNode> subscribe(
-        vssNode: T,
+        request: VssNodeSubscribeRequest<T>,
         vssNodeListener: VssNodeListener<T>,
     )
 
     fun <T : VssNode> unsubscribe(
-        vssNode: T,
+        request: VssNodeSubscribeRequest<T>,
         vssNodeListener: VssNodeListener<T>,
     )
 

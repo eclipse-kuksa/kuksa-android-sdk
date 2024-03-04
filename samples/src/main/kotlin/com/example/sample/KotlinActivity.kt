@@ -33,7 +33,12 @@ import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
-import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
@@ -114,10 +119,11 @@ class KotlinActivity : AppCompatActivity() {
         dataBrokerConnection = null
     }
 
-    fun fetchProperty(property: Property) {
+    fun fetchProperty() {
+        val request = FetchRequest("Vehicle.Speed", Types.Field.FIELD_VALUE)
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.fetch(property) ?: return@launch
+                val response = dataBrokerConnection?.fetch(request) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle error
@@ -125,10 +131,14 @@ class KotlinActivity : AppCompatActivity() {
         }
     }
 
-    fun updateProperty(property: Property, datapoint: Datapoint) {
+    fun updateProperty() {
+        val datapoint = Datapoint.newBuilder()
+            .setFloat(50f)
+            .build()
+        val request = UpdateRequest("Vehicle.Speed", datapoint, Types.Field.FIELD_VALUE)
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.update(property, datapoint) ?: return@launch
+                val response = dataBrokerConnection?.update(request) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle error
@@ -136,7 +146,8 @@ class KotlinActivity : AppCompatActivity() {
         }
     }
 
-    fun subscribeProperty(property: Property) {
+    fun subscribeProperty() {
+        val request = SubscribeRequest("Vehicle.Speed", Types.Field.FIELD_VALUE)
         val propertyListener = object : PropertyListener {
             override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
                 entryUpdates.forEach { entryUpdate ->
@@ -156,7 +167,7 @@ class KotlinActivity : AppCompatActivity() {
             }
         }
 
-        dataBrokerConnection?.subscribe(property, propertyListener)
+        dataBrokerConnection?.subscribe(request, propertyListener)
     }
 
     // region: VSS generated models
@@ -164,7 +175,8 @@ class KotlinActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val vssSpeed = VssVehicle.VssSpeed()
-                val updatedSpeed = dataBrokerConnection?.fetch(vssSpeed, listOf(Types.Field.FIELD_VALUE))
+                val request = VssNodeFetchRequest(vssSpeed, Types.Field.FIELD_VALUE)
+                val updatedSpeed = dataBrokerConnection?.fetch(request)
                 val speed = updatedSpeed?.value
             } catch (e: DataBrokerException) {
                 // handle error
@@ -175,15 +187,16 @@ class KotlinActivity : AppCompatActivity() {
     fun updateNode() {
         lifecycleScope.launch {
             val vssSpeed = VssVehicle.VssSpeed(value = 100f)
-            dataBrokerConnection?.update(vssSpeed, listOf(Types.Field.FIELD_VALUE))
+            val request = VssNodeUpdateRequest(vssSpeed, Types.Field.FIELD_VALUE)
+            dataBrokerConnection?.update(request)
         }
     }
 
     fun subscribeNode() {
         val vssSpeed = VssVehicle.VssSpeed(value = 100f)
+        val request = VssNodeSubscribeRequest(vssSpeed, Types.Field.FIELD_VALUE)
         dataBrokerConnection?.subscribe(
-            vssSpeed,
-            listOf(Types.Field.FIELD_VALUE),
+            request,
             object : VssNodeListener<VssVehicle.VssSpeed> {
                 override fun onNodeChanged(vssNode: VssVehicle.VssSpeed) {
                     val speed = vssSpeed.value

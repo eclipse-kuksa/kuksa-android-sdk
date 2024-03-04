@@ -22,7 +22,8 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectionTest
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
-import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Authentication
 import org.eclipse.kuksa.test.kotest.CustomDatabroker
@@ -43,6 +44,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
+        val speedVssPath = "Vehicle.Speed"
 
         and("an insecure DataBrokerConnector with a READ_WRITE_ALL JWT") {
             val jwtFileStream = JwtType.READ_WRITE_ALL.asInputStream()
@@ -50,10 +52,10 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
-                val property = Property("Vehicle.Speed")
 
                 `when`("Reading Vehicle.Speed") {
-                    val response = connection.fetch(property)
+                    val fetchRequest = FetchRequest(speedVssPath)
+                    val response = connection.fetch(fetchRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -63,8 +65,9 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 `when`("Writing the VALUE of Vehicle.Speed") {
                     val nextFloat = random.nextFloat() * 100F
                     val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
+                    val updateRequest = UpdateRequest(speedVssPath, datapoint)
 
-                    val response = connection.update(property, datapoint)
+                    val response = connection.update(updateRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -79,10 +82,10 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
-                val property = Property("Vehicle.Speed")
 
                 `when`("Reading Vehicle.Speed") {
-                    val response = connection.fetch(property)
+                    val fetchRequest = FetchRequest(speedVssPath)
+                    val response = connection.fetch(fetchRequest)
 
                     then("No error should appear") {
                         response.errorsList.size shouldBe 0
@@ -92,8 +95,8 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 `when`("Writing the VALUE of Vehicle.Speed") {
                     val nextFloat = random.nextFloat() * 100F
                     val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
-
-                    val response = connection.update(property, datapoint)
+                    val updateRequest = UpdateRequest(speedVssPath, datapoint)
+                    val response = connection.update(updateRequest)
 
                     then("An error should occur") {
                         response.errorsList.size shouldBe 1
@@ -108,13 +111,12 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
-                val actuatorTargetProperty = Property(
-                    "Vehicle.Body.Mirrors.DriverSide.Pan",
-                    listOf(Types.Field.FIELD_ACTUATOR_TARGET),
-                )
+                val panVssPath = "Vehicle.Body.Mirrors.DriverSide.Pan"
+                val actuatorTargetField = Types.Field.FIELD_ACTUATOR_TARGET
 
                 `when`("Reading the ACTUATOR_TARGET of Vehicle.Body.Mirrors.DriverSide.Pan") {
-                    val response = connection.fetch(actuatorTargetProperty)
+                    val fetchRequest = FetchRequest(panVssPath, actuatorTargetField)
+                    val response = connection.fetch(fetchRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -124,21 +126,18 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 `when`("Writing to the ACTUATOR_TARGET of Vehicle.Body.Mirrors.DriverSide.Pan") {
                     val nextInt = random.nextInt(-100..100)
                     val datapoint = Types.Datapoint.newBuilder().setInt32(nextInt).build()
+                    val updateRequest = UpdateRequest(panVssPath, datapoint, actuatorTargetField)
 
-                    val response = connection.update(actuatorTargetProperty, datapoint)
+                    val response = connection.update(updateRequest)
 
                     then("An error should occur") {
                         response.errorsList.size shouldBe 1
                     }
                 }
 
-                val valueProperty = Property(
-                    "Vehicle.Speed",
-                    listOf(Types.Field.FIELD_VALUE),
-                )
-
                 `when`("Reading the VALUE of Vehicle.Speed") {
-                    val response = connection.fetch(valueProperty)
+                    val fetchRequest = FetchRequest(speedVssPath)
+                    val response = connection.fetch(fetchRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -148,8 +147,9 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 `when`("Writing the VALUE of Vehicle.Speed") {
                     val nextFloat = random.nextFloat() * 100F
                     val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
+                    val updateRequest = UpdateRequest(speedVssPath, datapoint)
 
-                    val response = connection.update(valueProperty, datapoint)
+                    val response = connection.update(updateRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0

@@ -82,8 +82,8 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VssViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPathsViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VssNodesViewModel
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
@@ -102,8 +102,8 @@ val MinimumButtonWidth = 150.dp
 fun DataBrokerView(
     topAppBarViewModel: TopAppBarViewModel,
     connectionViewModel: ConnectionViewModel,
-    vssPropertiesViewModel: VSSPropertiesViewModel,
-    vssViewModel: VssViewModel,
+    vssPropertiesViewModel: VSSPathsViewModel,
+    vssNodesViewModel: VssNodesViewModel,
     outputViewModel: OutputViewModel,
 ) {
     Scaffold(
@@ -126,7 +126,7 @@ fun DataBrokerView(
                 if (connectionViewModel.isConnected) {
                     when (dataBrokerMode) {
                         DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
-                        DataBrokerMode.VSS_FILE -> DataBrokerVssNodes(vssViewModel)
+                        DataBrokerMode.VSS_FILE -> DataBrokerVssNodes(vssNodesViewModel)
                     }
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
@@ -233,9 +233,9 @@ private fun ConnectionStatusIcon(
 }
 
 @Composable
-fun DataBrokerVssNodes(viewModel: VssViewModel) {
+fun DataBrokerVssNodes(viewModel: VssNodesViewModel) {
     Column {
-        Headline(name = "VSS Nodes")
+        Headline(name = "Generated VSS Nodes")
 
         val adapter = object : SuggestionAdapter<VssNode> {
             override fun toString(item: VssNode): String {
@@ -288,21 +288,21 @@ fun DataBrokerVssNodes(viewModel: VssViewModel) {
 }
 
 @Composable
-fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
-    val vssProperties = viewModel.vssProperties
+fun DataBrokerProperties(viewModel: VSSPathsViewModel) {
+    val dataBrokerProperty = viewModel.dataBrokerProperty
     var expanded by remember { mutableStateOf(false) }
 
     Column {
-        Headline(name = "Properties")
+        Headline(name = "VSS Paths")
         SuggestionTextView(
             suggestions = viewModel.suggestions,
-            value = viewModel.vssProperties.vssPath,
+            value = dataBrokerProperty.vssPath,
             onValueChanged = {
-                val newVssProperties = viewModel.vssProperties.copy(
+                val newVssProperties = dataBrokerProperty.copy(
                     vssPath = it,
                     valueType = ValueCase.VALUE_NOT_SET,
                 )
-                viewModel.updateVssProperties(newVssProperties)
+                viewModel.updateDataBrokerProperty(newVssProperties)
             },
             label = {
                 Text(text = "VSS Path")
@@ -315,10 +315,10 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
         Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
         Row {
             TextField(
-                value = "${viewModel.vssProperties.valueType}",
+                value = "${dataBrokerProperty.valueType}",
                 onValueChange = {},
                 label = {
-                    Text("Field Type")
+                    Text("Value Type")
                 },
                 readOnly = true,
                 enabled = false,
@@ -357,8 +357,8 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
                             onClick = {
                                 expanded = false
 
-                                val newVssProperties = viewModel.vssProperties.copy(valueType = it)
-                                viewModel.updateVssProperties(newVssProperties)
+                                val newVssProperties = dataBrokerProperty.copy(valueType = it)
+                                viewModel.updateDataBrokerProperty(newVssProperties)
                             },
                         )
                     }
@@ -368,10 +368,10 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
         Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
         Row {
             TextField(
-                value = vssProperties.value,
+                value = dataBrokerProperty.value,
                 onValueChange = {
-                    val newVssProperties = viewModel.vssProperties.copy(value = it)
-                    viewModel.updateVssProperties(newVssProperties)
+                    val newVssProperties = dataBrokerProperty.copy(value = it)
+                    viewModel.updateDataBrokerProperty(newVssProperties)
                 },
                 modifier = Modifier
                     .padding(start = DefaultEdgePadding)
@@ -389,8 +389,8 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
                 label = "Field Type",
                 list = viewModel.fieldTypes,
                 onValueChange = {
-                    val newVssProperties = viewModel.vssProperties.copy(fieldType = it)
-                    viewModel.updateVssProperties(newVssProperties)
+                    val newVssProperties = dataBrokerProperty.copy(fieldTypes = setOf(it))
+                    viewModel.updateDataBrokerProperty(newVssProperties)
                 },
             )
         }
@@ -401,16 +401,16 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
         ) {
             Button(
                 onClick = {
-                    viewModel.onGetProperty(viewModel.property)
+                    viewModel.onGetProperty(dataBrokerProperty)
                 },
                 modifier = Modifier.requiredWidth(80.dp),
             ) {
                 Text(text = "Get")
             }
             Button(
-                enabled = viewModel.vssProperties.valueType != ValueCase.VALUE_NOT_SET,
+                enabled = dataBrokerProperty.valueType != ValueCase.VALUE_NOT_SET,
                 onClick = {
-                    viewModel.onSetProperty(viewModel.property, viewModel.datapoint)
+                    viewModel.onSetProperty(dataBrokerProperty, viewModel.datapoint)
                 },
                 modifier = Modifier.requiredWidth(80.dp),
             ) {
@@ -418,15 +418,15 @@ fun DataBrokerProperties(viewModel: VSSPropertiesViewModel) {
             }
             if (viewModel.isSubscribed) {
                 Button(onClick = {
-                    viewModel.subscribedProperties.remove(viewModel.property)
-                    viewModel.onUnsubscribeProperty(viewModel.property)
+                    viewModel.subscribedProperties.remove(dataBrokerProperty)
+                    viewModel.onUnsubscribeProperty(dataBrokerProperty)
                 }) {
                     Text(text = "Unsubscribe")
                 }
             } else {
                 Button(onClick = {
-                    viewModel.subscribedProperties.add(viewModel.property)
-                    viewModel.onSubscribeProperty(viewModel.property)
+                    viewModel.subscribedProperties.add(dataBrokerProperty)
+                    viewModel.onSubscribeProperty(dataBrokerProperty)
                 }) {
                     Text(text = "Subscribe")
                 }
@@ -498,8 +498,8 @@ fun Preview() {
         DataBrokerView(
             TopAppBarViewModel(),
             ConnectionViewModel(connectionInfoRepository),
-            VSSPropertiesViewModel(),
-            VssViewModel(),
+            VSSPathsViewModel(),
+            VssNodesViewModel(),
             OutputViewModel(),
         )
     }

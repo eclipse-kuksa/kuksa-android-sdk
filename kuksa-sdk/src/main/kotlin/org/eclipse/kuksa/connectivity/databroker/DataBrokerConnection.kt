@@ -28,17 +28,21 @@ import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.datapoint
 import org.eclipse.kuksa.extension.vss.copy
-import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.heritage
@@ -49,6 +53,7 @@ import kotlin.properties.Delegates
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
  * DataBroker.
  */
+@Suppress("performance:SpreadOperator") // API convenience > performance
 class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -86,29 +91,29 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [property] and notifies the provided [propertyListener] about updates.
+     * Subscribes to the specified [request] and notifies the provided [propertyListener] about updates.
      *
      * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
      */
     fun subscribe(
-        property: Property,
+        request: SubscribeRequest,
         propertyListener: PropertyListener,
     ) {
-        val vssPath = property.vssPath
-        property.fields.forEach { field ->
+        val vssPath = request.vssPath
+        request.fields.forEach { field ->
             dataBrokerSubscriber.subscribe(vssPath, field, propertyListener)
         }
     }
 
     /**
-     * Unsubscribes the [propertyListener] from updates of the specified [property].
+     * Unsubscribes the [propertyListener] from updates of the specified [request].
      */
     fun unsubscribe(
-        property: Property,
+        request: SubscribeRequest,
         propertyListener: PropertyListener,
     ) {
-        val vssPath = property.vssPath
-        property.fields.forEach { field ->
+        val vssPath = request.vssPath
+        request.fields.forEach { field ->
             dataBrokerSubscriber.unsubscribe(vssPath, field, propertyListener)
         }
     }
@@ -117,33 +122,35 @@ class DataBrokerConnection internal constructor(
      * Subscribes to the specified [VssNode] with the provided [VssNodeListener]. Only a [VssLeaf]
      * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
      * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
-     * application will be notified about any changes to every subscribed [VssLeaf]. The [fields] can be used to
-     * subscribe to different information of the [specification]. The default for the [fields] parameter is a list with
-     * a single [Types.Field.FIELD_VALUE] entry.
+     * application will be notified about any changes to every subscribed [VssLeaf].
+     * The [VssNodeSubscribeRequest.fields] can be used to subscribe to different information of the [VssNode].
+     * The default for the [Types.Field] parameter is a list with a single [Types.Field.FIELD_VALUE] entry.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    @JvmOverloads
     fun <T : VssNode> subscribe(
-        specification: T,
-        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
+        request: VssNodeSubscribeRequest<T>,
         listener: VssNodeListener<T>,
     ) {
+        val fields = request.fields
+        val vssNode = request.vssNode
         fields.forEach { field ->
-            dataBrokerSubscriber.subscribe(specification, field, listener)
+            dataBrokerSubscriber.subscribe(vssNode, field, listener)
         }
     }
 
     /**
-     * Unsubscribes the [listener] from updates of the specified [fields] and [specification].
+     * Unsubscribes the [listener] from updates of the specified [VssNodeSubscribeRequest.fields] and
+     * [VssNodeSubscribeRequest.vssNode].
      */
     fun <T : VssNode> unsubscribe(
-        specification: T,
-        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
+        request: VssNodeSubscribeRequest<T>,
         listener: VssNodeListener<T>,
     ) {
+        val fields = request.fields
+        val vssNode = request.vssNode
         fields.forEach { field ->
-            dataBrokerSubscriber.unsubscribe(specification, field, listener)
+            dataBrokerSubscriber.unsubscribe(vssNode, field, listener)
         }
     }
 
@@ -152,39 +159,34 @@ class DataBrokerConnection internal constructor(
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    suspend fun fetch(property: Property): GetResponse {
-        Log.d(TAG, "fetchProperty() called with: property: $property")
-        return dataBrokerTransporter.fetch(property.vssPath, property.fields)
+    suspend fun fetch(request: FetchRequest): GetResponse {
+        Log.d(TAG, "fetchProperty() called with: property: $request")
+        return dataBrokerTransporter.fetch(request.vssPath, *request.fields)
     }
 
     /**
      * Retrieves the [VssNode] and returns it. The retrieved [VssNode]
      * is of the same type as the inputted one. All underlying heirs are changed to reflect the data broker state.
-     * The [fields] can be used to subscribe to different information of the [specification]. The default for the
-     * [fields] parameter is a list with a single [Types.Field.FIELD_VALUE] entry.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     @Suppress("exceptions:TooGenericExceptionCaught") // Handling is bundled together
-    @JvmOverloads
-    suspend fun <T : VssNode> fetch(
-        specification: T,
-        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
-    ): T {
+    suspend fun <T : VssNode> fetch(request: VssNodeFetchRequest<T>): T {
         return withContext(dispatcher) {
             try {
-                val property = Property(specification.vssPath, fields)
-                val response = fetch(property)
+                val vssNode = request.vssNode
+                val simpleFetchRequest = FetchRequest(request.vssPath, *request.fields)
+                val response = fetch(simpleFetchRequest)
                 val entries = response.entriesList
 
                 if (entries.isEmpty()) {
                     Log.w(TAG, "No entries found for fetched specification!")
-                    return@withContext specification
+                    return@withContext vssNode
                 }
 
                 // Update every heir specification
                 // TODO: Can be optimized to not replace the whole heritage line for every child entry one by one
-                var updatedSpecification: T = specification
+                var updatedSpecification: T = vssNode
                 val heritage = updatedSpecification.heritage
                 entries.forEach { entry ->
                     updatedSpecification = updatedSpecification.copy(entry.path, entry.value, heritage)
@@ -198,39 +200,33 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Updates the underlying property of the specified vssPath with the updatedProperty. Notifies the callback
-     * about (un)successful operation.
+     * Updates the underlying data broker property of the specified [UpdateRequest.vssPath] with the
+     * [UpdateRequest.dataPoint]. Notifies the callback about (un)successful operation.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    suspend fun update(
-        property: Property,
-        datapoint: Datapoint,
-    ): SetResponse {
-        Log.d(TAG, "updateProperty() called with: updatedProperty = $property")
-        return dataBrokerTransporter.update(property.vssPath, property.fields, datapoint)
+    suspend fun update(request: UpdateRequest): SetResponse {
+        Log.d(TAG, "updateProperty() called with: updatedProperty = $request")
+        return dataBrokerTransporter.update(request.vssPath, request.dataPoint, *request.fields)
     }
 
     /**
      * Only a [VssLeaf] can be updated because they have an actual value. When provided with any parent
      * [VssNode] then this [update] method will find all [VssLeaf] children and updates their corresponding
-     * [fields] instead.
-     * Compared to [update] with only one [Property] and [Datapoint], here multiple [SetResponse] will be returned
+     * [Types.Field] instead.
+     * Compared to [update] with only one [UpdateRequest], here multiple [SetResponse] will be returned
      * because a [VssNode] may consists of multiple values which may need to be updated.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      * @throws IllegalArgumentException if the [VssLeaf] could not be converted to a [Datapoint].
      */
-    @JvmOverloads
-    suspend fun update(
-        vssNode: VssNode,
-        fields: Collection<Field> = listOf(Field.FIELD_VALUE),
-    ): Collection<SetResponse> {
+    suspend fun <T : VssNode> update(request: VssNodeUpdateRequest<T>): Collection<SetResponse> {
         val responses = mutableListOf<SetResponse>()
+        val vssNode = request.vssNode
 
         vssNode.vssLeafs.forEach { vssLeaf ->
-            val property = Property(vssLeaf.vssPath, fields)
-            val response = update(property, vssLeaf.datapoint)
+            val property = UpdateRequest(vssLeaf.vssPath, vssLeaf.datapoint, *request.fields)
+            val response = update(property)
             responses.add(response)
         }
 

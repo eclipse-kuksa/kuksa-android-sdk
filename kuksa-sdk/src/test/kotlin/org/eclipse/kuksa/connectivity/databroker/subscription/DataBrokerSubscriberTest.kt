@@ -27,9 +27,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.delay
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
-import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.extensions.updateRandomUint32Value

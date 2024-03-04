@@ -16,20 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.kuksa.extension
+package org.eclipse.kuksa.connectivity.databroker.request
 
-import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.vsscore.model.VssLeaf
-import org.eclipse.kuksa.vsscore.model.VssNode
-import org.eclipse.kuksa.vsscore.model.vssLeafs
 
 /**
- * Finds all [VssLeaf] heirs for the [VssNode] and converts them into a collection of [Property].
+ * Used for subscribe requests with [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.subscribe].
  */
-fun VssNode.createProperties(
-    vararg fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
-): Collection<Property> {
-    return vssLeafs
-        .map { Property(it.vssPath, fields.toSet()) }
-}
+class SubscribeRequest @JvmOverloads constructor(
+    override val vssPath: String,
+    override vararg val fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
+) : DataBrokerRequest

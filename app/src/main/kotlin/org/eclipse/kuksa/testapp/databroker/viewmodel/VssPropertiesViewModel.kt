@@ -27,25 +27,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.eclipse.kuksa.extension.createDatapoint
-import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.proto.v1.Types.Field
 import java.util.TreeSet
 
-class VSSPropertiesViewModel : ViewModel() {
-    var onGetProperty: (property: Property) -> Unit = { }
-    var onSetProperty: (property: Property, datapoint: Datapoint) -> Unit = { _: Property, _: Datapoint -> }
-    var onSubscribeProperty: (property: Property) -> Unit = { }
-    var onUnsubscribeProperty: (property: Property) -> Unit = { }
+class VSSPathsViewModel : ViewModel() {
+    var onGetProperty: (property: DataBrokerProperty) -> Unit = { }
+    var onSetProperty: (property: DataBrokerProperty, datapoint: Datapoint) -> Unit = {
+            _: DataBrokerProperty,
+            _: Datapoint,
+        ->
+    }
+    var onSubscribeProperty: (property: DataBrokerProperty) -> Unit = { }
+    var onUnsubscribeProperty: (property: DataBrokerProperty) -> Unit = { }
 
-    var subscribedProperties = mutableStateListOf<Property>()
+    var subscribedProperties = mutableStateListOf<DataBrokerProperty>()
 
     val isSubscribed by derivedStateOf {
-        subscribedProperties.contains(property)
+        subscribedProperties.contains(dataBrokerProperty)
     }
 
-    var vssProperties: VSSProperties by mutableStateOf(VSSProperties())
+    var dataBrokerProperty: DataBrokerProperty by mutableStateOf(DataBrokerProperty())
         private set
 
     val valueTypes: List<ValueCase> = ValueCase.entries
@@ -59,13 +62,10 @@ class VSSPropertiesViewModel : ViewModel() {
         private set
 
     val datapoint: Datapoint
-        get() = vssProperties.valueType.createDatapoint(vssProperties.value)
+        get() = dataBrokerProperty.valueType.createDatapoint(dataBrokerProperty.value)
 
-    val property: Property
-        get() = Property(vssProperties.vssPath, listOf(vssProperties.fieldType))
-
-    fun updateVssProperties(vssProperties: VSSProperties = VSSProperties()) {
-        this.vssProperties = vssProperties
+    fun updateDataBrokerProperty(property: DataBrokerProperty = DataBrokerProperty()) {
+        dataBrokerProperty = property
     }
 
     fun updateSuggestions(vssPaths: Collection<String>) {
@@ -90,9 +90,9 @@ class VSSPropertiesViewModel : ViewModel() {
 }
 
 @Immutable
-data class VSSProperties(
+data class DataBrokerProperty(
     val vssPath: String = "Vehicle",
     val valueType: ValueCase = ValueCase.VALUE_NOT_SET,
     val value: String = "",
-    val fieldType: Field = Field.FIELD_VALUE,
+    val fieldTypes: Collection<Field> = setOf(Field.FIELD_VALUE),
 )

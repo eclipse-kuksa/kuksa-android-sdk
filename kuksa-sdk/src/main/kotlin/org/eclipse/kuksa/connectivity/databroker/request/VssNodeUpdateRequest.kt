@@ -14,25 +14,19 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.model
+package org.eclipse.kuksa.connectivity.databroker.request
 
-import org.eclipse.kuksa.proto.v1.Types.Field
-import org.eclipse.kuksa.proto.v1.Types.Field.FIELD_VALUE
+import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.vsscore.model.VssNode
 
 /**
- * A DataBroker Property.
+ * Used for update requests with a generated [VssNode] model and
+ * [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.update].
  */
-data class Property(
-    /**
-     * The VehicleSignalSpecification (VSS) path.
-     */
-    val vssPath: String,
-
-    /**
-     * The corresponding field type of the [Property]. The default is [FIELD_VALUE].
-     */
-    val fields: Collection<Field> = listOf(FIELD_VALUE),
-)
+@Suppress("performance:SpreadOperator") // API convenience > performance
+class VssNodeUpdateRequest<T : VssNode> @JvmOverloads constructor(
+    override val vssNode: T,
+    override vararg val fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
+) : VssNodeDataBrokerRequest<T>, FetchRequest(vssNode.vssPath, *fields)

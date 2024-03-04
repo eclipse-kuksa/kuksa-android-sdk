@@ -23,22 +23,23 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import org.eclipse.kuksa.coroutine.CoroutineCallback;
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection;
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector;
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener;
 import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener;
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener;
-import org.eclipse.kuksa.model.Property;
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest;
+import org.eclipse.kuksa.coroutine.CoroutineCallback;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
-import org.eclipse.kuksa.proto.v1.Types;
-import org.eclipse.kuksa.proto.v1.Types.Datapoint;
 import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory;
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo;
 import org.eclipse.kuksa.vsscore.model.VssNode;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -91,7 +92,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void fetch(@NonNull Property property, @NonNull CoroutineCallback<GetResponse> callback) {
+    public void fetch(@NonNull FetchRequest property, @NonNull CoroutineCallback<GetResponse> callback) {
         if (dataBrokerConnection == null) {
             return;
         }
@@ -101,72 +102,59 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
 
     @Override
     public <T extends VssNode> void fetch(
-        @NonNull T vssNode,
+        @NonNull VssNodeFetchRequest<T> request,
         @NonNull CoroutineCallback<T> callback
     ) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.fetch(vssNode, callback);
+        dataBrokerConnection.fetch(request, callback);
     }
 
     @Override
     public void update(
-        @NonNull Property property,
-        @NonNull Datapoint datapoint,
+        @NonNull UpdateRequest request,
         @NonNull CoroutineCallback<SetResponse> callback
     ) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.update(property, datapoint, callback);
+        dataBrokerConnection.update(request, callback);
     }
 
     @Override
-    public void subscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
+    public void subscribe(@NonNull SubscribeRequest request, @NonNull PropertyListener propertyListener) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.subscribe(property, propertyListener);
+        dataBrokerConnection.subscribe(request, propertyListener);
     }
 
     @Override
     public <T extends VssNode> void subscribe(
-        @NonNull T vssNode,
+        @NonNull VssNodeSubscribeRequest<T> request,
         @NonNull VssNodeListener<T> vssNodeListener
     ) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        ArrayList<Types.Field> fields = new ArrayList<>() {
-            {
-                add(Types.Field.FIELD_VALUE);
-            }
-        };
-
-        dataBrokerConnection.subscribe(vssNode, fields, vssNodeListener);
+        dataBrokerConnection.subscribe(request, vssNodeListener);
     }
 
     @Override
     public <T extends VssNode> void unsubscribe(
-        @NonNull T vssNode,
+        @NonNull VssNodeSubscribeRequest<T> request,
         @NonNull VssNodeListener<T> vssNodeListener
     ) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        ArrayList<Types.Field> fields = new ArrayList<>() {
-            {
-                add(Types.Field.FIELD_VALUE);
-            }
-        };
-
-        dataBrokerConnection.unsubscribe(vssNode, fields, vssNodeListener);
+        dataBrokerConnection.unsubscribe(request, vssNodeListener);
     }
 
     public void disconnect() {
@@ -206,9 +194,9 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void unsubscribe(@NonNull Property property, @NonNull PropertyListener propertyListener) {
+    public void unsubscribe(@NonNull SubscribeRequest request, @NonNull PropertyListener propertyListener) {
         if (dataBrokerConnection != null) {
-            dataBrokerConnection.unsubscribe(property, propertyListener);
+            dataBrokerConnection.unsubscribe(request, propertyListener);
         }
     }
 }

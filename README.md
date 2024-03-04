@@ -57,8 +57,8 @@ fun connectInsecure(host: String, port: Int) {
 ```kotlin
 fun fetch() {
     lifecycleScope.launch {
-        val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
-        val response = dataBrokerConnection?.fetch(property) ?: return@launch
+        val request = FetchRequest("Vehicle.Speed", listOf(Field.FIELD_VALUE))
+        val response = dataBrokerConnection?.fetch(request) ?: return@launch
         val entry = entriesList.first() // Don't forget to handle empty responses
         val value = entry.value
         val speed = value.float
