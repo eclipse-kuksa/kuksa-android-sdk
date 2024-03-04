@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,18 @@
  *
  */
 
-package org.eclipse.kuksa.vssprocessor.parser
+package org.eclipse.kuksa.vssprocessor.parser.yaml
 
 import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vssprocessor.parser.VssDefinitionParser
 import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 
-internal class YamlDefinitionParser : VssDefinitionParser {
-    override fun parseSpecifications(definitionFile: File, elementDelimiter: String): List<VssSpecificationSpecModel> {
+internal class YamlDefinitionParser(private val elementDelimiter: String = "") : VssDefinitionParser {
+    override fun parseSpecifications(definitionFile: File): List<VssSpecificationSpecModel> {
         val specificationElements = mutableListOf<VssSpecificationSpecModel>()
         definitionFile.useLines { lines ->
             val yamlAttributes = mutableListOf<String>()

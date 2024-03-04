@@ -39,7 +39,7 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.parentClassName
-import org.eclipse.kuksa.vssprocessor.parser.YamlDefinitionParser
+import org.eclipse.kuksa.vssprocessor.parser.factory.VssDefinitionParserFactory
 import org.eclipse.kuksa.vssprocessor.spec.VssPath
 import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
@@ -56,7 +56,7 @@ class VssDefinitionProcessor(
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     private val visitor = VssDefinitionVisitor()
-    private val yamlParser = YamlDefinitionParser()
+    private val vssDefinitionParserFactory = VssDefinitionParserFactory()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(VssDefinition::class.qualifiedName.toString())
@@ -86,14 +86,20 @@ class VssDefinitionProcessor(
                 return
             }
 
+            val simpleSpecificationElements = mutableListOf<VssSpecificationSpecModel>()
             definitionFiles.forEach { definitionFile ->
-                val simpleSpecificationElements = yamlParser.parseSpecifications(definitionFile)
-                val vssPathToSpecificationElement = simpleSpecificationElements
-                    .associateBy({ VssPath(it.vssPath) }, { it })
+                logger.info("Parsing models for definition file: ${definitionFile.name}")
+                val vssDefinitionParser = vssDefinitionParserFactory.create(definitionFile)
+                val specModels = vssDefinitionParser.parseSpecifications(definitionFile)
 
-                logger.info("Generating models for definition file: ${definitionFile.name}")
-                generateModelFiles(vssPathToSpecificationElement)
+                simpleSpecificationElements.addAll(specModels)
             }
+
+            val vssPathToSpecificationElement = simpleSpecificationElements
+                .distinctBy { it.uuid }
+                .associateBy({ VssPath(it.vssPath) }, { it })
+
+            generateModelFiles(vssPathToSpecificationElement)
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.

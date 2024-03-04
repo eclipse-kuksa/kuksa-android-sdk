@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
-package org.eclipse.kuksa.vssprocessor.parser
+package org.eclipse.kuksa.vssprocessor.parser.yaml
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
@@ -28,20 +29,19 @@ class YamlDefinitionParserTest : BehaviorSpec({
         val classLoader = parser::class.java.classLoader!!
 
         and("a specification file of version 4") {
-            val resourceUrl = classLoader.getResource("vss_rel_4.0.yaml")!!
+            val resourceUrl = classLoader.getResource("yaml/vss_rel_4.0.yaml")!!
             val specificationFile = File(resourceUrl.path)
 
             `when`("parsing the file") {
                 val parsedSpecifications = parser.parseSpecifications(specificationFile)
 
                 then("the correct number of specification models should be parsed") {
-                    // These are exactly the specifications defined in the 4.0 file
-                    parsedSpecifications.size shouldBe 1197
+                    parsedSpecifications.size shouldBe 1197 // counted occurrences of '"uuid":' in specFile
                 }
             }
         }
         and("an incompatible yaml file") {
-            val incompatibleResourceUrl = classLoader.getResource("incompatible.yaml")!!
+            val incompatibleResourceUrl = classLoader.getResource("yaml/incompatible.yaml")!!
             val incompatibleFile = File(incompatibleResourceUrl.path)
 
             `when`("parsing the file") {
@@ -53,7 +53,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             }
         }
         and("an invalid yaml file") {
-            val invalidResourceUrl = classLoader.getResource("invalid.yaml")!!
+            val invalidResourceUrl = classLoader.getResource("yaml/invalid.yaml")!!
             val invalidFile = File(invalidResourceUrl.path)
 
             `when`("parsing the file") {

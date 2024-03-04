@@ -6,6 +6,7 @@ datastore = "1.0.0"
 constraintlayoutCompose = "1.0.1"
 datastorePreferences = "1.0.0"
 dokka = "1.9.10"
+gson = "2.10.1"
 kotlin = "1.9.22"
 kotlinpoet = "1.16.0"
 kotlinxSerializationJson = "1.6.1"
@@ -36,6 +37,7 @@ androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedat
 grpc-okhttp = { group = "io.grpc", name = "grpc-okhttp", version.ref = "grpc" }
 grpc-protobuf = { group = "io.grpc", name = "grpc-protobuf-lite", version.ref = "grpc" }
 grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
