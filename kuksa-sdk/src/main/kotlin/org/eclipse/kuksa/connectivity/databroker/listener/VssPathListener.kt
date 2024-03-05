@@ -27,11 +27,11 @@ import org.eclipse.kuksa.vsscore.model.VssNode
  * listener to e.g. Vehicle.ADAS.ABS this listener will also be notified about changes of the children
  * Vehicle.ADAS.ABS.IsEnabled or Vehicle.ADAS.ABS.IsEngaged.
  */
-interface PropertyListener : Listener {
+interface VssPathListener : Listener {
     /**
      * Will be triggered with a list of [entryUpdates] of the corresponding field.
      */
-    fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>)
+    fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>)
 
     /**
      * Will be triggered when an error happens during subscription and forwards the [throwable].

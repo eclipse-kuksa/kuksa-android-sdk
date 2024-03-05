@@ -31,7 +31,7 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
@@ -60,13 +60,13 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val subscribeRequest = SubscribeRequest(vssPath, field)
 
             `when`("Subscribing to the Property") {
-                val propertyListener = mockk<PropertyListener>(relaxed = true)
-                dataBrokerConnection.subscribe(subscribeRequest, propertyListener)
+                val vssPathListener = mockk<VssPathListener>(relaxed = true)
+                dataBrokerConnection.subscribe(subscribeRequest, vssPathListener)
 
                 then("The #onPropertyChanged method is triggered") {
                     val capturingSlot = slot<List<KuksaValV1.EntryUpdate>>()
                     verify(timeout = 100L) {
-                        propertyListener.onPropertyChanged(capture(capturingSlot))
+                        vssPathListener.onEntryChanged(capture(capturingSlot))
                     }
 
                     val entryUpdates = capturingSlot.captured
@@ -75,7 +75,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 }
 
                 `when`("The observed Property changes") {
-                    clearMocks(propertyListener)
+                    clearMocks(vssPathListener)
 
                     val random = Random(System.currentTimeMillis())
                     val newValue = random.nextFloat()
@@ -87,7 +87,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                         val capturingSlot = slot<List<KuksaValV1.EntryUpdate>>()
 
                         verify(timeout = 100) {
-                            propertyListener.onPropertyChanged(capture(capturingSlot))
+                            vssPathListener.onEntryChanged(capture(capturingSlot))
                         }
 
                         val entryUpdates = capturingSlot.captured
@@ -228,13 +228,13 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val invalidVssPath = "Vehicle.Some.Unknown.Path"
 
             `when`("Trying to subscribe to the INVALID Property") {
-                val propertyListener = mockk<PropertyListener>(relaxed = true)
+                val vssPathListener = mockk<VssPathListener>(relaxed = true)
                 val subscribeRequest = SubscribeRequest(invalidVssPath)
-                dataBrokerConnection.subscribe(subscribeRequest, propertyListener)
+                dataBrokerConnection.subscribe(subscribeRequest, vssPathListener)
 
                 then("The PropertyListener#onError method should be triggered with 'NOT_FOUND' (Path not found)") {
                     val capturingSlot = slot<Throwable>()
-                    verify(timeout = 100L) { propertyListener.onError(capture(capturingSlot)) }
+                    verify(timeout = 100L) { vssPathListener.onError(capture(capturingSlot)) }
                     val capturedThrowable = capturingSlot.captured
                     capturedThrowable.message shouldContain "NOT_FOUND"
                 }

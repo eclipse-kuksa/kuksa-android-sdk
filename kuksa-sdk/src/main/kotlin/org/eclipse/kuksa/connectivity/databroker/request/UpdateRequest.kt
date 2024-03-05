@@ -24,7 +24,7 @@ import org.eclipse.kuksa.proto.v1.Types.Datapoint
 /**
  * Used for update requests with [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.update].
  */
-class UpdateRequest @JvmOverloads constructor(
+open class UpdateRequest @JvmOverloads constructor(
     override val vssPath: String,
     val dataPoint: Datapoint,
     override vararg val fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),

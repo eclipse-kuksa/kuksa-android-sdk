@@ -25,7 +25,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.instanceOf
 import io.mockk.mockk
 import io.mockk.verify
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
@@ -101,15 +101,15 @@ class DataBrokerTransporterTest : BehaviorSpec({
                 `when`("Subscribing to the vssPath using FIELD_VALUE") {
                     val subscription = classUnderTest.subscribe(vssPath, Types.Field.FIELD_VALUE)
 
-                    val propertyListener = mockk<PropertyListener>(relaxed = true)
-                    subscription.listeners.register(propertyListener)
+                    val vssPathListener = mockk<VssPathListener>(relaxed = true)
+                    subscription.listeners.register(vssPathListener)
 
                     and("The value of the vssPath is updated") {
                         classUnderTest.updateRandomFloatValue(vssPath)
 
                         then("The PropertyListener should be notified") {
                             verify {
-                                propertyListener.onPropertyChanged(any())
+                                vssPathListener.onEntryChanged(any())
                             }
                         }
                     }
@@ -118,12 +118,12 @@ class DataBrokerTransporterTest : BehaviorSpec({
                 `when`("Subscribing to an invalid vssPath") {
                     val subscription = classUnderTest.subscribe("Vehicle.Some.Invalid.Path", Types.Field.FIELD_VALUE)
 
-                    val propertyListener = mockk<PropertyListener>(relaxed = true)
-                    subscription.listeners.register(propertyListener)
+                    val vssPathListener = mockk<VssPathListener>(relaxed = true)
+                    subscription.listeners.register(vssPathListener)
 
                     then("An Error should be triggered") {
                         verify(timeout = 100L) {
-                            propertyListener.onError(any())
+                            vssPathListener.onError(any())
                         }
                     }
                 }

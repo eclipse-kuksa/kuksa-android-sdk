@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection;
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector;
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener;
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener;
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener;
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener;
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest;
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest;
@@ -125,12 +125,12 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void subscribe(@NonNull SubscribeRequest request, @NonNull PropertyListener propertyListener) {
+    public void subscribe(@NonNull SubscribeRequest request, @NonNull VssPathListener listener) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.subscribe(request, propertyListener);
+        dataBrokerConnection.subscribe(request, listener);
     }
 
     @Override
@@ -194,9 +194,9 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void unsubscribe(@NonNull SubscribeRequest request, @NonNull PropertyListener propertyListener) {
+    public void unsubscribe(@NonNull SubscribeRequest request, @NonNull VssPathListener listener) {
         if (dataBrokerConnection != null) {
-            dataBrokerConnection.unsubscribe(request, propertyListener);
+            dataBrokerConnection.unsubscribe(request, listener);
         }
     }
 }

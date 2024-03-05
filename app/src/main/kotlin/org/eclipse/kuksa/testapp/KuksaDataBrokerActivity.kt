@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
@@ -98,9 +98,9 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         outputViewModel.addOutputEntry("DataBroker disconnected")
     }
 
-    private val propertyListener = object : PropertyListener {
-        override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
-            Log.d(TAG, "onPropertyChanged() called with: updatedValues = $entryUpdates")
+    private val vssPathListener = object : VssPathListener {
+        override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+            Log.d(TAG, "onEntryChanged() called with: updatedValues = $entryUpdates")
 
             val entries = mutableListOf<String>().apply {
                 add("Updated Entries")
@@ -147,12 +147,12 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
             vssPathsViewModel.onSubscribeProperty = { property: DataBrokerProperty ->
                 val request = SubscribeRequest(property.vssPath, *property.fieldTypes.toTypedArray())
-                dataBrokerEngine.subscribe(request, propertyListener)
+                dataBrokerEngine.subscribe(request, vssPathListener)
             }
 
             vssPathsViewModel.onUnsubscribeProperty = { property: DataBrokerProperty ->
                 val request = SubscribeRequest(property.vssPath, *property.fieldTypes.toTypedArray())
-                dataBrokerEngine.unsubscribe(request, propertyListener)
+                dataBrokerEngine.unsubscribe(request, vssPathListener)
             }
         }
 

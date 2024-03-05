@@ -18,21 +18,21 @@
 
 package org.eclipse.kuksa.connectivity.databroker.subscription
 
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extension.vss.copy
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.vsscore.model.VssNode
 
-internal class SpecificationPropertyListener<T : VssNode>(
+internal class VssNodePathListener<T : VssNode>(
     node: T,
     private val listener: VssNodeListener<T>,
-) : PropertyListener {
+) : VssPathListener {
     // This is currently needed because we get multiple subscribe responses for every heir. Otherwise we
     // would override the last heir value with every new response.
     private var updatedVssNode: T = node
 
-    override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+    override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
         entryUpdates.forEach { entryUpdate ->
             val dataEntry = entryUpdate.entry
             updatedVssNode = updatedVssNode.copy(dataEntry.path, dataEntry.value)
@@ -50,7 +50,7 @@ internal class SpecificationPropertyListener<T : VssNode>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SpecificationPropertyListener<*>
+        other as VssNodePathListener<*>
 
         return listener == other.listener
     }

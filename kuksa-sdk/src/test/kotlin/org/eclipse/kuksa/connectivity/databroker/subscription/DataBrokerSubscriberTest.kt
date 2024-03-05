@@ -29,11 +29,11 @@ import io.mockk.verify
 import kotlinx.coroutines.delay
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.extensions.updateRandomUint32Value
-import org.eclipse.kuksa.mocking.FriendlyPropertyListener
+import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
@@ -61,7 +61,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             `when`("Subscribing to VSS_PATH (Branch) 'Vehicle.ADAS.ABS'") {
                 val vssPath = "Vehicle.ADAS.ABS"
                 val fieldValue = Types.Field.FIELD_VALUE
-                val propertyListener = FriendlyPropertyListener()
+                val propertyListener = FriendlyVssPathListener()
                 classUnderTest.subscribe(vssPath, fieldValue, propertyListener)
 
                 then("The PropertyListener should send out ONE update containing ALL children") {
@@ -108,7 +108,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             `when`("Subscribing using VSS_PATH to Vehicle.Speed with FIELD_VALUE") {
                 val vssPath = "Vehicle.Speed"
                 val fieldValue = Types.Field.FIELD_VALUE
-                val propertyListener = FriendlyPropertyListener()
+                val propertyListener = FriendlyVssPathListener()
                 classUnderTest.subscribe(vssPath, fieldValue, propertyListener)
 
                 and("When the FIELD_VALUE of Vehicle.Speed is updated") {
@@ -163,9 +163,9 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 }
 
                 `when`("Subscribing multiple (different) PropertyListener to $vssPath") {
-                    val friendlyPropertyListeners = mutableListOf<FriendlyPropertyListener>()
+                    val friendlyPropertyListeners = mutableListOf<FriendlyVssPathListener>()
                     repeat(10) {
-                        val otherPropertyListenerMock = FriendlyPropertyListener()
+                        val otherPropertyListenerMock = FriendlyVssPathListener()
                         friendlyPropertyListeners.add(otherPropertyListenerMock)
 
                         classUnderTest.subscribe(vssPath, fieldValue, otherPropertyListenerMock)
@@ -208,7 +208,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             `when`("Subscribing the same PropertyListener twice using VSS_PATH to Vehicle.Speed with FIELD_VALUE") {
                 val vssPath = "Vehicle.Speed"
                 val fieldValue = Types.Field.FIELD_VALUE
-                val friendlyPropertyListener = FriendlyPropertyListener()
+                val friendlyPropertyListener = FriendlyVssPathListener()
                 classUnderTest.subscribe(vssPath, fieldValue, friendlyPropertyListener)
                 classUnderTest.subscribe(vssPath, fieldValue, friendlyPropertyListener)
 
@@ -286,7 +286,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
     given("An Instance of DataBrokerSubscriber with a mocked DataBrokerTransporter") {
         val subscriptionMock = mockk<DataBrokerSubscription>(relaxed = true)
         val dataBrokerTransporterMock = mockk<DataBrokerTransporter>(relaxed = true)
-        val multiListener = MultiListener<PropertyListener>()
+        val multiListener = MultiListener<VssPathListener>()
         every { dataBrokerTransporterMock.subscribe(any(), any()) } returns subscriptionMock
         every { subscriptionMock.listeners } returns multiListener
         val classUnderTest = DataBrokerSubscriber(dataBrokerTransporterMock)
@@ -294,9 +294,9 @@ class DataBrokerSubscriberTest : BehaviorSpec({
         `when`("Subscribing for the first time to a vssPath and field") {
             val vssPath = "Vehicle.Speed"
             val field = Types.Field.FIELD_VALUE
-            val propertyListenerMock1 = mockk<PropertyListener>()
-            val propertyListenerMock2 = mockk<PropertyListener>()
-            classUnderTest.subscribe(vssPath, field, propertyListenerMock1)
+            val vssPathListenerMock1 = mockk<VssPathListener>()
+            val vssPathListenerMock2 = mockk<VssPathListener>()
+            classUnderTest.subscribe(vssPath, field, vssPathListenerMock1)
 
             then("A new Subscription is created and the PropertyListener is added to the list of Listeners") {
                 verify {
@@ -308,7 +308,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             `when`("Another PropertyListener subscribes to the same vssPath and field") {
                 clearMocks(dataBrokerTransporterMock)
 
-                classUnderTest.subscribe(vssPath, field, propertyListenerMock2)
+                classUnderTest.subscribe(vssPath, field, vssPathListenerMock2)
 
                 then("No new Subscription is created and the PropertyListener is added to the list of Listeners") {
                     verify(exactly = 0) {
@@ -319,7 +319,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
             }
 
             `when`("One of two PropertyListeners unsubscribes") {
-                classUnderTest.unsubscribe(vssPath, field, propertyListenerMock1)
+                classUnderTest.unsubscribe(vssPath, field, vssPathListenerMock1)
 
                 then("The Subscription is not canceled") {
                     verify(exactly = 0) {
@@ -329,7 +329,7 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 }
 
                 `when`("The last PropertyListener unsubscribes as well") {
-                    classUnderTest.unsubscribe(vssPath, field, propertyListenerMock2)
+                    classUnderTest.unsubscribe(vssPath, field, vssPathListenerMock2)
 
                     then("There should be no more listeners registered") {
                         multiListener.count() shouldBe 0

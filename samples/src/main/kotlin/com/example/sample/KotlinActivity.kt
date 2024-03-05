@@ -31,7 +31,7 @@ import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
@@ -148,8 +148,8 @@ class KotlinActivity : AppCompatActivity() {
 
     fun subscribeProperty() {
         val request = SubscribeRequest("Vehicle.Speed", Types.Field.FIELD_VALUE)
-        val propertyListener = object : PropertyListener {
-            override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+        val vssPathListener = object : VssPathListener {
+            override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
                 entryUpdates.forEach { entryUpdate ->
                     val updatedValue = entryUpdate.entry
 
@@ -167,7 +167,7 @@ class KotlinActivity : AppCompatActivity() {
             }
         }
 
-        dataBrokerConnection?.subscribe(request, propertyListener)
+        dataBrokerConnection?.subscribe(request, vssPathListener)
     }
 
     // region: VSS generated models

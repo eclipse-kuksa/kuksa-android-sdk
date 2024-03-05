@@ -26,7 +26,7 @@ import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
@@ -110,12 +110,12 @@ class KotlinDataBrokerEngine(
         }
     }
 
-    override fun subscribe(request: SubscribeRequest, propertyListener: PropertyListener) {
-        dataBrokerConnection?.subscribe(request, propertyListener)
+    override fun subscribe(request: SubscribeRequest, listener: VssPathListener) {
+        dataBrokerConnection?.subscribe(request, listener)
     }
 
-    override fun unsubscribe(request: SubscribeRequest, propertyListener: PropertyListener) {
-        dataBrokerConnection?.unsubscribe(request, propertyListener)
+    override fun unsubscribe(request: SubscribeRequest, listener: VssPathListener) {
+        dataBrokerConnection?.unsubscribe(request, listener)
     }
 
     override fun <T : VssNode> subscribe(

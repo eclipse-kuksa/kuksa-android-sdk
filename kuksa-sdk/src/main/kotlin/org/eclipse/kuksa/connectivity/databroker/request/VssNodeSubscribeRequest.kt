@@ -29,4 +29,7 @@ import org.eclipse.kuksa.vsscore.model.VssNode
 class VssNodeSubscribeRequest<T : VssNode> @JvmOverloads constructor(
     override val vssNode: T,
     override vararg val fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
-) : VssNodeDataBrokerRequest<T>, FetchRequest(vssNode.vssPath, *fields)
+) : VssNodeDataBrokerRequest<T> {
+    override val vssPath: String
+        get() = vssNode.vssPath
+}

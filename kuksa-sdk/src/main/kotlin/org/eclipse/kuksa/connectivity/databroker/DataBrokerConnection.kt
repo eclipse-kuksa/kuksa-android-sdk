@@ -26,8 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
@@ -91,30 +91,30 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [request] and notifies the provided [propertyListener] about updates.
+     * Subscribes to the specified [request] and notifies the provided [listener] about updates.
      *
      * Throws a [DataBrokerException] in case the connection to the DataBroker is no longer active
      */
     fun subscribe(
         request: SubscribeRequest,
-        propertyListener: PropertyListener,
+        listener: VssPathListener,
     ) {
         val vssPath = request.vssPath
         request.fields.forEach { field ->
-            dataBrokerSubscriber.subscribe(vssPath, field, propertyListener)
+            dataBrokerSubscriber.subscribe(vssPath, field, listener)
         }
     }
 
     /**
-     * Unsubscribes the [propertyListener] from updates of the specified [request].
+     * Unsubscribes the [listener] from updates of the specified [request].
      */
     fun unsubscribe(
         request: SubscribeRequest,
-        propertyListener: PropertyListener,
+        listener: VssPathListener,
     ) {
         val vssPath = request.vssPath
         request.fields.forEach { field ->
-            dataBrokerSubscriber.unsubscribe(vssPath, field, propertyListener)
+            dataBrokerSubscriber.unsubscribe(vssPath, field, listener)
         }
     }
 
@@ -155,12 +155,13 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Retrieves the underlying property of the specified vssPath and returns it to the corresponding Callback.
+     * Retrieves the underlying data broker information of the specified vssPath and returns it to the corresponding
+     * callback.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     suspend fun fetch(request: FetchRequest): GetResponse {
-        Log.d(TAG, "fetchProperty() called with: property: $request")
+        Log.d(TAG, "Fetching via request: $request")
         return dataBrokerTransporter.fetch(request.vssPath, *request.fields)
     }
 
@@ -206,7 +207,7 @@ class DataBrokerConnection internal constructor(
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
     suspend fun update(request: UpdateRequest): SetResponse {
-        Log.d(TAG, "updateProperty() called with: updatedProperty = $request")
+        Log.d(TAG, "Update with request: $request")
         return dataBrokerTransporter.update(request.vssPath, request.dataPoint, *request.fields)
     }
 
@@ -225,8 +226,9 @@ class DataBrokerConnection internal constructor(
         val vssNode = request.vssNode
 
         vssNode.vssLeafs.forEach { vssLeaf ->
-            val property = UpdateRequest(vssLeaf.vssPath, vssLeaf.datapoint, *request.fields)
-            val response = update(property)
+            val simpleUpdateRequest = UpdateRequest(vssLeaf.vssPath, vssLeaf.datapoint, *request.fields)
+            val response = update(simpleUpdateRequest)
+
             responses.add(response)
         }
 

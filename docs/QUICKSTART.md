@@ -80,18 +80,18 @@ fun update() {
     lifecycleScope.launch {
         val request = UpdateRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
         val datapoint = Datapoint.newBuilder().setFloat(100f).build()
-        dataBrokerConnection?.update(property, datapoint)
+        dataBrokerConnection?.update(request, datapoint)
     }
 }
 
 fun subscribe() {
     val request = SubscribeRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
-    val propertyListener = object : PropertyListener {
-        override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+    val listener = object : VssPathListener {
+        override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
             entryUpdates.forEach { entryUpdate ->
                 val updatedValue = entryUpdate.entry
 
-                // handle property change
+                // handle entry change
                 when (updatedValue.path) {
                     "Vehicle.Speed" -> {
                         val speed = updatedValue.value.float
@@ -100,7 +100,7 @@ fun subscribe() {
         }
     }
 
-    dataBrokerConnection?.subscribe(request, propertyListener)
+    dataBrokerConnection?.subscribe(request, listener)
 }
 ```
 *Java*
@@ -131,13 +131,13 @@ void update() {
 
 void subscribe() {
     SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
-    dataBrokerConnection.subscribe(request, new PropertyListener() {
+    dataBrokerConnection.subscribe(request, new VssPathListener() {
         @Override
-        public void onPropertyChanged(@NonNull List<EntryUpdate> entryUpdates) {
+        public void onEntryChanged(@NonNull List<EntryUpdate> entryUpdates) {
             for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
             Types.DataEntry updatedValue = entryUpdate.getEntry();
 
-            // handle property change
+            // handle entry change
             switch (updatedValue.getPath()) {
                 case "Vehicle.Speed":
                 float speed = updatedValue.getValue().getFloat();
@@ -152,11 +152,12 @@ void subscribe() {
 }
 ```
 
-## VSS Symbol Processing
+## VSS Model Generation
 
-The generic nature of using the `Property` API will result into an information loss of the type which can be seen in 
-the `subscribe` example. You may choose to reuse the same listener for multiple properties. Then it requires an additional check 
-of the `vssPath` after receiving an updated value to correctly cast it back. This is feasible for simple use cases but can get tedious when working with a lot of vehicle signals.
+The generic nature of using the `VSS Path` API will result into an information loss of the type which can be seen in 
+the `subscribe` example. You may choose to reuse the same listener for multiple VSS paths. Then it requires an additional check 
+of the `vssPath` after receiving an updated value to correctly cast it back. This is feasible for simple use cases but can get tedious 
+when working with a lot of vehicle signals.
 
 For a more convenient usage you can opt in to auto generate Kotlin models via [Symbol Processing](https://kotlinlang.org/docs/ksp-quickstart.html) 
 of the same specification the Databroker uses. For starters you can retrieve an extensive default specification from the

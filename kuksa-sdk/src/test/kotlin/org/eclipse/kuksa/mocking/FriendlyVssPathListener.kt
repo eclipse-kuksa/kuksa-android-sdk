@@ -19,13 +19,13 @@
 
 package org.eclipse.kuksa.mocking
 
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 
-class FriendlyPropertyListener : PropertyListener {
+class FriendlyVssPathListener : VssPathListener {
     val updates = mutableListOf<List<KuksaValV1.EntryUpdate>>()
     val errors = mutableListOf<Throwable>()
-    override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+    override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
         updates.add(entryUpdates)
     }
 

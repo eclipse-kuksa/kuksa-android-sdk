@@ -26,7 +26,7 @@ import org.eclipse.kuksa.connectivity.authentication.JsonWebToken;
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection;
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector;
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener;
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener;
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener;
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener;
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest;
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest;
@@ -180,9 +180,9 @@ public class JavaActivity extends AppCompatActivity {
         if (dataBrokerConnection == null) return;
 
         SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
-        dataBrokerConnection.subscribe(request, new PropertyListener() {
+        dataBrokerConnection.subscribe(request, new VssPathListener() {
             @Override
-            public void onPropertyChanged(@NonNull List<KuksaValV1.EntryUpdate> entryUpdates) {
+            public void onEntryChanged(@NonNull List<KuksaValV1.EntryUpdate> entryUpdates) {
                 for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
                     Types.DataEntry updatedValue = entryUpdate.getEntry();
 

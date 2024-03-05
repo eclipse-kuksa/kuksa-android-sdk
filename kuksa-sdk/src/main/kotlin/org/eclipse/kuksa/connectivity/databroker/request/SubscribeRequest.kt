@@ -23,7 +23,7 @@ import org.eclipse.kuksa.proto.v1.Types
 /**
  * Used for subscribe requests with [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.subscribe].
  */
-class SubscribeRequest @JvmOverloads constructor(
+open class SubscribeRequest @JvmOverloads constructor(
     override val vssPath: String,
     override vararg val fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
 ) : DataBrokerRequest

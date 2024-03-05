@@ -161,7 +161,7 @@ internal class DataBrokerTransporter(
         val streamObserver = object : StreamObserver<SubscribeResponse> {
             override fun onNext(value: SubscribeResponse) {
                 subscription.listeners.forEach { observer ->
-                    observer.onPropertyChanged(value.updatesList)
+                    observer.onEntryChanged(value.updatesList)
                 }
 
                 subscription.lastSubscribeResponse = value

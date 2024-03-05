@@ -21,8 +21,8 @@ package org.eclipse.kuksa.connectivity.databroker.subscription
 import android.util.Log
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
-import org.eclipse.kuksa.connectivity.databroker.listener.PropertyListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
@@ -33,7 +33,7 @@ import org.eclipse.kuksa.vsscore.model.VssNode
  * Creates [DataBrokerSubscription]s to the DataBroker to get notified about changes on the underlying vssPaths and
  * fields.If no [DataBrokerSubscription] for a given vssPath and field does exist the DataBrokerSubscriber will create
  * a new one. If it was already requested before, the same [DataBrokerSubscription] will be re-used. When the last
- * [PropertyListener] of a [DataBrokerSubscription] unsubscribes the [DataBrokerSubscription] will be automatically
+ * [VssPathListener] of a [DataBrokerSubscription] unsubscribes the [DataBrokerSubscription] will be automatically
  * canceled and removed from the active [DataBrokerSubscription]s.
  */
 internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBrokerTransporter) {
@@ -42,10 +42,10 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
 
     /**
      * Checks if the SDK is already subscribed to the corresponding [vssPath] and [field], if the SDK is already
-     * subscribed it will simply add the 3rd-party [propertyListener] to the current subscription. If not, a new
-     * Subscription is made and the [propertyListener] is added to it.
+     * subscribed it will simply add the 3rd-party [listener] to the current subscription. If not, a new
+     * Subscription is made and the [listener] is added to it.
      */
-    fun subscribe(vssPath: String, field: Field, propertyListener: PropertyListener) {
+    fun subscribe(vssPath: String, field: Field, listener: VssPathListener) {
         val identifier = createIdentifier(vssPath, field)
         var subscription = subscriptions[identifier]
         if (subscription == null) {
@@ -54,19 +54,19 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
             Log.v(TAG, "Created $subscription")
         }
 
-        subscription.listeners.register(propertyListener)
+        subscription.listeners.register(listener)
     }
 
     /**
-     * Removes the specified [propertyListener] for the specified [vssPath] and [field] from an already existing
+     * Removes the specified [listener] for the specified [vssPath] and [field] from an already existing
      * Subscription to the DataBroker. If the given Subscription has no more Listeners after unsubscribing it will be
      * canceled and removed. Gracefully ignores invalid input, e.g. when a [vssPath] and [field] of a non-subscribed
      * property is provided.
      */
-    fun unsubscribe(vssPath: String, field: Field, propertyListener: PropertyListener) {
+    fun unsubscribe(vssPath: String, field: Field, listener: VssPathListener) {
         val identifier = createIdentifier(vssPath, field)
         val subscription = subscriptions[identifier] ?: return
-        subscription.listeners.unregister(propertyListener)
+        subscription.listeners.unregister(listener)
 
         if (subscription.listeners.isEmpty()) {
             Log.v(TAG, "Removing $subscription: no more listeners")
@@ -92,8 +92,8 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     ) {
         val vssPath = node.vssPath
 
-        val specificationPropertyListener = SpecificationPropertyListener(node, listener)
-        subscribe(vssPath, field, specificationPropertyListener)
+        val vssNodePathListener = VssNodePathListener(node, listener)
+        subscribe(vssPath, field, vssNodePathListener)
     }
 
     /**
@@ -109,8 +109,8 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     ) {
         val vssPath = node.vssPath
 
-        val specificationPropertyListener = SpecificationPropertyListener(node, listener)
-        unsubscribe(vssPath, field, specificationPropertyListener)
+        val vssNodePathListener = VssNodePathListener(node, listener)
+        unsubscribe(vssPath, field, vssNodePathListener)
     }
 
     private companion object {
