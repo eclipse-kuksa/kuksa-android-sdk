@@ -86,7 +86,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
             }
         }
 
-        `when`("Parsing the SpecModels of vss_rel_4.0.json") {
+        `when`("Parsing vss_rel_4.0.json") {
             val fullSpecFile = TestResourceFile("json/vss_rel_4.0.json")
             val specModels = classUnderTest.parseSpecifications(fullSpecFile)
 
@@ -95,9 +95,78 @@ class JsonDefinitionParserTest : BehaviorSpec({
             }
         }
 
+        `when`("Parsing vss_rel_3.1.1.json") {
+            val fullSpecFile = TestResourceFile("json/vss_rel_3.1.1.json")
+            val result = runCatching {
+                classUnderTest.parseSpecifications(fullSpecFile)
+            }
+
+            then("No Exception should be thrown") {
+                result.exceptionOrNull() shouldBe null
+            }
+            then("The correct number of results should be parsed") {
+                result.getOrNull()?.size shouldBe 1138 // counted occurrences of '"uuid":' in specFile
+            }
+        }
+
+        `when`("Parsing vss_rel_3.0.json") {
+            val fullSpecFile = TestResourceFile("json/vss_rel_3.0.json")
+            val result = runCatching {
+                classUnderTest.parseSpecifications(fullSpecFile)
+            }
+
+            then("No Exception should be thrown") {
+                result.exceptionOrNull() shouldBe null
+            }
+            then("The correct number of results should be parsed") {
+                result.getOrNull()?.size shouldBe 1079 // counted occurrences of '"uuid":' in specFile
+            }
+        }
+
+        `when`("Parsing vss_rel_2.2.json") {
+            val fullSpecFile = TestResourceFile("json/vss_rel_2.2.json")
+            val result = runCatching {
+                classUnderTest.parseSpecifications(fullSpecFile)
+            }
+
+            then("No Exception should be thrown") {
+                result.exceptionOrNull() shouldBe null
+            }
+            then("The correct number of results should be parsed") {
+                result.getOrNull()?.size shouldBe 968 // counted occurrences of '"uuid":' in specFile
+            }
+        }
+
+        `when`("Parsing vss_rel_2.1.json") {
+            val fullSpecFile = TestResourceFile("json/vss_rel_2.1.json")
+            val result = runCatching {
+                classUnderTest.parseSpecifications(fullSpecFile)
+            }
+
+            then("No Exception should be thrown") {
+                result.exceptionOrNull() shouldBe null
+            }
+            then("The correct number of results should be parsed") {
+                result.getOrNull()?.size shouldBe 967 // counted occurrences of '"uuid":' in specFile
+            }
+        }
+
+        `when`("Parsing vss_rel_2.0.json") {
+            val fullSpecFile = TestResourceFile("json/vss_rel_2.0.json")
+            val result = runCatching {
+                classUnderTest.parseSpecifications(fullSpecFile)
+            }
+
+            then("No Exception should be thrown") {
+                result.exceptionOrNull() shouldBe null
+            }
+            then("The correct number of results should be parsed") {
+                result.getOrNull()?.size shouldBe 1712 // counted occurrences of '"uuid":' in specFile
+            }
+        }
+
         `when`("Parsing an incompatible / non-vss json file") {
             val incompatibleFile = TestResourceFile("json/incompatible.json")
-
             val result = runCatching {
                 classUnderTest.parseSpecifications(incompatibleFile)
             }
@@ -109,7 +178,6 @@ class JsonDefinitionParserTest : BehaviorSpec({
 
         `when`("Parsing a non-json file") {
             val nonJsonFile = TestResourceFile("yaml/vss_rel_4.0.yaml")
-
             val result = runCatching {
                 classUnderTest.parseSpecifications(nonJsonFile)
             }
