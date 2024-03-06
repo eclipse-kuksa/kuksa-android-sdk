@@ -31,8 +31,8 @@ import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
@@ -131,9 +131,11 @@ class KotlinActivity : AppCompatActivity() {
         }
     }
 
+    private val newSpeed = 50f
+
     fun updateProperty() {
         val datapoint = Datapoint.newBuilder()
-            .setFloat(50f)
+            .setFloat(newSpeed)
             .build()
         val request = UpdateRequest("Vehicle.Speed", datapoint, Types.Field.FIELD_VALUE)
         lifecycleScope.launch {

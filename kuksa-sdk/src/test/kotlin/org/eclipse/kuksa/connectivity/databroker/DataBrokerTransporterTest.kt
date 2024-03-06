@@ -107,7 +107,7 @@ class DataBrokerTransporterTest : BehaviorSpec({
                     and("The value of the vssPath is updated") {
                         classUnderTest.updateRandomFloatValue(vssPath)
 
-                        then("The PropertyListener should be notified") {
+                        then("The listener should be notified") {
                             verify {
                                 vssPathListener.onEntryChanged(any())
                             }
@@ -116,7 +116,10 @@ class DataBrokerTransporterTest : BehaviorSpec({
                 }
 
                 `when`("Subscribing to an invalid vssPath") {
-                    val subscription = classUnderTest.subscribe("Vehicle.Some.Invalid.Path", Types.Field.FIELD_VALUE)
+                    val subscription = classUnderTest.subscribe(
+                        "Vehicle.Some.Invalid.Path",
+                        Types.Field.FIELD_VALUE,
+                    )
 
                     val vssPathListener = mockk<VssPathListener>(relaxed = true)
                     subscription.listeners.register(vssPathListener)

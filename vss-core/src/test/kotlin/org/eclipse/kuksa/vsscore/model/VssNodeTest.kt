@@ -43,8 +43,8 @@ class VssNodeTest : BehaviorSpec({
             }
         }
         `when`("finding specific properties") {
-            val properties = vssVehicle.findProperties(VssDriver.VssHeartRate::class)
-            then("it should return all VssProperties which fit the class") {
+            val properties = vssVehicle.findLeaf(VssDriver.VssHeartRate::class)
+            then("it should return all properties which fit the class") {
                 properties.size shouldBe 2
             }
         }

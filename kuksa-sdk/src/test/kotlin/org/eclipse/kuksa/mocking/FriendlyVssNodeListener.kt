@@ -25,6 +25,7 @@ import org.eclipse.kuksa.vsscore.model.VssNode
 class FriendlyVssNodeListener<T : VssNode> : VssNodeListener<T> {
     val updatedSpecifications = mutableListOf<T>()
     val errors = mutableListOf<Throwable>()
+
     override fun onNodeChanged(vssNode: T) {
         updatedSpecifications.add(vssNode)
     }
