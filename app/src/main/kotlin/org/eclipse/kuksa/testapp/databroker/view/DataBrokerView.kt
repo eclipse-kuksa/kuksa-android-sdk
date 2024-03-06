@@ -102,7 +102,7 @@ val MinimumButtonWidth = 150.dp
 fun DataBrokerView(
     topAppBarViewModel: TopAppBarViewModel,
     connectionViewModel: ConnectionViewModel,
-    vssPropertiesViewModel: VSSPathsViewModel,
+    vssPathsViewModel: VSSPathsViewModel,
     vssNodesViewModel: VssNodesViewModel,
     outputViewModel: OutputViewModel,
 ) {
@@ -125,7 +125,7 @@ fun DataBrokerView(
                 val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 if (connectionViewModel.isConnected) {
                     when (dataBrokerMode) {
-                        DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPropertiesViewModel)
+                        DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPathsViewModel)
                         DataBrokerMode.VSS_FILE -> DataBrokerVssNodes(vssNodesViewModel)
                     }
                 }

@@ -255,9 +255,9 @@ class KuksaDataBrokerActivity : ComponentActivity() {
 
                     Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
 
-                    val vssProperties = vssPathsViewModel.dataBrokerProperty
+                    val dataBrokerProperty = vssPathsViewModel.dataBrokerProperty
                         .copy(valueType = automaticValueType)
-                    vssPathsViewModel.updateDataBrokerProperty(vssProperties)
+                    vssPathsViewModel.updateDataBrokerProperty(dataBrokerProperty)
                 }
 
                 override fun onError(error: Throwable) {

@@ -33,13 +33,13 @@ interface VssNode {
     val uuid: String
 
     /**
-     * Defines the path to the property inside the VSS tree structure.
+     * Defines the path to the [VssNode] inside the VSS tree structure.
      * Example: Vehicle.Body.Horn.IsActive
      */
     val vssPath: String
 
     /**
-     * Simple description of the property.
+     * Simple description of the [VssNode].
      */
     val description: String
 
@@ -209,19 +209,19 @@ fun VssNode.findHeritageLine(
 }
 
 /**
- * Finds the given [property] inside the current [VssNode].
+ * Finds the given [leaf] inside the current [VssNode].
  */
-fun <T : VssLeaf<V>, V : Any> VssNode.findProperty(property: VssLeaf<V>): VssLeaf<V> {
+fun <T : VssLeaf<V>, V : Any> VssNode.findLeaf(leaf: VssLeaf<V>): VssLeaf<V> {
     return heritage
         .filterIsInstance<VssLeaf<V>>()
-        .first { it.uuid == property.uuid }
+        .first { it.uuid == leaf.uuid }
 }
 
 /**
  * Finds all [VssLeaf] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
  * with the same Name exists but are pretty much the same besides the [VssNode.vssPath] etc.
  */
-fun <T : VssLeaf<V>, V : Any> VssNode.findProperties(type: KClass<T>): Map<String, VssLeaf<V>> {
+fun <T : VssLeaf<V>, V : Any> VssNode.findLeaf(type: KClass<T>): Map<String, VssLeaf<V>> {
     return heritage
         .filterIsInstance<VssLeaf<V>>()
         .filter { it::class.simpleName == type.simpleName }
