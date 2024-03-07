@@ -19,14 +19,14 @@
 
 package org.eclipse.kuksa.vssprocessor.parser
 
-import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
+import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
 
-internal interface VssDefinitionParser {
+internal interface VssParser {
     /**
-     * @param definitionFile to parse [VssSpecificationSpecModel] with
+     * @param definitionFile to parse [VssNodeSpecModel] with
      *
      * @throws java.io.IOException will be thrown when parsing the SpecModels failed
      */
-    fun parseSpecifications(definitionFile: File): List<VssSpecificationSpecModel>
+    fun parseNodes(definitionFile: File): List<VssNodeSpecModel>
 }

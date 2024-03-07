@@ -22,20 +22,20 @@ package org.eclipse.kuksa.vssprocessor.parser.factory
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
-import org.eclipse.kuksa.vssprocessor.parser.json.JsonDefinitionParser
-import org.eclipse.kuksa.vssprocessor.parser.yaml.YamlDefinitionParser
+import org.eclipse.kuksa.vssprocessor.parser.json.JsonVssParser
+import org.eclipse.kuksa.vssprocessor.parser.yaml.YamlVssParser
 import java.io.File
 
-class VssDefinitionParserFactoryTest : BehaviorSpec({
+class VssParserFactoryTest : BehaviorSpec({
 
     given("An instance of DefinitionParserFactory") {
-        val classUnderTest = VssDefinitionParserFactory()
+        val classUnderTest = VssParserFactory()
 
         `when`("Calling create with supported extension 'json'") {
             val vssDefinitionParser = classUnderTest.create("json")
 
             then("It should return a JsonDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(JsonDefinitionParser::class)
+                vssDefinitionParser shouldBe instanceOf(JsonVssParser::class)
             }
         }
 
@@ -43,7 +43,7 @@ class VssDefinitionParserFactoryTest : BehaviorSpec({
             val vssDefinitionParser = classUnderTest.create("yaml")
 
             then("It should return a YamlDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(YamlDefinitionParser::class)
+                vssDefinitionParser shouldBe instanceOf(YamlVssParser::class)
             }
         }
 
@@ -51,7 +51,7 @@ class VssDefinitionParserFactoryTest : BehaviorSpec({
             val vssDefinitionParser = classUnderTest.create("yml")
 
             then("It should return a YamlDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(YamlDefinitionParser::class)
+                vssDefinitionParser shouldBe instanceOf(YamlVssParser::class)
             }
         }
 
@@ -60,7 +60,7 @@ class VssDefinitionParserFactoryTest : BehaviorSpec({
             val vssDefinitionParser = classUnderTest.create(supportedFile)
 
             then("It should correctly extract the extension and return the corresponding VssDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(JsonDefinitionParser::class)
+                vssDefinitionParser shouldBe instanceOf(JsonVssParser::class)
             }
         }
 

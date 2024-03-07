@@ -26,14 +26,14 @@ import io.kotest.matchers.types.instanceOf
 import org.eclipse.kuksa.test.TestResourceFile
 import java.io.IOException
 
-class JsonDefinitionParserTest : BehaviorSpec({
+class JsonVssParserTest : BehaviorSpec({
 
     given("A JsonDefinitionParser") {
-        val classUnderTest = JsonDefinitionParser()
+        val classUnderTest = JsonVssParser()
 
         `when`("Parsing the SpecModels of vss_rel_4.0.partial.json") {
             val partialSpecFile = TestResourceFile("json/vss_rel_4.0.partial.json")
-            val specModels = classUnderTest.parseSpecifications(partialSpecFile)
+            val specModels = classUnderTest.parseNodes(partialSpecFile)
 
             then("The following SpecModels should be parsed") {
                 val validVssPaths = listOf(
@@ -88,7 +88,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
 
         `when`("Parsing vss_rel_4.0.json") {
             val fullSpecFile = TestResourceFile("json/vss_rel_4.0.json")
-            val specModels = classUnderTest.parseSpecifications(fullSpecFile)
+            val specModels = classUnderTest.parseNodes(fullSpecFile)
 
             then("the correct number of specification models should be parsed") {
                 specModels.size shouldBe 1197 // counted occurrences of '"uuid":' in specFile
@@ -98,7 +98,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
         `when`("Parsing vss_rel_3.1.1.json") {
             val fullSpecFile = TestResourceFile("json/vss_rel_3.1.1.json")
             val result = runCatching {
-                classUnderTest.parseSpecifications(fullSpecFile)
+                classUnderTest.parseNodes(fullSpecFile)
             }
 
             then("No Exception should be thrown") {
@@ -112,7 +112,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
         `when`("Parsing vss_rel_3.0.json") {
             val fullSpecFile = TestResourceFile("json/vss_rel_3.0.json")
             val result = runCatching {
-                classUnderTest.parseSpecifications(fullSpecFile)
+                classUnderTest.parseNodes(fullSpecFile)
             }
 
             then("No Exception should be thrown") {
@@ -126,7 +126,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
         `when`("Parsing vss_rel_2.2.json") {
             val fullSpecFile = TestResourceFile("json/vss_rel_2.2.json")
             val result = runCatching {
-                classUnderTest.parseSpecifications(fullSpecFile)
+                classUnderTest.parseNodes(fullSpecFile)
             }
 
             then("No Exception should be thrown") {
@@ -140,7 +140,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
         `when`("Parsing vss_rel_2.1.json") {
             val fullSpecFile = TestResourceFile("json/vss_rel_2.1.json")
             val result = runCatching {
-                classUnderTest.parseSpecifications(fullSpecFile)
+                classUnderTest.parseNodes(fullSpecFile)
             }
 
             then("No Exception should be thrown") {
@@ -154,7 +154,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
         `when`("Parsing vss_rel_2.0.json") {
             val fullSpecFile = TestResourceFile("json/vss_rel_2.0.json")
             val result = runCatching {
-                classUnderTest.parseSpecifications(fullSpecFile)
+                classUnderTest.parseNodes(fullSpecFile)
             }
 
             then("No Exception should be thrown") {
@@ -168,7 +168,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
         `when`("Parsing an incompatible / non-vss json file") {
             val incompatibleFile = TestResourceFile("json/incompatible.json")
             val result = runCatching {
-                classUnderTest.parseSpecifications(incompatibleFile)
+                classUnderTest.parseNodes(incompatibleFile)
             }
 
             then("An IOException is thrown") {
@@ -179,7 +179,7 @@ class JsonDefinitionParserTest : BehaviorSpec({
         `when`("Parsing a non-json file") {
             val nonJsonFile = TestResourceFile("yaml/vss_rel_4.0.yaml")
             val result = runCatching {
-                classUnderTest.parseSpecifications(nonJsonFile)
+                classUnderTest.parseNodes(nonJsonFile)
             }
 
             then("An IOException is thrown") {

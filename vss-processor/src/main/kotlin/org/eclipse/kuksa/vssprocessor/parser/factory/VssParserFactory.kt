@@ -19,26 +19,26 @@
 
 package org.eclipse.kuksa.vssprocessor.parser.factory
 
-import org.eclipse.kuksa.vssprocessor.parser.VssDefinitionParser
+import org.eclipse.kuksa.vssprocessor.parser.VssParser
 import org.eclipse.kuksa.vssprocessor.parser.factory.VssFileExtension.JSON
 import org.eclipse.kuksa.vssprocessor.parser.factory.VssFileExtension.YAML
-import org.eclipse.kuksa.vssprocessor.parser.json.JsonDefinitionParser
-import org.eclipse.kuksa.vssprocessor.parser.yaml.YamlDefinitionParser
+import org.eclipse.kuksa.vssprocessor.parser.json.JsonVssParser
+import org.eclipse.kuksa.vssprocessor.parser.yaml.YamlVssParser
 import java.io.File
 
-internal class VssDefinitionParserFactory {
+internal class VssParserFactory {
 
     /**
      * @throws IllegalStateException when the specified extension is not supported
      */
-    fun create(extension: String): VssDefinitionParser {
+    fun create(extension: String): VssParser {
         return when {
             JSON.fileExtensions.contains(extension) -> {
-                JsonDefinitionParser()
+                JsonVssParser()
             }
 
             YAML.fileExtensions.contains(extension) -> {
-                YamlDefinitionParser()
+                YamlVssParser()
             }
 
             else -> {
@@ -50,7 +50,7 @@ internal class VssDefinitionParserFactory {
     /**
      * @throws IllegalStateException when the extension of the specified file is not supported
      */
-    fun create(file: File): VssDefinitionParser {
+    fun create(file: File): VssParser {
         val fileName = file.name // with extension
         val fileExtension = fileName.substringAfterLast(".")
 

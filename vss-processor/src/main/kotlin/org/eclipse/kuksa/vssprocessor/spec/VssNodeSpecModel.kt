@@ -46,14 +46,14 @@ import kotlin.reflect.full.declaredMemberProperties
 
 // Reflects the specification file as a model and is filled via reflection. That is why the variable names
 // should exactly match the names inside the specification file and be of a string type.
-internal class VssSpecificationSpecModel(
+internal class VssNodeSpecModel(
     override var uuid: String = "",
     override var vssPath: String = "",
     override var description: String = "",
     override var type: String = "",
     override var comment: String = "",
     @Suppress("MemberVisibilityCanBePrivate") var datatype: String = "",
-) : VssSpecification, SpecModel<VssSpecificationSpecModel> {
+) : VssSpecification, SpecModel<VssNodeSpecModel> {
     var logger: KSPLogger? = null
 
     private val datatypeProperty: TypeName
@@ -99,7 +99,7 @@ internal class VssSpecificationSpecModel(
 
     override fun createClassSpec(
         packageName: String,
-        relatedSpecifications: Collection<VssSpecificationSpecModel>,
+        relatedSpecifications: Collection<VssNodeSpecModel>,
         nestedClasses: Collection<String>,
     ): TypeSpec {
         val childSpecifications = relatedSpecifications.filter { it.parentKey == name }
@@ -210,7 +210,7 @@ internal class VssSpecificationSpecModel(
     private fun createVssSpecificationSpecs(
         className: String,
         packageName: String,
-        specification: VssSpecificationSpecModel = this,
+        specification: VssNodeSpecModel = this,
     ): List<PropertySpec> {
         val propertySpecs = mutableListOf<PropertySpec>()
         val members = VssSpecification::class.declaredMemberProperties
@@ -232,7 +232,7 @@ internal class VssSpecificationSpecModel(
         }
 
         fun createObjectTypeSpec(
-            specification: VssSpecificationSpecModel,
+            specification: VssNodeSpecModel,
             packageName: String,
         ): PropertySpec {
             val prefixedTypeName = ClassName(packageName, specification.className)
@@ -259,7 +259,7 @@ internal class VssSpecificationSpecModel(
         return listOf(objectTypeSpec)
     }
 
-    private fun createVssNodeSpecs(childSpecifications: List<VssSpecificationSpecModel>): List<PropertySpec> {
+    private fun createVssNodeSpecs(childSpecifications: List<VssNodeSpecModel>): List<PropertySpec> {
         fun createSetSpec(memberName: String, memberType: TypeName): PropertySpec {
             val specificationNamesJoined = childSpecifications.joinToString(", ") { it.variableName }
 
@@ -311,7 +311,7 @@ internal class VssSpecificationSpecModel(
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other !is VssSpecificationSpecModel) return false
+        if (other !is VssNodeSpecModel) return false
 
         return uuid == other.uuid
     }

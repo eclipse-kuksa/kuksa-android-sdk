@@ -23,15 +23,15 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.eclipse.kuksa.test.TestResourceFile
 
-class YamlDefinitionParserTest : BehaviorSpec({
+class YamlVssParserTest : BehaviorSpec({
     given("A parser for yaml files") {
-        val parser = YamlDefinitionParser()
+        val parser = YamlVssParser()
 
         and("a specification file of version 4") {
             val fullSpecificationFile = TestResourceFile("yaml/vss_rel_4.0.yaml")
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseSpecifications(fullSpecificationFile)
+                val parsedSpecifications = parser.parseNodes(fullSpecificationFile)
 
                 then("the correct number of specification models should be parsed") {
                     parsedSpecifications.size shouldBe 1197 // counted occurrences of '"uuid":' in specFile
@@ -42,7 +42,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             val incompatibleFile = TestResourceFile("yaml/incompatible.yaml")
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseSpecifications(incompatibleFile)
+                val parsedSpecifications = parser.parseNodes(incompatibleFile)
 
                 then("no entries should be returned") {
                     parsedSpecifications.size shouldBe 0
@@ -53,7 +53,7 @@ class YamlDefinitionParserTest : BehaviorSpec({
             val invalidFile = TestResourceFile("yaml/invalid.yaml")
 
             `when`("parsing the file") {
-                val parsedSpecifications = parser.parseSpecifications(invalidFile)
+                val parsedSpecifications = parser.parseNodes(invalidFile)
 
                 then("no entries should be returned") {
                     parsedSpecifications.size shouldBe 0

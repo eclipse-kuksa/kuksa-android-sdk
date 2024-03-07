@@ -39,9 +39,9 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import org.eclipse.kuksa.vsscore.annotation.VssDefinition
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.parentClassName
-import org.eclipse.kuksa.vssprocessor.parser.factory.VssDefinitionParserFactory
+import org.eclipse.kuksa.vssprocessor.parser.factory.VssParserFactory
+import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import org.eclipse.kuksa.vssprocessor.spec.VssPath
-import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
 
 /**
@@ -51,12 +51,12 @@ import java.io.File
  * @param codeGenerator to generate class files with
  * @param logger to log output with
  */
-class VssDefinitionProcessor(
+class VssModelGeneratorProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     private val visitor = VssDefinitionVisitor()
-    private val vssDefinitionParserFactory = VssDefinitionParserFactory()
+    private val vssParserFactory = VssParserFactory()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(VssDefinition::class.qualifiedName.toString())
@@ -86,11 +86,11 @@ class VssDefinitionProcessor(
                 return
             }
 
-            val simpleSpecificationElements = mutableListOf<VssSpecificationSpecModel>()
+            val simpleSpecificationElements = mutableListOf<VssNodeSpecModel>()
             definitionFiles.forEach { definitionFile ->
                 logger.info("Parsing models for definition file: ${definitionFile.name}")
-                val vssDefinitionParser = vssDefinitionParserFactory.create(definitionFile)
-                val specModels = vssDefinitionParser.parseSpecifications(definitionFile)
+                val vssDefinitionParser = vssParserFactory.create(definitionFile)
+                val specModels = vssDefinitionParser.parseNodes(definitionFile)
 
                 simpleSpecificationElements.addAll(specModels)
             }
@@ -116,7 +116,7 @@ class VssDefinitionProcessor(
                 .toSet()
         }
 
-        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssSpecificationSpecModel>) {
+        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssNodeSpecModel>) {
             val duplicateSpecificationNames = vssPathToSpecification.keys
                 .groupBy { it.leaf }
                 .filter { it.value.size > 1 }
@@ -159,7 +159,7 @@ class VssDefinitionProcessor(
         // If the actual parent is a sub class (Driver) in another class file (e.g. Vehicle) then this method returns
         // a sub import e.g. "Vehicle.Driver". Otherwise just "Vehicle" is returned.
         private fun buildParentImport(
-            specModel: VssSpecificationSpecModel,
+            specModel: VssNodeSpecModel,
             parentVssPathToClassName: Map<String, String>,
         ): String {
             var availableParentVssPath = specModel.vssPath
@@ -200,12 +200,12 @@ class VssDefinitionProcessor(
 }
 
 /**
- * Provides the environment for the [VssDefinitionProcessor].
+ * Provides the environment for the [VssModelGeneratorProcessor].
  */
 class VssDefinitionProcessorProvider : SymbolProcessorProvider {
     override fun create(
         environment: SymbolProcessorEnvironment,
     ): SymbolProcessor {
-        return VssDefinitionProcessor(environment.codeGenerator, environment.logger)
+        return VssModelGeneratorProcessor(environment.codeGenerator, environment.logger)
     }
 }

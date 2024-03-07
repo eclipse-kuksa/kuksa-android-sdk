@@ -22,8 +22,8 @@ package org.eclipse.kuksa.vssprocessor.parser.json
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
-import org.eclipse.kuksa.vssprocessor.parser.VssDefinitionParser
-import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
+import org.eclipse.kuksa.vssprocessor.parser.VssParser
+import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
 import java.io.IOException
 
@@ -36,7 +36,7 @@ private const val KEY_DATA_COMMENT = "comment"
 private const val KEY_DATA_DATATYPE = "datatype"
 private const val KEY_DATA_CHILDREN = "children"
 
-internal class JsonDefinitionParser : VssDefinitionParser {
+internal class JsonVssParser : VssParser {
     private val dataKeys = listOf(
         KEY_DATA_DESCRIPTION,
         KEY_DATA_TYPE,
@@ -46,8 +46,8 @@ internal class JsonDefinitionParser : VssDefinitionParser {
         KEY_DATA_CHILDREN,
     )
 
-    override fun parseSpecifications(definitionFile: File): List<VssSpecificationSpecModel> {
-        val vssSpecificationSpecModels = mutableListOf<VssSpecificationSpecModel>()
+    override fun parseNodes(definitionFile: File): List<VssNodeSpecModel> {
+        val vssNodeSpecModels = mutableListOf<VssNodeSpecModel>()
 
         try {
             val jsonStreamReader = definitionFile.reader()
@@ -57,7 +57,7 @@ internal class JsonDefinitionParser : VssDefinitionParser {
 
             if (rootJsonObject.has(ROOT_KEY_VEHICLE)) {
                 val vehicleJsonObject = rootJsonObject.getAsJsonObject(ROOT_KEY_VEHICLE)
-                vssSpecificationSpecModels += parseSpecModels(ROOT_KEY_VEHICLE, vehicleJsonObject)
+                vssNodeSpecModels += parseSpecModels(ROOT_KEY_VEHICLE, vehicleJsonObject)
             } else {
                 throw IOException("Invalid VSS Specification file '${definitionFile.path}'")
             }
@@ -65,14 +65,14 @@ internal class JsonDefinitionParser : VssDefinitionParser {
             throw IOException("Invalid VSS Specification file '${definitionFile.path}'", e)
         }
 
-        return vssSpecificationSpecModels.toList()
+        return vssNodeSpecModels.toList()
     }
 
     private fun parseSpecModels(
         vssPath: String,
         jsonObject: JsonObject,
-    ): Collection<VssSpecificationSpecModel> {
-        val parsedSpecModels = mutableListOf<VssSpecificationSpecModel>()
+    ): Collection<VssNodeSpecModel> {
+        val parsedSpecModels = mutableListOf<VssNodeSpecModel>()
 
         val parsedSpecModel = parseSpecModel(vssPath, jsonObject)
         parsedSpecModels += parsedSpecModel
@@ -97,7 +97,7 @@ internal class JsonDefinitionParser : VssDefinitionParser {
     private fun parseSpecModel(
         vssPath: String,
         jsonObject: JsonObject,
-    ): VssSpecificationSpecModel {
+    ): VssNodeSpecModel {
         val uuid = jsonObject.get(KEY_DATA_UUID).asString
             ?: throw JsonParseException("Could not parse '$KEY_DATA_UUID' for '$vssPath'")
 
@@ -108,6 +108,6 @@ internal class JsonDefinitionParser : VssDefinitionParser {
         val datatype = jsonObject.get(KEY_DATA_DATATYPE)?.asString ?: ""
         val comment = jsonObject.get(KEY_DATA_COMMENT)?.asString ?: ""
 
-        return VssSpecificationSpecModel(uuid, vssPath, description, type, comment, datatype)
+        return VssNodeSpecModel(uuid, vssPath, description, type, comment, datatype)
     }
 }
