@@ -25,7 +25,6 @@ import org.eclipse.kuksa.vsscore.model.VssNode
  * Used for fetch requests with a generated [VssNode] model and
  * [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.fetch].
  */
-@Suppress("performance:SpreadOperator") // API convenience > performance
 class VssNodeFetchRequest<T : VssNode> @JvmOverloads constructor(
     override val vssNode: T,
     override vararg val fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),

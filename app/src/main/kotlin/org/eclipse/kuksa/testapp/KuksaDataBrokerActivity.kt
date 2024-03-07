@@ -65,7 +65,6 @@ import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.annotation.VssModelGenerator
 import org.eclipse.kuksa.vsscore.model.VssNode
 
-@Suppress("performance:SpreadOperator") // API convenience > performance
 @VssModelGenerator
 class KuksaDataBrokerActivity : ComponentActivity() {
     private lateinit var connectionInfoRepository: ConnectionInfoRepository
@@ -134,6 +133,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         JavaDataBrokerEngine()
     }
 
+    @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
     override fun onCreate(savedInstanceState: Bundle?) {
         fun addVssPathsListeners() {
             vssPathsViewModel.onGetProperty = { property: DataBrokerProperty ->
@@ -267,6 +267,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
+    @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
     private fun fetchProperty(property: DataBrokerProperty) {
         Log.d(TAG, "Fetch property: $property")
 
@@ -300,6 +301,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
+    @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
     private fun updateProperty(property: DataBrokerProperty, datapoint: Datapoint) {
         Log.d(TAG, "Update property: $property dataPoint: $datapoint, type: ${datapoint.valueCase}")
 

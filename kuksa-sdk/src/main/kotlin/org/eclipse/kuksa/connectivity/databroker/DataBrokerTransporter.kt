@@ -70,7 +70,7 @@ internal class DataBrokerTransporter(
      */
     suspend fun fetch(
         vssPath: String,
-        vararg fields: Field,
+        fields: Collection<Field>,
     ): KuksaValV1.GetResponse {
         return withContext(defaultDispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)
@@ -101,7 +101,7 @@ internal class DataBrokerTransporter(
     suspend fun update(
         vssPath: String,
         updatedDatapoint: Types.Datapoint,
-        vararg fields: Field,
+        fields: Collection<Field>,
     ): KuksaValV1.SetResponse {
         return withContext(defaultDispatcher) {
             val blockingStub = VALGrpc.newBlockingStub(managedChannel)

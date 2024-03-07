@@ -49,25 +49,35 @@ import kotlin.reflect.full.memberProperties
  */
 // The suggested method to improve the performance can't be used here because we are already working with a full array.
 // https://detekt.dev/docs/rules/performance/
-@Suppress("performance:SpreadOperator")
-fun <T : VssNode> T.deepCopy(generation: Int = 0, vararg changedHeritage: VssNode): T {
+fun <T : VssNode> T.deepCopy(generation: Int = 0, changedHeritage: List<VssNode>): T {
     if (generation == changedHeritage.size) { // Reached the end, use the changed [VssLeaf]
         return this
     }
 
-    // Create the missing link between this [VssNode] and the given property (node inbetween)
+    // Create the missing link between this [VssNode] and the given node inbetween
     var heritageLine = changedHeritage
     if (changedHeritage.size == 1) {
         heritageLine = findHeritageLine(changedHeritage.first(), true)
-            .toTypedArray()
+            .toList()
             .ifEmpty { changedHeritage }
     }
 
     val childNode = heritageLine[generation]
-    val childCopy = childNode.deepCopy(generation + 1, *heritageLine)
+    val childCopy = childNode.deepCopy(generation + 1, heritageLine)
     val parameterNameToChild = mapOf(childNode.variableName to childCopy)
 
     return copy(parameterNameToChild)
+}
+
+/**
+ * Convenience method for [deepCopy] with a [VssNode]. It will return the [VssNode] with the updated
+ * [VssNode].
+ *
+ * @throws [IllegalArgumentException] if the copied types do not match.
+ * @throws [NoSuchElementException] if no copy method was found for the class.
+ */
+fun <T : VssNode> T.deepCopy(vararg vssNodes: VssNode): T {
+    return deepCopy(0, vssNodes.toList())
 }
 
 /**
@@ -160,10 +170,10 @@ fun <T : VssNode> T.copy(
 
     val updatedVssNode = vssNode.copy(updatedValue)
 
-    // Same property with no heirs, no deep copy is needed
+    // Same node with no heirs, no deep copy is needed
     if (this.vssPath == updatedVssNode.vssPath) return updatedVssNode as T
 
-    return deepCopy(0, updatedVssNode)
+    return deepCopy(updatedVssNode)
 }
 
 // region Operators
@@ -175,8 +185,8 @@ fun <T : VssNode> T.copy(
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun <T : VssNode> T.invoke(vararg property: VssNode): T {
-    return deepCopy(0, *property)
+operator fun <T : VssNode> T.invoke(vararg vssNodes: VssNode): T {
+    return deepCopy(0, vssNodes.toList())
 }
 
 /**

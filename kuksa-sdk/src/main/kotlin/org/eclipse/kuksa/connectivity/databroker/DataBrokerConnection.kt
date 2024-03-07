@@ -53,7 +53,6 @@ import kotlin.properties.Delegates
  * The DataBrokerConnection holds an active connection to the DataBroker. The Connection can be use to interact with the
  * DataBroker.
  */
-@Suppress("performance:SpreadOperator") // API convenience > performance
 class DataBrokerConnection internal constructor(
     private val managedChannel: ManagedChannel,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -162,7 +161,7 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun fetch(request: FetchRequest): GetResponse {
         Log.d(TAG, "Fetching via request: $request")
-        return dataBrokerTransporter.fetch(request.vssPath, *request.fields)
+        return dataBrokerTransporter.fetch(request.vssPath, request.fields.toSet())
     }
 
     /**
@@ -171,7 +170,10 @@ class DataBrokerConnection internal constructor(
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      */
-    @Suppress("exceptions:TooGenericExceptionCaught") // Handling is bundled together
+
+    // SpreadOperator: Neglectable - Field types are 1-2 elements mostly
+    // TooGenericExceptionCaught: Handling is bundled together
+    @Suppress("exceptions:TooGenericExceptionCaught", "performance:SpreadOperator")
     suspend fun <T : VssNode> fetch(request: VssNodeFetchRequest<T>): T {
         return withContext(dispatcher) {
             try {
@@ -181,19 +183,19 @@ class DataBrokerConnection internal constructor(
                 val entries = response.entriesList
 
                 if (entries.isEmpty()) {
-                    Log.w(TAG, "No entries found for fetched specification!")
+                    Log.w(TAG, "No entries found for fetched VssNode!")
                     return@withContext vssNode
                 }
 
-                // Update every heir specification
+                // Update every heir node
                 // TODO: Can be optimized to not replace the whole heritage line for every child entry one by one
-                var updatedSpecification: T = vssNode
-                val heritage = updatedSpecification.heritage
+                var updatedVssNode: T = vssNode
+                val heritage = updatedVssNode.heritage
                 entries.forEach { entry ->
-                    updatedSpecification = updatedSpecification.copy(entry.path, entry.value, heritage)
+                    updatedVssNode = updatedVssNode.copy(entry.path, entry.value, heritage)
                 }
 
-                return@withContext updatedSpecification
+                return@withContext updatedVssNode
             } catch (e: Exception) {
                 throw DataBrokerException(e.message, e)
             }
@@ -208,7 +210,7 @@ class DataBrokerConnection internal constructor(
      */
     suspend fun update(request: UpdateRequest): SetResponse {
         Log.d(TAG, "Update with request: $request")
-        return dataBrokerTransporter.update(request.vssPath, request.dataPoint, *request.fields)
+        return dataBrokerTransporter.update(request.vssPath, request.dataPoint, request.fields.toSet())
     }
 
     /**
@@ -221,6 +223,7 @@ class DataBrokerConnection internal constructor(
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      * @throws IllegalArgumentException if the [VssLeaf] could not be converted to a [Datapoint].
      */
+    @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
     suspend fun <T : VssNode> update(request: VssNodeUpdateRequest<T>): Collection<SetResponse> {
         val responses = mutableListOf<SetResponse>()
         val vssNode = request.vssNode
