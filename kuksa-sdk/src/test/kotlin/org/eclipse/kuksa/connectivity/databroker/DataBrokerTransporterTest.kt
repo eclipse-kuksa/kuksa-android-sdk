@@ -47,14 +47,14 @@ class DataBrokerTransporterTest : BehaviorSpec({
 
             and("Some VSS-related data") {
                 val vssPath = "Vehicle.ADAS.CruiseControl.SpeedSet"
-                val field = Types.Field.FIELD_VALUE
+                val fields = setOf(Types.Field.FIELD_VALUE)
                 val random = Random(System.currentTimeMillis())
                 val valueToSet = random.nextInt(250).toFloat()
 
-                `when`("Updating the $field of $vssPath to $valueToSet km/h") {
+                `when`("Updating the $fields of $vssPath to $valueToSet km/h") {
                     val updatedDatapoint = Types.Datapoint.newBuilder().setFloat(valueToSet).build()
                     val result = kotlin.runCatching {
-                        classUnderTest.update(vssPath, updatedDatapoint, field)
+                        classUnderTest.update(vssPath, updatedDatapoint, fields)
                     }
 
                     then("No Exception should be thrown") {
@@ -69,7 +69,7 @@ class DataBrokerTransporterTest : BehaviorSpec({
                 }
 
                 `when`("Fetching the Value of Vehicle.ADAS.CruiseControl.SpeedSet") {
-                    val property = classUnderTest.fetch(vssPath, field)
+                    val property = classUnderTest.fetch(vssPath, fields)
 
                     then("It should return the correct value") {
                         val dataEntry = property.getEntries(0)
@@ -78,11 +78,11 @@ class DataBrokerTransporterTest : BehaviorSpec({
                     }
                 }
 
-                `when`("Trying to fetch the $field from an invalid VSS Path") {
+                `when`("Trying to fetch the $fields from an invalid VSS Path") {
                     val invalidVssPath = "Vehicle.This.Path.Is.Invalid"
 
                     val result = kotlin.runCatching {
-                        classUnderTest.fetch(invalidVssPath, field)
+                        classUnderTest.fetch(invalidVssPath, fields)
                     }
 
                     then("No Exception should be thrown") {

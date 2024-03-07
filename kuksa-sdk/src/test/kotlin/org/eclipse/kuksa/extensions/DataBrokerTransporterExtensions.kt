@@ -34,7 +34,7 @@ internal suspend fun DataBrokerTransporter.updateRandomFloatValue(
     val updatedDatapoint = Types.Datapoint.newBuilder().setFloat(randomFloat).build()
 
     try {
-        update(vssPath, updatedDatapoint, Types.Field.FIELD_VALUE)
+        update(vssPath, updatedDatapoint, setOf(Types.Field.FIELD_VALUE))
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomFloat failed: $e")
     }
@@ -51,7 +51,7 @@ internal suspend fun DataBrokerTransporter.updateRandomUint32Value(
     val updatedDatapoint = Types.Datapoint.newBuilder().setUint32(randomValue).build()
 
     try {
-        update(vssPath, updatedDatapoint, Types.Field.FIELD_VALUE)
+        update(vssPath, updatedDatapoint, setOf(Types.Field.FIELD_VALUE))
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomValue failed: $e")
     }
@@ -60,17 +60,17 @@ internal suspend fun DataBrokerTransporter.updateRandomUint32Value(
 }
 
 internal suspend fun DataBrokerTransporter.toggleBoolean(vssPath: String): Boolean {
-    val field = Types.Field.FIELD_VALUE
+    val fields = setOf(Types.Field.FIELD_VALUE)
 
     var newBoolean: Boolean? = null
     try {
-        val response = fetch(vssPath, field)
+        val response = fetch(vssPath, fields)
         val currentBool = response.entriesList[0].value.bool
 
         newBoolean = !currentBool
         val newDatapoint = Types.Datapoint.newBuilder().setBool(newBoolean).build()
 
-        update(vssPath, newDatapoint, field)
+        update(vssPath, newDatapoint, fields)
     } catch (e: Exception) {
         fail("Updating $vssPath to $newBoolean failed: $e")
     }
