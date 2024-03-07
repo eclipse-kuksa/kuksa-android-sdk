@@ -71,10 +71,10 @@ internal class JsonDefinitionParser : VssDefinitionParser {
     private fun parseSpecModels(
         vssPath: String,
         jsonObject: JsonObject,
-    ): MutableList<VssSpecificationSpecModel> {
+    ): Collection<VssSpecificationSpecModel> {
         val parsedSpecModels = mutableListOf<VssSpecificationSpecModel>()
 
-        val parsedSpecModel = parseSpecModel(jsonObject, vssPath)
+        val parsedSpecModel = parseSpecModel(vssPath, jsonObject)
         parsedSpecModels += parsedSpecModel
 
         if (jsonObject.has(KEY_DATA_CHILDREN)) {
@@ -95,8 +95,8 @@ internal class JsonDefinitionParser : VssDefinitionParser {
     }
 
     private fun parseSpecModel(
-        jsonObject: JsonObject,
         vssPath: String,
+        jsonObject: JsonObject,
     ): VssSpecificationSpecModel {
         val uuid = jsonObject.get(KEY_DATA_UUID).asString
             ?: throw JsonParseException("Could not parse '$KEY_DATA_UUID' for '$vssPath'")
