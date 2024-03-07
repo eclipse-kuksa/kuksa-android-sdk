@@ -75,7 +75,7 @@ class VssProcessorPlugin : Plugin<Project> {
                         .append(KSP_INPUT_BUILD_DIRECTORY)
                         .append(fileSeparator)
                         .toString()
-                    val vssBuildFile = File(vssFilePath)
+                    val vssFile = File(vssFilePath)
 
                     logger.info("Searching directory $searchPath for VSS definitions")
 
@@ -88,7 +88,7 @@ class VssProcessorPlugin : Plugin<Project> {
                     }
 
                     inputDir.set(searchDir)
-                    outputDir.set(vssBuildFile)
+                    outputDir.set(vssFile)
                 }
 
             tasks.getByName("preBuild").dependsOn(

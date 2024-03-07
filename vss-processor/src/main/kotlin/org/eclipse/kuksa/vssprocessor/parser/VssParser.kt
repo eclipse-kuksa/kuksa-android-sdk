@@ -25,7 +25,7 @@ import java.io.File
 internal interface VssParser {
     /**
      * @param definitionFile to parse [VssNodeSpecModel] with
-     * @param elementDelimiter which is the separator string between the specifications. The default is an empty line.
+     * @param elementDelimiter which is the separator string between the elements. The default is an empty line.
      */
     fun parseNodes(
         definitionFile: File,

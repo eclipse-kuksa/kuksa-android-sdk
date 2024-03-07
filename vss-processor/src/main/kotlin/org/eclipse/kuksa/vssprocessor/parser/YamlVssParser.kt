@@ -28,14 +28,14 @@ import kotlin.reflect.full.memberProperties
 
 internal class YamlVssParser : VssParser {
     override fun parseNodes(definitionFile: File, elementDelimiter: String): List<VssNodeSpecModel> {
-        val specificationElements = mutableListOf<VssNodeSpecModel>()
+        val vssNodeElements = mutableListOf<VssNodeSpecModel>()
         definitionFile.useLines { lines ->
             val yamlAttributes = mutableListOf<String>()
             for (line in lines.toList()) {
                 val trimmedLine = line.trim()
                 if (trimmedLine == elementDelimiter) { // A new element will follow after the delimiter
-                    parseYamlElement(yamlAttributes)?.let { specificationElement ->
-                        specificationElements.add(specificationElement)
+                    parseYamlElement(yamlAttributes)?.let { vssNodeElement ->
+                        vssNodeElements.add(vssNodeElement)
                     }
 
                     yamlAttributes.clear()
@@ -47,12 +47,12 @@ internal class YamlVssParser : VssParser {
             }
 
             // Add the last element because no empty line will follow
-            parseYamlElement(yamlAttributes)?.let { specificationElement ->
-                specificationElements.add(specificationElement)
+            parseYamlElement(yamlAttributes)?.let { vssNodeElement ->
+                vssNodeElements.add(vssNodeElement)
             }
         }
 
-        return specificationElements
+        return vssNodeElements
     }
 
     // Example .yaml element:

@@ -61,7 +61,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
      * Removes the specified [listener] for the specified [vssPath] and [field] from an already existing
      * Subscription to the DataBroker. If the given Subscription has no more Listeners after unsubscribing it will be
      * canceled and removed. Gracefully ignores invalid input, e.g. when a [vssPath] and [field] of a non-subscribed
-     * property is provided.
+     * [vssPath] is provided.
      */
     fun unsubscribe(vssPath: String, field: Field, listener: VssPathListener) {
         val identifier = createIdentifier(vssPath, field)
@@ -100,7 +100,7 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
      * Removes the specified [listener] for the specified [node] and [field] from an already existing
      * Subscription to the DataBroker. If the given Subscription has no more Listeners after unsubscribing it will be
      * canceled and removed. Gracefully ignores invalid input, e.g. when a [node] and [field] of a
-     * non-subscribed property is provided.
+     * non-subscribed [VssNode] is provided.
      */
     fun <T : VssNode> unsubscribe(
         node: T,

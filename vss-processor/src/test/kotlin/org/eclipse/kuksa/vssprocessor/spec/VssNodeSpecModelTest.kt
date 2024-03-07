@@ -149,9 +149,9 @@ class VssNodeSpecModelTest : BehaviorSpec({
                 exception shouldNotBe null
             }
         }
-        and("related specifications") {
+        and("related nodes") {
             val vehicleSpeedSpecModel = VssNodeSpecModel(datatype = "float", vssPath = "Vehicle.Speed")
-            val relatedSpecifications = listOf(
+            val relatedVssNodes = listOf(
                 VssNodeSpecModel(vssPath = "Vehicle.SmartphoneProjection"),
                 VssNodeSpecModel(datatype = "boolean", vssPath = "Vehicle.IsBrokenDown"),
                 vehicleSpeedSpecModel,
@@ -161,7 +161,7 @@ class VssNodeSpecModelTest : BehaviorSpec({
             )
 
             `when`("creating a class spec with children") {
-                val rootClassSpec = specModel.createClassSpec("test", relatedSpecifications)
+                val rootClassSpec = specModel.createClassSpec("test", relatedVssNodes)
 
                 then("it should contain the child properties") {
                     val isBrokenDownPropertySpec = rootClassSpec.propertySpecs.find { it.name == "isBrokenDown" }
@@ -190,14 +190,14 @@ class VssNodeSpecModelTest : BehaviorSpec({
                     }
                 }
             }
-            and("nested specifications") {
-                val nestedSpecifications = listOf("Speed")
+            and("nested nodes") {
+                val nestedVssNodes = listOf("Speed")
 
                 `when`("creating a child class spec with nested children") {
                     val classSpec = specModel.createClassSpec(
                         "test",
-                        relatedSpecifications,
-                        nestedSpecifications,
+                        relatedVssNodes,
+                        nestedVssNodes,
                     )
 
                     then("it should contain the nested children") {

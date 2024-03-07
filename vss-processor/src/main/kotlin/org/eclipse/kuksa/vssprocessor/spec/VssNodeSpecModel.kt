@@ -43,8 +43,8 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
-// Reflects the specification file as a model and is filled via reflection. That is why the variable names
-// should exactly match the names inside the specification file and be of a string type.
+// Reflects the VSS file as a model and is filled via reflection. That is why the variable names
+// should exactly match the names inside the VSS file and be of a string type.
 internal class VssNodeSpecModel(
     override var uuid: String = "",
     override var vssPath: String = "",
@@ -102,12 +102,12 @@ internal class VssNodeSpecModel(
 
     override fun createClassSpec(
         packageName: String,
-        relatedSpecifications: Collection<VssNodeSpecModel>,
+        relatedNodes: Collection<VssNodeSpecModel>,
         nestedClasses: Collection<String>,
     ): TypeSpec {
-        val childSpecifications = relatedSpecifications.filter { it.parentKey == name }
+        val childNodes = relatedNodes.filter { it.parentKey == name }
         // Every specification has only one parent, do not check again for heirs
-        val reducedRelatedSpecifications = relatedSpecifications - childSpecifications.toSet() - this
+        val reducedRelatedNodes = relatedNodes - childNodes.toSet() - this
 
         val nestedChildSpecs = mutableListOf<TypeSpec>()
         val constructorBuilder = FunSpec.constructorBuilder()
@@ -116,7 +116,7 @@ internal class VssNodeSpecModel(
         val superInterfaces = mutableSetOf<TypeName>(VssNode::class.asTypeName())
 
         // The last element in the chain should have a value like "isLocked".
-        if (childSpecifications.isEmpty()) {
+        if (childNodes.isEmpty()) {
             val (valuePropertySpec, parameterSpec) = createValueSpec()
 
             constructorBuilder.addParameter(parameterSpec)
@@ -133,14 +133,14 @@ internal class VssNodeSpecModel(
         val propertySpec = createVssNodeSpecs(className, packageName = packageName)
         propertySpecs.addAll(propertySpec)
 
-        // Parses all specifications into properties
-        childSpecifications.forEach { childSpecification ->
-            // This nested specification has an ambiguous name, add as nested class
+        // Parses all VssNodes into properties
+        childNodes.forEach { childNode ->
+            // This nested node has an ambiguous name, add as nested class
             // The package name is different for nested classes (no qualifier)
-            val hasAmbiguousName = nestedClasses.contains(childSpecification.name)
+            val hasAmbiguousName = nestedClasses.contains(childNode.name)
             val uniquePackageName = if (hasAmbiguousName) "" else packageName
 
-            val childPropertySpec = createVssNodeSpecs(className, uniquePackageName, childSpecification)
+            val childPropertySpec = createVssNodeSpecs(className, uniquePackageName, childNode)
             propertySpecs.addAll(childPropertySpec)
 
             // Nested VssNode properties should be added as constructor parameters
@@ -148,19 +148,19 @@ internal class VssNodeSpecModel(
             if (mainClassPropertySpec.initializer != null) { // Only add a default for initializer
                 if (hasAmbiguousName) {
                     // All children should contain the prefix vssPath (improves performance)
-                    val relevantRelatedSpecifications = reducedRelatedSpecifications.filter {
-                        it.vssPath.contains(childSpecification.vssPath + ".")
+                    val relevantRelatedNodes = reducedRelatedNodes.filter {
+                        it.vssPath.contains(childNode.vssPath + ".")
                     }
-                    val childSpec = childSpecification.createClassSpec(
+                    val childSpec = childNode.createClassSpec(
                         packageName,
-                        relevantRelatedSpecifications,
+                        relevantRelatedNodes,
                         nestedClasses,
                     )
 
                     nestedChildSpecs.add(childSpec)
                 }
 
-                val defaultClassName = childSpecification.className
+                val defaultClassName = childNode.className
                 val defaultParameter = createDefaultParameterSpec(
                     mainClassPropertySpec.name,
                     defaultClassName,
@@ -171,7 +171,7 @@ internal class VssNodeSpecModel(
             }
         }
 
-        val nodeSpecs = createVssNodeTreeSpecs(childSpecifications)
+        val nodeSpecs = createVssNodeTreeSpecs(childNodes)
         propertySpecs.addAll(nodeSpecs)
 
         val className = ClassName(packageName, className)
@@ -213,7 +213,7 @@ internal class VssNodeSpecModel(
     private fun createVssNodeSpecs(
         className: String,
         packageName: String,
-        specification: VssNodeSpecModel = this,
+        specModel: VssNodeSpecModel = this,
     ): List<PropertySpec> {
         val propertySpecs = mutableListOf<PropertySpec>()
         val members = VssNode::class.declaredMemberProperties
@@ -221,7 +221,7 @@ internal class VssNodeSpecModel(
         fun createInterfaceDataTypeSpec(member: KProperty1<VssNode, *>): PropertySpec {
             val memberName = member.name
             val memberType = member.returnType.asTypeName()
-            val initialValue = member.get(specification) ?: ""
+            val initialValue = member.get(specModel) ?: ""
 
             return PropertySpec
                 .builder(memberName, memberType)
@@ -235,11 +235,11 @@ internal class VssNodeSpecModel(
         }
 
         fun createObjectTypeSpec(
-            specification: VssNodeSpecModel,
+            nodeSpecModel: VssNodeSpecModel,
             packageName: String,
         ): PropertySpec {
-            val prefixedTypeName = ClassName(packageName, specification.className)
-            val variableName = specification.variableName
+            val prefixedTypeName = ClassName(packageName, nodeSpecModel.className)
+            val variableName = nodeSpecModel.variableName
 
             return PropertySpec
                 .builder(variableName, prefixedTypeName)
@@ -248,7 +248,7 @@ internal class VssNodeSpecModel(
         }
 
         // Add primitive data types
-        if (specification.className == className) {
+        if (specModel.className == className) {
             members.forEach { member ->
                 when (member.returnType.asTypeName()) {
                     stringTypeName -> createInterfaceDataTypeSpec(member)
@@ -262,13 +262,13 @@ internal class VssNodeSpecModel(
         }
 
         // Add nested child classes
-        val objectTypeSpec = createObjectTypeSpec(specification, packageName)
+        val objectTypeSpec = createObjectTypeSpec(specModel, packageName)
         return listOf(objectTypeSpec)
     }
 
-    private fun createVssNodeTreeSpecs(childSpecifications: List<VssNodeSpecModel>): List<PropertySpec> {
+    private fun createVssNodeTreeSpecs(childNodes: List<VssNodeSpecModel>): List<PropertySpec> {
         fun createSetSpec(memberName: String, memberType: TypeName): PropertySpec {
-            val specificationNamesJoined = childSpecifications.joinToString(", ") { it.variableName }
+            val vssNodeNamesJoined = childNodes.joinToString(", ") { it.variableName }
 
             return PropertySpec
                 .builder(memberName, memberType)
@@ -276,7 +276,7 @@ internal class VssNodeSpecModel(
                 .addModifiers(KModifier.OVERRIDE)
                 .getter(
                     FunSpec.getterBuilder()
-                        .addStatement("return setOf(%L)", specificationNamesJoined)
+                        .addStatement("return setOf(%L)", vssNodeNamesJoined)
                         .build(),
                 )
                 .build()

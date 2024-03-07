@@ -92,12 +92,12 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     }
 
     @Override
-    public void fetch(@NonNull FetchRequest property, @NonNull CoroutineCallback<GetResponse> callback) {
+    public void fetch(@NonNull FetchRequest request, @NonNull CoroutineCallback<GetResponse> callback) {
         if (dataBrokerConnection == null) {
             return;
         }
 
-        dataBrokerConnection.fetch(property, callback);
+        dataBrokerConnection.fetch(request, callback);
     }
 
     @Override

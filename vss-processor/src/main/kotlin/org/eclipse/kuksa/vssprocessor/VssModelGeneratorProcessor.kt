@@ -44,8 +44,8 @@ import org.eclipse.kuksa.vssprocessor.spec.VssPath
 import java.io.File
 
 /**
- * Generates a [org.eclipse.kuksa.vsscore.model.VssNode] for every specification listed in the input file.
- * These nodes are a usable kotlin data class reflection of the specification.
+ * Generates a [org.eclipse.kuksa.vsscore.model.VssNode] for every entry listed in the input file.
+ * These nodes are a usable kotlin data class reflection of the element.
  *
  * @param codeGenerator to generate class files with
  * @param logger to log output with
@@ -109,26 +109,26 @@ class VssModelGeneratorProcessor(
                 .toSet()
         }
 
-        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssNodeSpecModel>) {
-            val duplicateSpecificationNames = vssPathToSpecification.keys
+        private fun generateModelFiles(vssPathToVssNode: Map<VssPath, VssNodeSpecModel>) {
+            val duplicateNodeNames = vssPathToVssNode.keys
                 .groupBy { it.leaf }
                 .filter { it.value.size > 1 }
                 .keys
 
-            logger.info("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
+            logger.info("Ambiguous VssNode - Generate nested classes: $duplicateNodeNames")
 
             val generatedFilesVssPathToClassName = mutableMapOf<String, String>()
-            for ((vssPath, specModel) in vssPathToSpecification) {
+            for ((vssPath, specModel) in vssPathToVssNode) {
                 // Every duplicate is produced as a nested class - No separate file should be generated
-                if (duplicateSpecificationNames.contains(vssPath.leaf)) {
+                if (duplicateNodeNames.contains(vssPath.leaf)) {
                     continue
                 }
 
                 specModel.logger = logger
                 val classSpec = specModel.createClassSpec(
                     PACKAGE_NAME,
-                    vssPathToSpecification.values,
-                    duplicateSpecificationNames,
+                    vssPathToVssNode.values,
+                    duplicateNodeNames,
                 )
 
                 val className = classSpec.name ?: throw NoSuchFieldException("Class spec $classSpec has no name field!")

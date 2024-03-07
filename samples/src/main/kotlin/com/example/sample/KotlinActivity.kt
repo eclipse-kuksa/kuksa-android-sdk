@@ -155,7 +155,7 @@ class KotlinActivity : AppCompatActivity() {
                 entryUpdates.forEach { entryUpdate ->
                     val updatedValue = entryUpdate.entry
 
-                    // handle property change
+                    // handle value change
                     when (updatedValue.path) {
                         "Vehicle.Speed" -> {
                             val speed = updatedValue.value.float

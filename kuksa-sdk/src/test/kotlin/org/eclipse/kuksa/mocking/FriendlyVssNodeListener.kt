@@ -23,11 +23,11 @@ import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
 import org.eclipse.kuksa.vsscore.model.VssNode
 
 class FriendlyVssNodeListener<T : VssNode> : VssNodeListener<T> {
-    val updatedSpecifications = mutableListOf<T>()
+    val updatedVssNodes = mutableListOf<T>()
     val errors = mutableListOf<Throwable>()
 
     override fun onNodeChanged(vssNode: T) {
-        updatedSpecifications.add(vssNode)
+        updatedVssNodes.add(vssNode)
     }
 
     override fun onError(throwable: Throwable) {
@@ -35,7 +35,7 @@ class FriendlyVssNodeListener<T : VssNode> : VssNodeListener<T> {
     }
 
     fun reset() {
-        updatedSpecifications.clear()
+        updatedVssNodes.clear()
         errors.clear()
     }
 }

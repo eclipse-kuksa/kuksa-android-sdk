@@ -227,55 +227,55 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 }
             }
 
-            val specification = VssDriver.VssHeartRate()
+            val vssHeartRate = VssDriver.VssHeartRate()
 
             `when`("Subscribing using a VSS node to Vehicle.Driver.HeartRate with Field FIELD_VALUE") {
                 val friendlyVssNodeListener = FriendlyVssNodeListener<VssDriver.VssHeartRate>()
                 classUnderTest.subscribe(
-                    specification,
+                    vssHeartRate,
                     Types.Field.FIELD_VALUE,
                     friendlyVssNodeListener,
                 )
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
                     val randomIntValue =
-                        databrokerTransporter.updateRandomUint32Value(specification.vssPath)
+                        databrokerTransporter.updateRandomUint32Value(vssHeartRate.vssPath)
 
                     then("The Observer should be triggered") {
                         eventually(1.seconds) {
-                            friendlyVssNodeListener.updatedSpecifications.size shouldBe 2
+                            friendlyVssNodeListener.updatedVssNodes.size shouldBe 2
                         }
 
-                        val count = friendlyVssNodeListener.updatedSpecifications
+                        val count = friendlyVssNodeListener.updatedVssNodes
                             .count { it.value == randomIntValue }
                         count shouldBe 1
                     }
                 }
             }
 
-            `when`("Subscribing the same SpecificationObserver twice to Vehicle.Driver.HeartRate") {
-                val specificationObserverMock = FriendlyVssNodeListener<VssDriver.VssHeartRate>()
+            `when`("Subscribing the same VssNodeObserver twice to Vehicle.Driver.HeartRate") {
+                val nodeListenerMock = FriendlyVssNodeListener<VssDriver.VssHeartRate>()
                 classUnderTest.subscribe(
-                    specification,
+                    vssHeartRate,
                     Types.Field.FIELD_VALUE,
-                    specificationObserverMock,
+                    nodeListenerMock,
                 )
                 classUnderTest.subscribe(
-                    specification,
+                    vssHeartRate,
                     Types.Field.FIELD_VALUE,
-                    specificationObserverMock,
+                    nodeListenerMock,
                 )
 
                 and("The value of Vehicle.Driver.HeartRate changes") {
                     val randomIntValue =
-                        databrokerTransporter.updateRandomUint32Value(specification.vssPath)
+                        databrokerTransporter.updateRandomUint32Value(vssHeartRate.vssPath)
 
                     then("The Observer is only notified once") {
                         eventually(1.seconds) {
-                            specificationObserverMock.updatedSpecifications.size shouldBe 2
+                            nodeListenerMock.updatedVssNodes.size shouldBe 2
                         }
 
-                        val count = specificationObserverMock.updatedSpecifications.count { it.value == randomIntValue }
+                        val count = nodeListenerMock.updatedVssNodes.count { it.value == randomIntValue }
                         count shouldBe 1
                     }
                 }

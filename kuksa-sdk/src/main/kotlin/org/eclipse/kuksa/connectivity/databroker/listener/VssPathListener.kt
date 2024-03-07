@@ -43,7 +43,7 @@ interface VssPathListener : Listener {
  * The Listener is used to notify about subscribed [VssNode]. If a [VssNode] has children
  * then [onNodeChanged] will be called on every value change for every children.
  */
-interface VssNodeListener<T : VssNode> {
+interface VssNodeListener<T : VssNode> : Listener {
     /**
      * Will be triggered with the [vssNode] when the underlying vssPath changed it's value or to inform about
      * the initial state.

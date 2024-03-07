@@ -35,7 +35,7 @@ import org.eclipse.kuksa.vsscore.model.VssLeaf
 class VssNodeCopyTest : BehaviorSpec({
     tags(Unit)
 
-    given("A specification") {
+    given("A VssNode") {
         val vehicle = VssVehicle()
         val driverHeartRate: VssLeaf<Int> = vehicle.driver.heartRate
 
@@ -44,7 +44,7 @@ class VssNodeCopyTest : BehaviorSpec({
             val updatedHeartRate = VssDriver.VssHeartRate(value = newValue)
 
             `when`("a deep copy is done with a changed heritage line") {
-                val deepCopiedNode = vehicle.deepCopy(0, updatedHeartRate)
+                val deepCopiedNode = vehicle.deepCopy(updatedHeartRate)
 
                 then("it should return the new children as a copy") {
                     val heartRate = deepCopiedNode.driver.heartRate
@@ -110,11 +110,11 @@ class VssNodeCopyTest : BehaviorSpec({
             val datapoint = Types.Datapoint.newBuilder().build()
 
             and("an invalid VssLeaf") {
-                val invalidSpecification = VssInvalid()
+                val vssInvalid = VssInvalid()
 
                 `when`("a copy is done") {
                     val exception = shouldThrow<NoSuchFieldException> {
-                        invalidSpecification.copy(datapoint)
+                        vssInvalid.copy(datapoint)
                     }
 
                     then("it should throw an IllegalArgumentException") {

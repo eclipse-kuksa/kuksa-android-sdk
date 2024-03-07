@@ -195,9 +195,9 @@ fun VssNode.findHeritageLine(
     heir: VssNode,
     isReplacingHeir: Boolean = false,
 ): Collection<VssNode> {
-    val specificationKeys = heir.vssPathHeritageLine
+    val vssNodeKeys = heir.vssPathHeritageLine
     val heritageLine = heritage.filter { child ->
-        specificationKeys.contains(child.vssPath)
+        vssNodeKeys.contains(child.vssPath)
     }.toMutableList()
 
     if (isReplacingHeir && heritageLine.isNotEmpty()) {

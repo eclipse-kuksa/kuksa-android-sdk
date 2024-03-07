@@ -45,7 +45,7 @@ internal class VssNodePathListener<T : VssNode>(
         listener.onError(throwable)
     }
 
-    // Two SpecificationObserverWrapper instances are equal if they have the same observer set!
+    // Two VssNodeObserverWrapper instances are equal if they have the same observer set!
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

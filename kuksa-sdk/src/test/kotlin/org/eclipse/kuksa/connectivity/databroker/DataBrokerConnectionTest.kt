@@ -177,9 +177,9 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val subscribeRequest = VssNodeSubscribeRequest(vssDriver)
                 dataBrokerConnection.subscribe(subscribeRequest, listener = vssNodeListener)
 
-                then("The #onSpecificationChanged method is triggered") {
+                then("The #onNodeChanged method is triggered") {
                     eventually(1.seconds) {
-                        vssNodeListener.updatedSpecifications.size shouldBe 1
+                        vssNodeListener.updatedVssNodes.size shouldBe 1
                     }
                 }
 
@@ -192,10 +192,10 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                     then("Every child node has been updated with the correct value") {
                         eventually(1.seconds) {
-                            vssNodeListener.updatedSpecifications.size shouldBe 2
+                            vssNodeListener.updatedVssNodes.size shouldBe 2
                         }
 
-                        val updatedDriver = vssNodeListener.updatedSpecifications.last()
+                        val updatedDriver = vssNodeListener.updatedVssNodes.last()
                         val heartRate = updatedDriver.heartRate
 
                         heartRate.value shouldBe newHeartRateValue
@@ -211,10 +211,10 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                     then("The subscribed vssNode should be updated") {
                         eventually(1.seconds) {
-                            vssNodeListener.updatedSpecifications.size shouldBe 3
+                            vssNodeListener.updatedVssNodes.size shouldBe 3
                         }
 
-                        val updatedDriver = vssNodeListener.updatedSpecifications.last()
+                        val updatedDriver = vssNodeListener.updatedVssNodes.last()
                         val heartRate = updatedDriver.heartRate
 
                         heartRate.value shouldBe newHeartRateValue

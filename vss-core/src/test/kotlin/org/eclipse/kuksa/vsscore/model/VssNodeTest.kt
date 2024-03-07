@@ -22,7 +22,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 
 class VssNodeTest : BehaviorSpec({
-    given("The root level specification") {
+    given("The root level VssNode") {
         val vssVehicle = VssVehicle()
         `when`("finding the whole heritage") {
             val heritage = vssVehicle.heritage
@@ -42,10 +42,10 @@ class VssNodeTest : BehaviorSpec({
                 heritageLine shouldBe listOf(vssVehicle.driver, vssVehicle.driver.heartRate)
             }
         }
-        `when`("finding specific properties") {
-            val properties = vssVehicle.findLeaf(VssDriver.VssHeartRate::class)
-            then("it should return all properties which fit the class") {
-                properties.size shouldBe 2
+        `when`("finding specific leafs") {
+            val leafs = vssVehicle.findLeaf(VssDriver.VssHeartRate::class)
+            then("it should return all leafs which fit the class") {
+                leafs.size shouldBe 2
             }
         }
         `when`("getting the variable name") {

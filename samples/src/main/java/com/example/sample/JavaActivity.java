@@ -139,7 +139,7 @@ public class JavaActivity extends AppCompatActivity {
         dataBrokerConnection = null;
     }
 
-    public void fetchProperty() {
+    public void fetch() {
         if (dataBrokerConnection == null) return;
 
         FetchRequest request = new FetchRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
@@ -156,7 +156,7 @@ public class JavaActivity extends AppCompatActivity {
         });
     }
 
-    public void updateProperty() {
+    public void update() {
         if (dataBrokerConnection == null) return;
 
         Datapoint datapoint = Datapoint.newBuilder()
@@ -176,7 +176,7 @@ public class JavaActivity extends AppCompatActivity {
         });
     }
 
-    public void subscribeProperty() {
+    public void subscribe() {
         if (dataBrokerConnection == null) return;
 
         SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
@@ -186,7 +186,7 @@ public class JavaActivity extends AppCompatActivity {
                 for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
                     Types.DataEntry updatedValue = entryUpdate.getEntry();
 
-                    // handle property change
+                    // handle value change
                     //noinspection SwitchStatementWithTooFewBranches
                     switch (updatedValue.getPath()) {
                         case "VSS.Speed":
