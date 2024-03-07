@@ -38,7 +38,7 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import org.eclipse.kuksa.vsscore.annotation.VssModelGenerator
 import org.eclipse.kuksa.vsscore.model.parentClassName
-import org.eclipse.kuksa.vssprocessor.parser.YamlVssParser
+import org.eclipse.kuksa.vssprocessor.parser.factory.VssParserFactory
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import org.eclipse.kuksa.vssprocessor.spec.VssPath
 import java.io.File
@@ -55,7 +55,7 @@ class VssModelGeneratorProcessor(
     private val logger: KSPLogger,
 ) : SymbolProcessor {
     private val visitor = VssModelGeneratorVisitor()
-    private val yamlParser = YamlVssParser()
+    private val vssParserFactory = VssParserFactory()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(VssModelGenerator::class.qualifiedName.toString())
@@ -85,14 +85,20 @@ class VssModelGeneratorProcessor(
                 return
             }
 
-            vssFiles.forEach { vssFile ->
-                val simpleVssNodeElements = yamlParser.parseNodes(vssFile)
-                val vssPathToVssNodeElement = simpleVssNodeElements
-                    .associateBy({ VssPath(it.vssPath) }, { it })
+            val simpleNodeElements = mutableListOf<VssNodeSpecModel>()
+            vssFiles.forEach { definitionFile ->
+                logger.info("Parsing models for definition file: ${definitionFile.name}")
+                val vssParser = vssParserFactory.create(definitionFile)
+                val specModels = vssParser.parseNodes(definitionFile)
 
-                logger.info("Generating models for VSS file: ${vssFile.name}")
-                generateModelFiles(vssPathToVssNodeElement)
+                simpleNodeElements.addAll(specModels)
             }
+
+            val vssPathToVssNodeElement = simpleNodeElements
+                .distinctBy { it.uuid }
+                .associateBy({ VssPath(it.vssPath) }, { it })
+
+            generateModelFiles(vssPathToVssNodeElement)
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.

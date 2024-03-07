@@ -20,11 +20,11 @@ package org.eclipse.kuksa.connectivity.authentication
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectionTest
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.test.TestResourceFile
 import org.eclipse.kuksa.test.kotest.Authentication
 import org.eclipse.kuksa.test.kotest.CustomDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
@@ -170,6 +170,7 @@ enum class JwtType(private val fileName: String) {
     ;
 
     fun asInputStream(): InputStream {
-        return DataBrokerConnectionTest::class.java.classLoader?.getResourceAsStream(fileName)!!
+        val resourceFile = TestResourceFile(fileName)
+        return resourceFile.inputStream()
     }
 }

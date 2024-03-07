@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,26 @@
  *
  */
 
-package org.eclipse.kuksa.vssprocessor.parser
+package org.eclipse.kuksa.vssprocessor.parser.yaml
 
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vssprocessor.parser.VssParser
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 
-internal class YamlVssParser : VssParser {
-    override fun parseNodes(definitionFile: File, elementDelimiter: String): List<VssNodeSpecModel> {
+internal class YamlVssParser(private val elementDelimiter: String = "") : VssParser {
+    override fun parseNodes(vssFile: File): List<VssNodeSpecModel> {
         val vssNodeElements = mutableListOf<VssNodeSpecModel>()
-        definitionFile.useLines { lines ->
+        vssFile.useLines { lines ->
             val yamlAttributes = mutableListOf<String>()
             for (line in lines.toList()) {
                 val trimmedLine = line.trim()
                 if (trimmedLine == elementDelimiter) { // A new element will follow after the delimiter
-                    parseYamlElement(yamlAttributes)?.let { vssNodeElement ->
-                        vssNodeElements.add(vssNodeElement)
+                    parseYamlElement(yamlAttributes)?.let { element ->
+                        vssNodeElements.add(element)
                     }
 
                     yamlAttributes.clear()
@@ -47,8 +48,8 @@ internal class YamlVssParser : VssParser {
             }
 
             // Add the last element because no empty line will follow
-            parseYamlElement(yamlAttributes)?.let { vssNodeElement ->
-                vssNodeElements.add(vssNodeElement)
+            parseYamlElement(yamlAttributes)?.let { element ->
+                vssNodeElements.add(element)
             }
         }
 
@@ -89,12 +90,12 @@ internal class YamlVssParser : VssParser {
             fieldsToSet.add(fieldInfo)
         }
 
-        val vssNodeMember = VssNodeSpecModel()
-        vssNodeMember.setFields(fieldsToSet)
+        val vssNodeSpec = VssNodeSpecModel()
+        vssNodeSpec.setFields(fieldsToSet)
 
-        if (vssNodeMember.uuid.isEmpty()) return null
+        if (vssNodeSpec.uuid.isEmpty()) return null
 
-        return vssNodeMember
+        return vssNodeSpec
     }
 }
 

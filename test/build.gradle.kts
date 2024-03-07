@@ -16,29 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  */
-
-@Suppress("DSL_SCOPE_VIOLATION") // Remove once KTIJ-19369 is fixed
 plugins {
-    id("com.android.library")
-    kotlin("android")
-}
-
-android {
-    namespace = "org.eclipse.kuksa.test"
-    compileSdk = 33
-
-    defaultConfig {
-        minSdk = 24
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+    kotlin("jvm")
 }
 
 dependencies {

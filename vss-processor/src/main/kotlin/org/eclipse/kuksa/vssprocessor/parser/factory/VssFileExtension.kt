@@ -17,16 +17,10 @@
  *
  */
 
-package org.eclipse.kuksa.vssprocessor.parser
+package org.eclipse.kuksa.vssprocessor.parser.factory
 
-import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
-import java.io.File
-
-internal interface VssParser {
-    /**
-     * Uses the given [vssFile] to parse [VssNodeSpecModel] with.
-     *
-     * @throws java.io.IOException will be thrown when parsing the SpecModels failed
-     */
-    fun parseNodes(vssFile: File): List<VssNodeSpecModel>
+// keep VssProcessorPlFugin#validVssExtensions aligned
+internal enum class VssFileExtension(vararg val fileExtensions: String) {
+    JSON("json"),
+    YAML("yaml", "yml"),
 }

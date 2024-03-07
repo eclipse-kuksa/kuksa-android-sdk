@@ -147,6 +147,6 @@ private abstract class ProvideVssFilesTask : DefaultTask() {
     }
 
     companion object {
-        private val validVssExtension = setOf("yml", "yaml")
+        private val validVssExtension = setOf("yml", "yaml", "json") // keep VssFileExtension aligned
     }
 }
