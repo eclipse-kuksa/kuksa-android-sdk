@@ -21,6 +21,7 @@ package org.eclipse.kuksa
 
 import io.kotest.core.spec.style.BehaviorSpec
 import org.eclipse.kuksa.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.test.TestResourceFile
 import org.eclipse.kuksa.test.kotest.CustomDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.Secure
@@ -37,8 +38,9 @@ class DataBrokerConnectorSecureTest : BehaviorSpec({
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
 
         and("a secure DataBrokerConnector with valid Host, Port and TLS certificate") {
-            val certificate = DataBrokerConnectionTest::class.java.classLoader?.getResourceAsStream("CA.pem")!!
-            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(rootCertFileStream = certificate)
+            val certificate = TestResourceFile("CA.pem")
+            val dataBrokerConnector =
+                dataBrokerConnectorProvider.createSecure(rootCertFileStream = certificate.inputStream())
 
             `when`("Trying to establish a secure connection") {
                 val connection = dataBrokerConnector.connect()

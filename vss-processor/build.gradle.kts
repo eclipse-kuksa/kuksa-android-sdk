@@ -38,9 +38,12 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
+    implementation(libs.gson)
     implementation(libs.kotlinpoet)
     implementation(libs.kotlinpoet.ksp)
     implementation(libs.symbol.processing.api)
+
+    testImplementation(project(":test"))
 
     testImplementation(libs.kotest)
     testImplementation(libs.mockk)

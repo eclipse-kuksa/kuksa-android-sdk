@@ -162,6 +162,8 @@ For a more convenient usage you can opt in to auto generate Kotlin models via [S
 of the same specification the Databroker uses. For starters you can retrieve an extensive default specification from the
 release page of the [COVESA Vehicle Signal Specification GitHub repository](https://github.com/COVESA/vehicle_signal_specification/releases).
 
+Currently VSS specification files in .yaml and .json format are supported by the vss-processor.
+
 *app/build.gradle.kts*
 ```
 plugins {

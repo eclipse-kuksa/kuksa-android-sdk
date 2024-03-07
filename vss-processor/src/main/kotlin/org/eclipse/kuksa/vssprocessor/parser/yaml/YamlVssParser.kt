@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,19 @@
  *
  */
 
-package org.eclipse.kuksa.vssprocessor.parser
+package org.eclipse.kuksa.vssprocessor.parser.yaml
 
 import org.eclipse.kuksa.vsscore.model.VssSpecification
-import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
+import org.eclipse.kuksa.vssprocessor.parser.VssParser
+import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 
-internal class YamlDefinitionParser : VssDefinitionParser {
-    override fun parseSpecifications(definitionFile: File, elementDelimiter: String): List<VssSpecificationSpecModel> {
-        val specificationElements = mutableListOf<VssSpecificationSpecModel>()
+internal class YamlVssParser(private val elementDelimiter: String = "") : VssParser {
+    override fun parseNodes(definitionFile: File): List<VssNodeSpecModel> {
+        val specificationElements = mutableListOf<VssNodeSpecModel>()
         definitionFile.useLines { lines ->
             val yamlAttributes = mutableListOf<String>()
             for (line in lines.toList()) {
@@ -61,14 +62,14 @@ internal class YamlDefinitionParser : VssDefinitionParser {
     //  description: Antilock Braking System signals.
     //  type: branch
     //  uuid: 219270ef27c4531f874bbda63743b330
-    private fun parseYamlElement(yamlElement: List<String>, delimiter: Char = ';'): VssSpecificationSpecModel? {
+    private fun parseYamlElement(yamlElement: List<String>, delimiter: Char = ';'): VssNodeSpecModel? {
         val elementVssPath = yamlElement.first().substringBefore(":")
 
         val yamlElementJoined = yamlElement
             .joinToString(separator = delimiter.toString())
             .substringAfter(delimiter) // Remove vssPath (already parsed)
             .prependIndent(delimiter.toString()) // So the parsing is consistent for the first element
-        val members = VssSpecificationSpecModel::class.memberProperties
+        val members = VssNodeSpecModel::class.memberProperties
         val fieldsToSet = mutableListOf<Pair<String, Any?>>()
 
         // The VSSPath is an exception because it is parsed from the top level name.
@@ -89,7 +90,7 @@ internal class YamlDefinitionParser : VssDefinitionParser {
             fieldsToSet.add(fieldInfo)
         }
 
-        val vssSpecificationMember = VssSpecificationSpecModel()
+        val vssSpecificationMember = VssNodeSpecModel()
         vssSpecificationMember.setFields(fieldsToSet)
 
         if (vssSpecificationMember.uuid.isEmpty()) return null

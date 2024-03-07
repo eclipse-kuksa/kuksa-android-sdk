@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,12 @@
  *
  */
 
-package org.eclipse.kuksa.vssprocessor.parser
+package org.eclipse.kuksa.test
 
-import org.eclipse.kuksa.vssprocessor.spec.VssSpecificationSpecModel
 import java.io.File
 
-internal interface VssDefinitionParser {
-    /**
-     * @param definitionFile to parse [VssSpecificationSpecModel] with
-     * @param elementDelimiter which is the separator string between the specifications. The default is an empty line.
-     */
-    fun parseSpecifications(
-        definitionFile: File,
-        elementDelimiter: String = "",
-    ): List<VssSpecificationSpecModel>
-}
+private val classLoader: ClassLoader? = TestResourceFile::class.java.classLoader
+
+class TestResourceFile(path: String) : File(
+    classLoader!!.getResource(path)?.file ?: error("File does not exist: '$path'"),
+)
