@@ -76,3 +76,35 @@ Used for detecting static code quality issues. It is recommended to install the 
 #### [ktlint](https://pinterest.github.io/ktlint)
 
 Used for detecting static code style issues. 
+
+#### Fail-Early-Builds
+
+We have multiple Fail-Early-Builds which run different versions of the KUKSA Android SDK against the KUKSA Databroker. 
+Our goal is to have an early indication which allows us more easily to find breaking or behavioral changes when running our SDK on a specific version of the Databroker. 
+
+When one of these builds fail a short validity check should be done:
+- Where the correct versions of the SDK and Databroker used? 
+- Is it a sporadically failing test? Does a re-run fix it? 
+- Is apparent if the issue is inside the SDK (e.g. wrongly written test, bug) or inside the Databroker (e.g. behavioral change, bug)?
+
+Using different versions of SDK and Databroker give different indications with varying importance. See the following list:
+
+**SDK:latestRelease -> Databroker:latestRelease**
+This means that issues exist between the latest released version of the SDK and the latest released version of the Databroker.
+
+If this build fails it should be considered as a potential bigger issue
+=> A hotfix or new release needs to be done
+
+**SDK:latestRelease -> Databroker:master**
+This means, that the latest released version of the SDK is not compatible with the currently developed version of the Databroker.
+
+If this build fails it should be considered as a warning
+=> Required fixes should be part of the next SDK release
+
+**SDK:main -> Databroker:master**
+This means both the SDK and Databroker are running in a kinda "bleeding edge" state in their currently developed version.
+
+If this build fails, it should be considered as a warning. 
+=> It is okay for the pipeline to fail for a short period of time. Longer periods should be avoided.
+=> No explicit release / hotfix required, both components should be compatible before a release
+
