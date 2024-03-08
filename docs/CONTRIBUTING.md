@@ -77,7 +77,7 @@ Used for detecting static code quality issues. It is recommended to install the 
 
 Used for detecting static code style issues. 
 
-#### Fail-Early-Builds
+### Fail-Early-Builds
 
 We have multiple Fail-Early-Builds which run different versions of the KUKSA Android SDK against the KUKSA Databroker. 
 Our goal is to have an early indication which allows us more easily to find breaking or behavioral changes when running our SDK on a specific version of the Databroker. 
@@ -92,7 +92,7 @@ Using different versions of SDK and Databroker give different indications with v
 **SDK:latestRelease -> Databroker:latestRelease**
 This means that issues exist between the latest released version of the SDK and the latest released version of the Databroker.
 
-If this build fails it should be considered as a potential bigger issue
+If this build fails it should be considered as a potential bigger issue  
 => A hotfix or new release needs to be done
 
 **SDK:latestRelease -> Databroker:master**
@@ -102,7 +102,10 @@ If this build fails it should be considered as a warning
 => Required fixes should be part of the next SDK release
 
 **SDK:main -> Databroker:master**
-This means both the SDK and Databroker are running in a kinda "bleeding edge" state in their currently developed version.
+
+![SDK:main <-> Databroker:master](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main-master.yaml/badge.svg)
+
+This means both the SDK and Databroker are running in a kind of "bleeding edge" state in their currently developed version.
 
 If this build fails, it should be considered as a warning. 
 => It is okay for the pipeline to fail for a short period of time. Longer periods should be avoided.
