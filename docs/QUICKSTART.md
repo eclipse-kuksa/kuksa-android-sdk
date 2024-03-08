@@ -68,7 +68,7 @@ void connectInsecure(String host, int port) {
 ```kotlin
 fun fetch() {
     lifecycleScope.launch {
-        val request = FetchRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
+        val request = FetchRequest("Vehicle.Speed", Field.FIELD_VALUE)
         val response = dataBrokerConnection?.fetch(request) ?: return@launch
         val entry = response.entriesList.first() // Don't forget to handle empty responses
         val value = entry.value
@@ -78,14 +78,14 @@ fun fetch() {
 
 fun update() {
     lifecycleScope.launch {
-        val request = UpdateRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
+        val request = UpdateRequest("Vehicle.Speed", Field.FIELD_VALUE)
         val datapoint = Datapoint.newBuilder().setFloat(100f).build()
         dataBrokerConnection?.update(request, datapoint)
     }
 }
 
 fun subscribe() {
-    val request = SubscribeRequest("Vehicle.Speed", setOf(Field.FIELD_VALUE))
+    val request = SubscribeRequest("Vehicle.Speed", Field.FIELD_VALUE)
     val listener = object : VssPathListener {
         override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
             entryUpdates.forEach { entryUpdate ->
@@ -106,7 +106,7 @@ fun subscribe() {
 *Java*
 ```java
 void fetch() {
-    FetchRequest request = new FetchRequest("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
+    FetchRequest request = new FetchRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
     dataBrokerConnection.fetch(request, new CoroutineCallback<GetResponse>() {
         @Override
         public void onSuccess(GetResponse result) {
@@ -120,7 +120,7 @@ void fetch() {
 
 void update() {
     Datapoint datapoint = Datapoint.newBuilder().setFloat(100f).build();
-    UpdateRequest request = new UpdateRequest("Vehicle.Speed", datapoint, Collections.singleton(Types.Field.FIELD_VALUE));
+    UpdateRequest request = new UpdateRequest("Vehicle.Speed", datapoint, Types.Field.FIELD_VALUE);
     dataBrokerConnection.update(request, new CoroutineCallback<KuksaValV1.SetResponse>() {
         @Override
         public void onSuccess(KuksaValV1.SetResponse result) {
@@ -130,7 +130,7 @@ void update() {
 }
 
 void subscribe() {
-    SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
+    SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
     dataBrokerConnection.subscribe(request, new VssPathListener() {
         @Override
         public void onEntryChanged(@NonNull List<EntryUpdate> entryUpdates) {
@@ -181,7 +181,7 @@ vssProcessor {
 }
 ```
 
-Use the [`VssModelGenerator`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssModelGenerator.kt) annotation and provide the path to the VSS file (Inside the assets folder).
+Use the [`VssModelGenerator`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssModelGenerator.kt) annotation.
 Doing so will generate a complete tree of Kotlin models which can be used in combination with the SDK API. This way you can
 work with safe types and the SDK takes care of all the model parsing for you. There is also a whole set of 
 convenience operators and extension methods to work with to manipulate the tree data. See the `VssNode` class documentation for this.
