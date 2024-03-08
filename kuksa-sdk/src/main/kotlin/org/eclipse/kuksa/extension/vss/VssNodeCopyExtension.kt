@@ -22,8 +22,8 @@ import org.eclipse.kuksa.extension.copy
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase.*
-import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssSignal
 import org.eclipse.kuksa.vsscore.model.findHeritageLine
 import org.eclipse.kuksa.vsscore.model.heritage
 import org.eclipse.kuksa.vsscore.model.variableName
@@ -50,7 +50,7 @@ import kotlin.reflect.full.memberProperties
 // The suggested method to improve the performance can't be used here because we are already working with a full array.
 // https://detekt.dev/docs/rules/performance/
 fun <T : VssNode> T.deepCopy(generation: Int = 0, changedHeritage: List<VssNode>): T {
-    if (generation == changedHeritage.size) { // Reached the end, use the changed [VssLeaf]
+    if (generation == changedHeritage.size) { // Reached the end, use the changed VssSignal
         return this
     }
 
@@ -81,11 +81,11 @@ fun <T : VssNode> T.deepCopy(vararg vssNodes: VssNode): T {
 }
 
 /**
- * Creates a copy of a [VssLeaf] where the [VssLeaf.value] is changed to the given [Datapoint].
+ * Creates a copy of a [VssSignal] where the [VssSignal.value] is changed to the given [Datapoint].
  */
 // The actual value type is unknown but it is expected that the casted [valueCase] is valid if no exception was thrown.
 @Suppress("UNCHECKED_CAST")
-fun <T : Any> VssLeaf<T>.copy(datapoint: Datapoint): VssLeaf<T> {
+fun <T : Any> VssSignal<T>.copy(datapoint: Datapoint): VssSignal<T> {
     with(datapoint) {
         val value: Any = when (valueCase) {
             STRING -> string
@@ -133,13 +133,13 @@ fun <T : Any> VssLeaf<T>.copy(datapoint: Datapoint): VssLeaf<T> {
 }
 
 /**
- * Calls the generated copy method of the data class for the [VssLeaf] and returns a new copy with the new [value].
+ * Calls the generated copy method of the data class for the [VssSignal] and returns a new copy with the new [value].
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-fun <T : Any> VssLeaf<T>.copy(value: T): VssLeaf<T> {
-    val memberProperties = VssLeaf::class.memberProperties
+fun <T : Any> VssSignal<T>.copy(value: T): VssSignal<T> {
+    val memberProperties = VssSignal::class.memberProperties
     val firstPropertyName = memberProperties.first().name
     val valueMap = mapOf(firstPropertyName to value)
 
@@ -165,7 +165,7 @@ fun <T : VssNode> T.copy(
 ): T {
     val vssNodes = consideredHeritage + this
     val vssNode = vssNodes
-        .filterIsInstance<VssLeaf<*>>()
+        .filterIsInstance<VssSignal<*>>()
         .find { it.vssPath == vssPath } ?: return this
 
     val updatedVssNode = vssNode.copy(updatedValue)
@@ -195,7 +195,7 @@ operator fun <T : VssNode> T.invoke(vararg vssNodes: VssNode): T {
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun <T : Any> VssLeaf<T>.invoke(value: T): VssLeaf<T> {
+operator fun <T : Any> VssSignal<T>.invoke(value: T): VssSignal<T> {
     return copy(value)
 }
 

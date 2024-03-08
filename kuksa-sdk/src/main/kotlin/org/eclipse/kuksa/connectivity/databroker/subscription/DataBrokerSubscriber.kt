@@ -26,8 +26,8 @@ import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Field
-import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssSignal
 
 /**
  * Creates [DataBrokerSubscription]s to the DataBroker to get notified about changes on the underlying vssPaths and
@@ -76,10 +76,10 @@ internal class DataBrokerSubscriber(private val dataBrokerTransporter: DataBroke
     }
 
     /**
-     * Subscribes to the specified [VssNode] with the provided [VssNodeListener]. Only a [VssLeaf]
+     * Subscribes to the specified [VssNode] with the provided [VssNodeListener]. Only a [VssSignal]
      * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
-     * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
-     * application will be notified about any changes to every subscribed [VssLeaf]. The [field] can be used to
+     * [subscribe] method will find all [VssSignal] children and subscribes them instead. Once subscribed the
+     * application will be notified about any changes to every subscribed [VssSignal]. The [field] can be used to
      * subscribe to different information of the [node]. The default for the [field] parameter is a single
      * [Types.Field.FIELD_VALUE] entry.
      *

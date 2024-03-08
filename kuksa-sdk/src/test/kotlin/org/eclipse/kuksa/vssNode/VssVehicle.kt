@@ -19,8 +19,8 @@
 
 package org.eclipse.kuksa.vssNode
 
-import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssSignal
 import kotlin.reflect.KClass
 
 data class VssVehicle(
@@ -68,7 +68,7 @@ data class VssPassenger(
         override val type: String = "sensor",
         override val comment: String = "",
         override val value: Int = 80,
-    ) : VssLeaf<Int> {
+    ) : VssSignal<Int> {
         override val parentClass: KClass<*>
             get() = VssPassenger::class
     }
@@ -81,7 +81,7 @@ data class VssValueInt(
     override val type: String = "sensor",
     override val comment: String = "",
     override val value: Int = 0,
-) : VssLeaf<Int>
+) : VssSignal<Int>
 
 data class VssValueFloat(
     override val uuid: String = "Value",
@@ -90,7 +90,7 @@ data class VssValueFloat(
     override val type: String = "sensor",
     override val comment: String = "",
     override val value: Float = 0f,
-) : VssLeaf<Float>
+) : VssSignal<Float>
 
 data class VssValueDouble(
     override val uuid: String = "Value",
@@ -99,7 +99,7 @@ data class VssValueDouble(
     override val type: String = "sensor",
     override val comment: String = "",
     override val value: Double = 0.0,
-) : VssLeaf<Double>
+) : VssSignal<Double>
 
 data class VssValueLong(
     override val uuid: String = "Value",
@@ -108,7 +108,7 @@ data class VssValueLong(
     override val type: String = "sensor",
     override val comment: String = "",
     override val value: Long = 0L,
-) : VssLeaf<Long>
+) : VssSignal<Long>
 
 data class VssInvalid(
     override val uuid: String = "Invalid",
@@ -117,4 +117,4 @@ data class VssInvalid(
     override val type: String = "",
     override val comment: String = "",
     override val value: Exception = Exception(),
-) : VssLeaf<Exception>
+) : VssSignal<Exception>

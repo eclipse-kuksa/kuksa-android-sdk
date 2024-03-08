@@ -3,7 +3,8 @@
 
 !startsub VssCore
 package VssCore {
-    VssNode <|- VssLeaf
+    VssNode <|- VssBranch
+    VssNode <|-- VssSignal
 
     annotation VssModelGenerator
 
@@ -17,7 +18,9 @@ package VssCore {
         + comment: String
     }
 
-    interface VssLeaf<T : Any> {
+    interface VssBranch
+
+    interface VssSignal<T : Any> {
         + value: T
     }
 }

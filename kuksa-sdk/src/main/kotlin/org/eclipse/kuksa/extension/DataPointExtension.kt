@@ -24,7 +24,7 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
-import org.eclipse.kuksa.vsscore.model.VssLeaf
+import org.eclipse.kuksa.vsscore.model.VssSignal
 
 private const val CSV_DELIMITER = ","
 
@@ -35,11 +35,11 @@ val Types.Metadata.valueType: ValueCase
     get() = dataType.dataPointValueCase
 
 /**
- * Converts the [VssLeaf.value] into a [Datapoint] object.
+ * Converts the [VssSignal.value] into a [Datapoint] object.
  *
- * @throws IllegalArgumentException if the [VssLeaf] could not be converted to a [Datapoint].
+ * @throws IllegalArgumentException if the [VssSignal] could not be converted to a [Datapoint].
  */
-val <T : Any> VssLeaf<T>.datapoint: Datapoint
+val <T : Any> VssSignal<T>.datapoint: Datapoint
     get() {
         val stringValue = value.toString()
         return when (value::class) {

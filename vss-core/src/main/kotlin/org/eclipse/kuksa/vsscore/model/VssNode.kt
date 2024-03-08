@@ -44,7 +44,7 @@ interface VssNode {
     val description: String
 
     /**
-     * Most relevant for [VssLeaf] nodes. They can be of the type "Sensor" or "Actuator".
+     * Most relevant for [VssSignal] nodes. They can be of the type "Sensor" or "Actuator".
      * For Nodes with children this will always be "branch".
      */
     val type: String
@@ -57,6 +57,8 @@ interface VssNode {
     /**
      * A collection of all initialized children.
      */
+    // Always empty for VssSignals. If this is moved to the VssBranch interface then it introduces some API
+    // inconveniences because most search API return a VssNode so a cast is always necessary for further searches.
     val children: Set<VssNode>
         get() = emptySet()
 
@@ -68,10 +70,19 @@ interface VssNode {
 }
 
 /**
- * Some [VssNode] may have an additional [value] property. These are children [VssLeaf] which do not have other
+ * Defines a [VssNode] which is not a [VssSignal] and only acts as a branch with one or more children. The [type] is
+ * always "branch".
+ */
+interface VssBranch : VssNode {
+    override val type: String
+        get() = "branch"
+}
+
+/**
+ * Some [VssNode] may have an additional [value] property. These are children [VssSignal] which do not have other
  * children.
  */
-interface VssLeaf<T : Any> : VssNode {
+interface VssSignal<T : Any> : VssNode {
     /**
      * A primitive type value.
      */
@@ -131,18 +142,21 @@ val VssNode.parentClassName: String
     }
 
 /**
- * Iterates through all nested children which also may have children and aggregates them into one big collection.
+ * Iterates through all nested children of the [VssNode] which also may have children and aggregates them into one
+ * big collection.
  */
 val VssNode.heritage: Collection<VssNode>
-    get() = children.toList() + children.flatMap { it.heritage }
+    get() = children.toList() + children
+        .filterIsInstance<VssBranch>()
+        .flatMap { it.heritage }
 
 /**
- * Finds the latest generation in the form of [VssLeaf] for the current [VssNode].
+ * Finds the latest generation in the form of [VssSignal] for the current [VssNode].
  */
-val VssNode.vssLeafs: Collection<VssLeaf<*>>
+val VssNode.vssSignals: Collection<VssSignal<*>>
     get() = heritage
         .ifEmpty { setOf(this) }
-        .filterIsInstance<VssLeaf<*>>()
+        .filterIsInstance<VssSignal<*>>()
 
 /**
  * Uses the [variablePrefix] to generate a unique variable name. The first character is at least lowercased.
@@ -209,21 +223,21 @@ fun VssNode.findHeritageLine(
 }
 
 /**
- * Finds the given [leaf] inside the current [VssNode].
+ * Finds the given [signal] inside the current [VssNode].
  */
-fun <T : VssLeaf<V>, V : Any> VssNode.findLeaf(leaf: VssLeaf<V>): VssLeaf<V> {
+inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(signal: T): T {
     return heritage
-        .filterIsInstance<VssLeaf<V>>()
-        .first { it.uuid == leaf.uuid }
+        .filterIsInstance<T>()
+        .first { it.uuid == signal.uuid }
 }
 
 /**
- * Finds all [VssLeaf] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
+ * Finds all [VssSignal] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
  * with the same Name exists but are pretty much the same besides the [VssNode.vssPath] etc.
  */
-fun <T : VssLeaf<V>, V : Any> VssNode.findLeaf(type: KClass<T>): Map<String, VssLeaf<V>> {
+inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(type: KClass<T>): Map<String, T> {
     return heritage
-        .filterIsInstance<VssLeaf<V>>()
+        .filterIsInstance<T>()
         .filter { it::class.simpleName == type.simpleName }
         .associateBy { it.vssPath }
 }

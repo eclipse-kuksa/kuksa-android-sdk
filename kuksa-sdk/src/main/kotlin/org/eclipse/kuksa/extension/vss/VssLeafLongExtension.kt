@@ -18,86 +18,86 @@
 
 package org.eclipse.kuksa.extension.vss
 
-import org.eclipse.kuksa.vsscore.model.VssLeaf
+import org.eclipse.kuksa.vsscore.model.VssSignal
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by adding [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by adding [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Long>.plusAssign(value: Number) {
+operator fun VssSignal<Long>.plusAssign(value: Number) {
     copy(this.value + value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by adding [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by adding [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Long>.plus(value: Number): VssLeaf<Long> {
+operator fun VssSignal<Long>.plus(value: Number): VssSignal<Long> {
     return copy(this.value + value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by subtracting [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by subtracting [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Long>.minusAssign(value: Number) {
+operator fun VssSignal<Long>.minusAssign(value: Number) {
     copy(this.value - value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by subtracting [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by subtracting [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Long>.minus(value: Number): VssLeaf<Long> {
+operator fun VssSignal<Long>.minus(value: Number): VssSignal<Long> {
     return copy(this.value - value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by dividing [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by dividing [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  * @throws [ArithmeticException] if divided by zero.
  */
-operator fun VssLeaf<Long>.divAssign(value: Number) {
+operator fun VssSignal<Long>.divAssign(value: Number) {
     copy(this.value / value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by dividing [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by dividing [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  * @throws [ArithmeticException] if divided by zero.
  */
-operator fun VssLeaf<Long>.div(value: Number): VssLeaf<Long> {
+operator fun VssSignal<Long>.div(value: Number): VssSignal<Long> {
     return copy(this.value / value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by multiplying [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by multiplying [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Long>.timesAssign(value: Number) {
+operator fun VssSignal<Long>.timesAssign(value: Number) {
     copy(this.value * value.toLong())
 }
 
 /**
- * Convenience operator for [copy] which updates the [VssLeaf.value] by multiplying [value] to it.
+ * Convenience operator for [copy] which updates the [VssSignal.value] by multiplying [value] to it.
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Long>.times(value: Number): VssLeaf<Long> {
+operator fun VssSignal<Long>.times(value: Number): VssSignal<Long> {
     return copy(this.value * value.toLong())
 }

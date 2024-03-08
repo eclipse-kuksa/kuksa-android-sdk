@@ -43,10 +43,10 @@ import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
-import org.eclipse.kuksa.vsscore.model.VssLeaf
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssSignal
 import org.eclipse.kuksa.vsscore.model.heritage
-import org.eclipse.kuksa.vsscore.model.vssLeafs
+import org.eclipse.kuksa.vsscore.model.vssSignals
 import kotlin.properties.Delegates
 
 /**
@@ -118,10 +118,10 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Subscribes to the specified [VssNode] with the provided [VssNodeListener]. Only a [VssLeaf]
+     * Subscribes to the specified [VssNode] with the provided [VssNodeListener]. Only a [VssSignal]
      * can be subscribed because they have an actual value. When provided with any parent [VssNode] then this
-     * [subscribe] method will find all [VssLeaf] children and subscribes them instead. Once subscribed the
-     * application will be notified about any changes to every subscribed [VssLeaf].
+     * [subscribe] method will find all [VssSignal] children and subscribes them instead. Once subscribed the
+     * application will be notified about any changes to every subscribed [VssSignal].
      * The [VssNodeSubscribeRequest.fields] can be used to subscribe to different information of the [VssNode].
      * The default for the [Types.Field] parameter is a list with a single [Types.Field.FIELD_VALUE] entry.
      *
@@ -214,22 +214,22 @@ class DataBrokerConnection internal constructor(
     }
 
     /**
-     * Only a [VssLeaf] can be updated because they have an actual value. When provided with any parent
-     * [VssNode] then this [update] method will find all [VssLeaf] children and updates their corresponding
+     * Only a [VssSignal] can be updated because they have an actual value. When provided with any parent
+     * [VssNode] then this [update] method will find all [VssSignal] children and updates their corresponding
      * [Types.Field] instead.
      * Compared to [update] with only one [UpdateRequest], here multiple [SetResponse] will be returned
      * because a [VssNode] may consists of multiple values which may need to be updated.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
-     * @throws IllegalArgumentException if the [VssLeaf] could not be converted to a [Datapoint].
+     * @throws IllegalArgumentException if the [VssSignal] could not be converted to a [Datapoint].
      */
     @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
     suspend fun <T : VssNode> update(request: VssNodeUpdateRequest<T>): Collection<SetResponse> {
         val responses = mutableListOf<SetResponse>()
         val vssNode = request.vssNode
 
-        vssNode.vssLeafs.forEach { vssLeaf ->
-            val simpleUpdateRequest = UpdateRequest(vssLeaf.vssPath, vssLeaf.datapoint, *request.fields)
+        vssNode.vssSignals.forEach { signal ->
+            val simpleUpdateRequest = UpdateRequest(signal.vssPath, signal.datapoint, *request.fields)
             val response = update(simpleUpdateRequest)
 
             responses.add(response)

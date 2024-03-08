@@ -43,7 +43,7 @@ class VssNodeTest : BehaviorSpec({
             }
         }
         `when`("finding specific leafs") {
-            val leafs = vssVehicle.findLeaf(VssDriver.VssHeartRate::class)
+            val leafs = vssVehicle.findSignal(VssDriver.VssHeartRate::class)
             then("it should return all leafs which fit the class") {
                 leafs.size shouldBe 2
             }

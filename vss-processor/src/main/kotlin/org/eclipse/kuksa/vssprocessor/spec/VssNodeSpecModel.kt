@@ -32,8 +32,9 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
-import org.eclipse.kuksa.vsscore.model.VssLeaf
+import org.eclipse.kuksa.vsscore.model.VssBranch
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssSignal
 import org.eclipse.kuksa.vsscore.model.className
 import org.eclipse.kuksa.vsscore.model.name
 import org.eclipse.kuksa.vsscore.model.parentClassName
@@ -113,7 +114,7 @@ internal class VssNodeSpecModel(
         val constructorBuilder = FunSpec.constructorBuilder()
             .addAnnotation(JvmOverloads::class)
         val propertySpecs = mutableListOf<PropertySpec>()
-        val superInterfaces = mutableSetOf<TypeName>(VssNode::class.asTypeName())
+        val superInterfaces = mutableSetOf<TypeName>(VssBranch::class.asTypeName())
 
         // The last element in the chain should have a value like "isLocked".
         if (childNodes.isEmpty()) {
@@ -122,12 +123,12 @@ internal class VssNodeSpecModel(
             constructorBuilder.addParameter(parameterSpec)
             propertySpecs.add(valuePropertySpec)
 
-            // Final leafs should ONLY implement the vss property interface
+            // Final leafs should ONLY implement the VssSignal interface
             superInterfaces.clear()
-            val vssLeafInterface = VssLeaf::class
+            val vssSignalInterface = VssSignal::class
                 .asTypeName()
                 .plusParameter(datatypeProperty)
-            superInterfaces.add(vssLeafInterface)
+            superInterfaces.add(vssSignalInterface)
         }
 
         val propertySpec = createVssNodeSpecs(className, packageName = packageName)

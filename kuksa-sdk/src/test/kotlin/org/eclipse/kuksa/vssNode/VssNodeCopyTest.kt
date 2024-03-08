@@ -30,14 +30,14 @@ import org.eclipse.kuksa.extension.vss.invoke
 import org.eclipse.kuksa.extension.vss.not
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Unit
-import org.eclipse.kuksa.vsscore.model.VssLeaf
+import org.eclipse.kuksa.vsscore.model.VssSignal
 
 class VssNodeCopyTest : BehaviorSpec({
     tags(Unit)
 
     given("A VssNode") {
         val vehicle = VssVehicle()
-        val driverHeartRate: VssLeaf<Int> = vehicle.driver.heartRate
+        val driverHeartRate: VssSignal<Int> = vehicle.driver.heartRate
 
         and("a changed heritage line") {
             val newValue = 70
@@ -109,7 +109,7 @@ class VssNodeCopyTest : BehaviorSpec({
         and("an empty DataPoint") {
             val datapoint = Types.Datapoint.newBuilder().build()
 
-            and("an invalid VssLeaf") {
+            and("an invalid VssSignal") {
                 val vssInvalid = VssInvalid()
 
                 `when`("a copy is done") {

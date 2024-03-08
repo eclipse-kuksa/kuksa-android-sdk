@@ -18,7 +18,7 @@
 
 package org.eclipse.kuksa.extension.vss
 
-import org.eclipse.kuksa.vsscore.model.VssLeaf
+import org.eclipse.kuksa.vsscore.model.VssSignal
 
 /**
  * Convenience operator for [copy] with a [Boolean] value which will be inverted.
@@ -26,6 +26,6 @@ import org.eclipse.kuksa.vsscore.model.VssLeaf
  * @throws [IllegalArgumentException] if the copied types do not match.
  * @throws [NoSuchElementException] if no copy method was found for the class.
  */
-operator fun VssLeaf<Boolean>.not(): VssLeaf<Boolean> {
+operator fun VssSignal<Boolean>.not(): VssSignal<Boolean> {
     return copy(!value)
 }
