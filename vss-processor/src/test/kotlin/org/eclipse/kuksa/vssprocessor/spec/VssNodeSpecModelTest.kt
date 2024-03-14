@@ -53,16 +53,22 @@ class VssNodeSpecModelTest : BehaviorSpec({
         }
     }
 
-    given("uint32 spec model") {
+    given("uint32 spec model (inline class)") {
         val specModel = VssNodeSpecModel(datatype = "uint32", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
 
-            then("it should have a value with the correct datatype") {
+            then("it should have a value with the correct data type") {
                 val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
 
                 propertySpec.toString() shouldContain "kotlin.Int = 0"
+            }
+
+            then("it should the correct inline class data type") {
+                val propertySpec = classSpec.propertySpecs.find { it.name == "dataType" }
+
+                propertySpec?.getter.toString() shouldContain "kotlin.UInt::class"
             }
         }
     }
@@ -91,6 +97,12 @@ class VssNodeSpecModelTest : BehaviorSpec({
                 val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
 
                 propertySpec.toString() shouldContain "kotlin.LongArray = LongArray(0)"
+            }
+
+            then("it should the correct inline class data type") {
+                val propertySpec = classSpec.propertySpecs.find { it.name == "dataType" }
+
+                propertySpec?.getter.toString() shouldContain "kotlin.LongArray::class"
             }
         }
     }

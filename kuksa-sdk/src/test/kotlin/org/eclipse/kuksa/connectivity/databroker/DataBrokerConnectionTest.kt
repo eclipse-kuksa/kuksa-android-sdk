@@ -37,6 +37,7 @@ import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
 import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
@@ -202,10 +203,10 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     }
                 }
 
-                and("Any subscribed node was changed") {
+                and("Any subscribed uInt node was changed") {
                     val newHeartRateValue = 50
-                    val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
-                    val updateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
+                    val newVssHeartRate = VssDriver.VssHeartRate(newHeartRateValue)
+                    val updateRequest = VssNodeUpdateRequest(newVssHeartRate)
 
                     dataBrokerConnection.update(updateRequest)
 
