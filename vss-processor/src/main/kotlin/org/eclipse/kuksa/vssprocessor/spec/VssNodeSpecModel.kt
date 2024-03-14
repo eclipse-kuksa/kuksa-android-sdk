@@ -65,16 +65,17 @@ internal class VssNodeSpecModel(
             return when (datatype) {
                 "string" -> String::class.asTypeName()
                 "boolean" -> Boolean::class.asTypeName()
-                // Do not use UInt because it is incompatible with @JvmOverloads annotation
-                "uint8", "uint16", "uint32" -> Int::class.asTypeName()
+                "uint8", "uint16", "uint32" -> UInt::class.asTypeName()
+                "uint64" -> ULong::class.asTypeName()
                 "int8", "int16", "int32" -> Int::class.asTypeName()
-                "int64", "uint64" -> Long::class.asTypeName()
+                "int64" -> Long::class.asTypeName()
                 "float" -> Float::class.asTypeName()
                 "double" -> Double::class.asTypeName()
                 "string[]" -> Array::class.parameterizedBy(String::class)
                 "boolean[]" -> BooleanArray::class.asTypeName()
                 "uint8[]", "uint16[]", "uint32[]", "int8[]", "int16[]", "int32[]" -> IntArray::class.asTypeName()
                 "int64[]", "uint64[]" -> LongArray::class.asTypeName()
+                "float[]" -> FloatArray::class.asTypeName()
                 else -> Any::class.asTypeName()
             }
         }
@@ -112,7 +113,6 @@ internal class VssNodeSpecModel(
 
         val nestedChildSpecs = mutableListOf<TypeSpec>()
         val constructorBuilder = FunSpec.constructorBuilder()
-            .addAnnotation(JvmOverloads::class)
         val propertySpecs = mutableListOf<PropertySpec>()
         val superInterfaces = mutableSetOf<TypeName>(VssBranch::class.asTypeName())
 

@@ -92,8 +92,8 @@ fun <T : Any> VssSignal<T>.copy(datapoint: Datapoint): VssSignal<T> {
             BOOL -> bool
             INT32 -> int32
             INT64 -> int64
-            UINT32 -> uint32
-            UINT64 -> uint64
+            UINT32 -> uint32.toUInt()
+            UINT64 -> uint64.toULong()
             FLOAT -> float
             DOUBLE -> double
             STRING_ARRAY -> stringArray.valuesList
@@ -179,7 +179,7 @@ fun <T : VssNode> T.copy(
 // region Operators
 
 /**
- * Convenience operator for [deepCopy] with a [VssNode]. It will return the [VssNode] with the updated
+ * Convenience operator for [deepCopy] with a [VssNode]. It will return the parent [VssNode] with the updated child
  * [VssNode].
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
