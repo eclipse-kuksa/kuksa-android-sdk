@@ -20,17 +20,20 @@
 package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
-import org.eclipse.kuksa.CoroutineCallback
-import org.eclipse.kuksa.DataBrokerConnection
-import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
-import org.eclipse.kuksa.model.Property
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 
 @Suppress("complexity:TooManyFunctions") // required to test the api
 interface DataBrokerEngine {
@@ -43,30 +46,29 @@ interface DataBrokerEngine {
     )
 
     fun fetch(
-        property: Property,
+        request: FetchRequest,
         callback: CoroutineCallback<GetResponse>,
     )
 
-    fun <T : VssSpecification> fetch(specification: T, callback: CoroutineCallback<T>)
+    fun <T : VssNode> fetch(request: VssNodeFetchRequest<T>, callback: CoroutineCallback<T>)
 
     fun update(
-        property: Property,
-        datapoint: Datapoint,
+        request: UpdateRequest,
         callback: CoroutineCallback<SetResponse>,
     )
 
-    fun subscribe(property: Property, propertyListener: PropertyListener)
+    fun subscribe(request: SubscribeRequest, listener: VssPathListener)
 
-    fun unsubscribe(property: Property, propertyListener: PropertyListener)
+    fun unsubscribe(request: SubscribeRequest, listener: VssPathListener)
 
-    fun <T : VssSpecification> subscribe(
-        specification: T,
-        specificationListener: VssSpecificationListener<T>,
+    fun <T : VssNode> subscribe(
+        request: VssNodeSubscribeRequest<T>,
+        vssNodeListener: VssNodeListener<T>,
     )
 
-    fun <T : VssSpecification> unsubscribe(
-        specification: T,
-        specificationListener: VssSpecificationListener<T>,
+    fun <T : VssNode> unsubscribe(
+        request: VssNodeSubscribeRequest<T>,
+        vssNodeListener: VssNodeListener<T>,
     )
 
     fun disconnect()

@@ -29,17 +29,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import org.eclipse.kuksa.CoroutineCallback
-import org.eclipse.kuksa.DataBrokerConnection
-import org.eclipse.kuksa.DisconnectListener
-import org.eclipse.kuksa.PropertyListener
-import org.eclipse.kuksa.VssSpecificationListener
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.extension.entriesMetadata
 import org.eclipse.kuksa.extension.valueType
-import org.eclipse.kuksa.model.Property
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
-import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
@@ -49,18 +52,20 @@ import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.view.DataBrokerView
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
+import org.eclipse.kuksa.testapp.databroker.viewmodel.DataBrokerProperty
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputEntry
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPropertiesViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VssSpecificationsViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPathsViewModel
+import org.eclipse.kuksa.testapp.databroker.viewmodel.VssNodesViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
-import org.eclipse.kuksa.vsscore.annotation.VssDefinition
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vss.VssVehicle
+import org.eclipse.kuksa.vsscore.annotation.VssModelGenerator
+import org.eclipse.kuksa.vsscore.model.VssNode
 
-@VssDefinition
+@VssModelGenerator
 class KuksaDataBrokerActivity : ComponentActivity() {
     private lateinit var connectionInfoRepository: ConnectionInfoRepository
 
@@ -68,8 +73,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
     private val connectionViewModel: ConnectionViewModel by viewModels {
         ConnectionViewModel.Factory(connectionInfoRepository)
     }
-    private val vssPropertiesViewModel: VSSPropertiesViewModel by viewModels()
-    private val vssSpecificationsViewModel: VssSpecificationsViewModel by viewModels()
+    private val vssPathsViewModel: VSSPathsViewModel by viewModels()
+    private val vssNodesViewModel: VssNodesViewModel by viewModels()
     private val outputViewModel: OutputViewModel by viewModels()
 
     private val dataBrokerConnectionCallback = object : CoroutineCallback<DataBrokerConnection>() {
@@ -92,9 +97,9 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         outputViewModel.addOutputEntry("DataBroker disconnected")
     }
 
-    private val propertyListener = object : PropertyListener {
-        override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
-            Log.d(TAG, "onPropertyChanged() called with: updatedValues = $entryUpdates")
+    private val vssPathListener = object : VssPathListener {
+        override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+            Log.d(TAG, "onEntryChanged() called with: updatedValues = $entryUpdates")
 
             val entries = mutableListOf<String>().apply {
                 add("Updated Entries")
@@ -109,13 +114,13 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         }
     }
 
-    private val specificationListener = object : VssSpecificationListener<VssSpecification> {
-        override fun onSpecificationChanged(vssSpecification: VssSpecification) {
-            outputViewModel.addOutputEntry("Updated specification: $vssSpecification")
+    private val vssNodeListener = object : VssNodeListener<VssNode> {
+        override fun onNodeChanged(vssNode: VssNode) {
+            outputViewModel.addOutputEntry("Updated node: $vssNode")
         }
 
         override fun onError(throwable: Throwable) {
-            outputViewModel.addOutputEntry("Updated specification: ${throwable.message}")
+            outputViewModel.addOutputEntry("Updated node: ${throwable.message}")
         }
     }
 
@@ -128,7 +133,45 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         JavaDataBrokerEngine()
     }
 
+    @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
     override fun onCreate(savedInstanceState: Bundle?) {
+        fun addVssPathsListeners() {
+            vssPathsViewModel.onGetProperty = { property: DataBrokerProperty ->
+                fetchPropertyFieldType(property)
+                fetchProperty(property)
+            }
+
+            vssPathsViewModel.onSetProperty = { property: DataBrokerProperty, datapoint: Datapoint ->
+                updateProperty(property, datapoint)
+            }
+
+            vssPathsViewModel.onSubscribeProperty = { property: DataBrokerProperty ->
+                val request = SubscribeRequest(property.vssPath, *property.fieldTypes.toTypedArray())
+                dataBrokerEngine.subscribe(request, vssPathListener)
+            }
+
+            vssPathsViewModel.onUnsubscribeProperty = { property: DataBrokerProperty ->
+                val request = SubscribeRequest(property.vssPath, *property.fieldTypes.toTypedArray())
+                dataBrokerEngine.unsubscribe(request, vssPathListener)
+            }
+        }
+
+        fun addVssNodesListeners() {
+            vssNodesViewModel.onSubscribeNode = { vssNode ->
+                val request = VssNodeSubscribeRequest(vssNode)
+                dataBrokerEngine.subscribe(request, vssNodeListener)
+            }
+
+            vssNodesViewModel.onUnsubscribeNode = { vssNode ->
+                val request = VssNodeSubscribeRequest(vssNode)
+                dataBrokerEngine.unsubscribe(request, vssNodeListener)
+            }
+
+            vssNodesViewModel.onGetNode = { vssNode ->
+                fetchVssNode(vssNode)
+            }
+        }
+
         super.onCreate(savedInstanceState)
 
         Log.d(TAG, "onCreate() called with: savedInstanceState = $savedInstanceState")
@@ -140,8 +183,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                     DataBrokerView(
                         topAppBarViewModel,
                         connectionViewModel,
-                        vssPropertiesViewModel,
-                        vssSpecificationsViewModel,
+                        vssPathsViewModel,
+                        vssNodesViewModel,
                         outputViewModel,
                     )
                 }
@@ -170,34 +213,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             disconnect()
         }
 
-        vssPropertiesViewModel.onGetProperty = { property: Property ->
-            fetchPropertyFieldType(property)
-            fetchProperty(property)
-        }
-
-        vssPropertiesViewModel.onSetProperty = { property: Property, datapoint: Datapoint ->
-            updateProperty(property, datapoint)
-        }
-
-        vssPropertiesViewModel.onSubscribeProperty = { property: Property ->
-            dataBrokerEngine.subscribe(property, propertyListener)
-        }
-
-        vssPropertiesViewModel.onUnsubscribeProperty = { property: Property ->
-            dataBrokerEngine.unsubscribe(property, propertyListener)
-        }
-
-        vssSpecificationsViewModel.onSubscribeSpecification = { specification ->
-            dataBrokerEngine.subscribe(specification, specificationListener)
-        }
-
-        vssSpecificationsViewModel.onUnsubscribeSpecification = { specification ->
-            dataBrokerEngine.unsubscribe(specification, specificationListener)
-        }
-
-        vssSpecificationsViewModel.onGetSpecification = { specification ->
-            fetchSpecification(specification)
-        }
+        addVssPathsListeners()
+        addVssNodesListeners()
     }
 
     override fun onDestroy() {
@@ -222,25 +239,25 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         dataBrokerEngine.unregisterDisconnectListener(onDisconnectListener)
     }
 
-    private fun fetchPropertyFieldType(property: Property) {
-        val propertyWithMetaData = property.copy(fields = listOf(Field.FIELD_METADATA))
+    private fun fetchPropertyFieldType(property: DataBrokerProperty) {
+        val request = FetchRequest(property.vssPath, Field.FIELD_METADATA)
 
         dataBrokerEngine.fetch(
-            propertyWithMetaData,
+            request,
             object : CoroutineCallback<GetResponse>() {
                 override fun onSuccess(result: GetResponse?) {
                     val entriesMetadata = result?.entriesMetadata ?: emptyList()
                     val automaticValueType = if (entriesMetadata.size == 1) {
                         entriesMetadata.first().valueType
                     } else {
-                        Types.Datapoint.ValueCase.VALUE_NOT_SET
+                        Datapoint.ValueCase.VALUE_NOT_SET
                     }
 
                     Log.d(TAG, "Fetched automatic value type from meta data: $automaticValueType")
 
-                    val vssProperties = vssPropertiesViewModel.vssProperties
+                    val dataBrokerProperty = vssPathsViewModel.dataBrokerProperty
                         .copy(valueType = automaticValueType)
-                    vssPropertiesViewModel.updateVssProperties(vssProperties)
+                    vssPathsViewModel.updateDataBrokerProperty(dataBrokerProperty)
                 }
 
                 override fun onError(error: Throwable) {
@@ -250,11 +267,14 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
-    private fun fetchProperty(property: Property) {
+    @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
+    private fun fetchProperty(property: DataBrokerProperty) {
         Log.d(TAG, "Fetch property: $property")
 
+        val request = FetchRequest(property.vssPath, *property.fieldTypes.toTypedArray())
+
         dataBrokerEngine.fetch(
-            property,
+            request,
             object : CoroutineCallback<GetResponse>() {
                 override fun onSuccess(result: GetResponse?) {
                     val errorsList = result?.errorsList
@@ -281,12 +301,13 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
-    private fun updateProperty(property: Property, datapoint: Datapoint) {
+    @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
+    private fun updateProperty(property: DataBrokerProperty, datapoint: Datapoint) {
         Log.d(TAG, "Update property: $property dataPoint: $datapoint, type: ${datapoint.valueCase}")
 
+        val request = UpdateRequest(property.vssPath, datapoint, *property.fieldTypes.toTypedArray())
         dataBrokerEngine.update(
-            property,
-            datapoint,
+            request,
             object : CoroutineCallback<KuksaValV1.SetResponse>() {
                 override fun onSuccess(result: KuksaValV1.SetResponse?) {
                     val errorsList = result?.errorsList
@@ -305,24 +326,25 @@ class KuksaDataBrokerActivity : ComponentActivity() {
         )
     }
 
-    private fun fetchSpecification(specification: VssSpecification) {
+    private fun fetchVssNode(vssNode: VssNode) {
+        val request = VssNodeFetchRequest(vssNode)
         dataBrokerEngine.fetch(
-            specification,
-            object : CoroutineCallback<VssSpecification>() {
-                override fun onSuccess(result: VssSpecification?) {
-                    Log.d(TAG, "Fetched specification: $result")
-                    outputViewModel.addOutputEntry("Fetched specification: $result")
+            request,
+            object : CoroutineCallback<VssNode>() {
+                override fun onSuccess(result: VssNode?) {
+                    Log.d(TAG, "Fetched node: $result")
+                    outputViewModel.addOutputEntry("Fetched node: $result")
                 }
 
                 override fun onError(error: Throwable) {
-                    outputViewModel.addOutputEntry("Could not fetch specification: ${error.message}")
+                    outputViewModel.addOutputEntry("Could not fetch node: ${error.message}")
                 }
             },
         )
     }
 
     private fun loadVssPathSuggestions() {
-        val property = Property("Vehicle", listOf(Field.FIELD_VALUE))
+        val property = FetchRequest(VssVehicle().vssPath, Field.FIELD_VALUE)
 
         dataBrokerEngine.fetch(
             property,
@@ -331,7 +353,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                     val entriesList = result?.entriesList
                     val vssPaths = entriesList?.map { it.path } ?: emptyList()
 
-                    vssPropertiesViewModel.updateSuggestions(vssPaths)
+                    vssPathsViewModel.updateSuggestions(vssPaths)
                 }
 
                 override fun onError(error: Throwable) {

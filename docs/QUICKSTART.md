@@ -68,8 +68,8 @@ void connectInsecure(String host, int port) {
 ```kotlin
 fun fetch() {
     lifecycleScope.launch {
-        val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
-        val response = dataBrokerConnection?.fetch(property) ?: return@launch
+        val request = FetchRequest("Vehicle.Speed", Field.FIELD_VALUE)
+        val response = dataBrokerConnection?.fetch(request) ?: return@launch
         val entry = response.entriesList.first() // Don't forget to handle empty responses
         val value = entry.value
         val speed = value.float
@@ -78,20 +78,20 @@ fun fetch() {
 
 fun update() {
     lifecycleScope.launch {
-        val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
+        val request = UpdateRequest("Vehicle.Speed", Field.FIELD_VALUE)
         val datapoint = Datapoint.newBuilder().setFloat(100f).build()
-        dataBrokerConnection?.update(property, datapoint)
+        dataBrokerConnection?.update(request, datapoint)
     }
 }
 
 fun subscribe() {
-    val property = Property("Vehicle.Speed", listOf(Field.FIELD_VALUE))
-    val propertyListener = object : PropertyListener {
-        override fun onPropertyChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
+    val request = SubscribeRequest("Vehicle.Speed", Field.FIELD_VALUE)
+    val listener = object : VssPathListener {
+        override fun onEntryChanged(entryUpdates: List<KuksaValV1.EntryUpdate>) {
             entryUpdates.forEach { entryUpdate ->
                 val updatedValue = entryUpdate.entry
 
-                // handle property change
+                // handle entry change
                 when (updatedValue.path) {
                     "Vehicle.Speed" -> {
                         val speed = updatedValue.value.float
@@ -100,14 +100,14 @@ fun subscribe() {
         }
     }
 
-    dataBrokerConnection?.subscribe(property, propertyListener)
+    dataBrokerConnection?.subscribe(request, listener)
 }
 ```
 *Java*
 ```java
 void fetch() {
-    Property property = new Property("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
-    dataBrokerConnection.fetch(property, new CoroutineCallback<GetResponse>() {
+    FetchRequest request = new FetchRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
+    dataBrokerConnection.fetch(request, new CoroutineCallback<GetResponse>() {
         @Override
         public void onSuccess(GetResponse result) {
             result.entriesList.first() // Don't forget to handle empty responses
@@ -119,25 +119,25 @@ void fetch() {
 }
 
 void update() {
-    Property property = new Property("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
     Datapoint datapoint = Datapoint.newBuilder().setFloat(100f).build();
-    dataBrokerConnection.update(property, datapoint, new CoroutineCallback<KuksaValV1.SetResponse>() {
+    UpdateRequest request = new UpdateRequest("Vehicle.Speed", datapoint, Types.Field.FIELD_VALUE);
+    dataBrokerConnection.update(request, new CoroutineCallback<KuksaValV1.SetResponse>() {
         @Override
         public void onSuccess(KuksaValV1.SetResponse result) {
-          // handle result
+        // handle result
         }
     });
 }
 
 void subscribe() {
-    Property property = new Property("Vehicle.Speed", Collections.singleton(Types.Field.FIELD_VALUE));
-    dataBrokerConnection.subscribe(property, new PropertyListener() {
+    SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
+    dataBrokerConnection.subscribe(request, new VssPathListener() {
         @Override
-        public void onPropertyChanged(@NonNull List<EntryUpdate> entryUpdates) {
+        public void onEntryChanged(@NonNull List<EntryUpdate> entryUpdates) {
             for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
             Types.DataEntry updatedValue = entryUpdate.getEntry();
 
-            // handle property change
+            // handle entry change
             switch (updatedValue.getPath()) {
                 case "Vehicle.Speed":
                 float speed = updatedValue.getValue().getFloat();
@@ -152,11 +152,12 @@ void subscribe() {
 }
 ```
 
-## Specifications Symbol Processing
+## VSS Model Generation
 
-The generic nature of using the `Property` API will result into an information loss of the type which can be seen in 
-the `subscribe` example. You may choose to reuse the same listener for multiple properties. Then it requires an additional check 
-of the `vssPath` after receiving an updated value to correctly cast it back. This is feasible for simple use cases but can get tedious when working with a lot of vehicle signals.
+The generic nature of using the `VSS Path` API will result into an information loss of the type which can be seen in 
+the `subscribe` example. You may choose to reuse the same listener for multiple VSS paths. Then it requires an additional check 
+of the `vssPath` after receiving an updated value to correctly cast it back. This is feasible for simple use cases but can get tedious 
+when working with a lot of vehicle signals.
 
 For a more convenient usage you can opt in to auto generate Kotlin models via [Symbol Processing](https://kotlinlang.org/docs/ksp-quickstart.html) 
 of the same specification the Databroker uses. For starters you can retrieve an extensive default specification from the
@@ -165,7 +166,7 @@ release page of the [COVESA Vehicle Signal Specification GitHub repository](http
 Currently VSS specification files in .yaml and .json format are supported by the vss-processor.
 
 *app/build.gradle.kts*
-```
+```kotlin
 plugins {
     id("org.eclipse.kuksa.vss-processor-plugin")
 }
@@ -180,26 +181,20 @@ vssProcessor {
 }
 ```
 
-Use the new [`VssDefinition`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssDefinition.kt) annotation and provide the path to the specification file (Inside the assets folder).
+Use the [`VssModelGenerator`](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/vss-core/src/main/java/org/eclipse/kuksa/vsscore/annotation/VssModelGenerator.kt) annotation.
 Doing so will generate a complete tree of Kotlin models which can be used in combination with the SDK API. This way you can
 work with safe types and the SDK takes care of all the model parsing for you. There is also a whole set of 
-convenience operators and extension methods to work with to manipulate the tree data. See the `VssSpecification` class documentation for this.
+convenience operators and extension methods to work with to manipulate the tree data. See the `VssNode` class documentation for this.
 
-*Kotlin*
-```kotlin
-@VssDefinition 
-class KotlinActivity
-```
-*Java*
-```java
-@VssDefinition
-public class JavaActivity
+```kotlin / Java
+@VssModelGenerator 
+class Activity
 ```
 > [!IMPORTANT]
-> Keep in mind to always synchronize the specification file between the client and the Databroker.
+> Keep in mind to always synchronize a compatible (e.g. subset) VSS file between the client and the Databroker.
 
 
-*Example .yaml specification file*
+*Example .yaml VSS file*
 ```yaml
 Vehicle.Speed:
   datatype: float
@@ -214,7 +209,7 @@ Vehicle.Speed:
 ```kotlin
 data class VssSpeed @JvmOverloads constructor(
     override val `value`: Float = 0f,
-) : VssProperty<Float> {
+) : VssNode<Float> {
     override val comment: String
         get() = ""
 
@@ -230,7 +225,7 @@ data class VssSpeed @JvmOverloads constructor(
     override val vssPath: String
         get() = "Vehicle.Speed"
 
-    override val children: Set<VssSpecification>
+    override val children: Set<VssNode>
         get() = setOf()
 
     override val parentClass: KClass<*>
@@ -238,14 +233,15 @@ data class VssSpeed @JvmOverloads constructor(
 }
 ```
 
-### Specification API
+### API for generated VSS models
 
 *Kotlin*
 ```kotlin
 fun fetch() {
     lifecycleScope.launch {
         val vssSpeed = VssVehicle.VssSpeed()
-        val updatedSpeed = dataBrokerConnection?.fetch(vssSpeed)
+        val request = VssNodeFetchRequest(vssSpeed)
+        val updatedSpeed = dataBrokerConnection?.fetch(request)
         val speed = updatedSpeed?.value
     }
 }
@@ -253,14 +249,16 @@ fun fetch() {
 fun update() {
     lifecycleScope.launch {
         val vssSpeed = VssVehicle.VssSpeed(value = 100f)
-        dataBrokerConnection?.update(vssSpeed)
+        val request = VssNodeUpdateRequest(vssSpeed)
+        dataBrokerConnection?.update(request)
     }
 }
 
 fun subscribe() {
     val vssSpeed = VssVehicle.VssSpeed(value = 100f)
-    dataBrokerConnection?.subscribe(vssSpeed, listener = object : VssSpecificationListener<VssVehicle.VssSpeed> {
-        override fun onSpecificationChanged(vssSpecification: VssVehicle.VssSpeed) {
+    val request = VssNodeSubscribeRequest(vssSpeed)
+    dataBrokerConnection?.subscribe(request, listener = object : VssNodeListener<VssVehicle.VssSpeed> {
+        override fun onNodeChanged(vssNode: VssVehicle.VssSpeed) {
             val speed = vssSpeed.value
         }
 
@@ -274,9 +272,9 @@ fun subscribe() {
 ```java
 void fetch() {
     VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
+    VssNodeFetchRequest request = new VssNodeFetchRequest(vssSpeed)
     dataBrokerConnection.fetch(
-        vssSpeed,
-        Collections.singleton(Types.Field.FIELD_VALUE),
+        request,
         new CoroutineCallback<VssVehicle.VssSpeed>() {
             @Override
             public void onSuccess(@Nullable VssVehicle.VssSpeed result) {
@@ -293,9 +291,9 @@ void fetch() {
 
 void update() {
     VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed(100f);
+    VssNodeUpdateRequest request = new VssNodeUpdateRequest(vssSpeed)
     dataBrokerConnection.update(
-        vssSpeed,
-        Collections.singleton(Types.Field.FIELD_VALUE),
+        request,
         new CoroutineCallback<Collection<? extends KuksaValV1.SetResponse>>() {
             @Override
             public void onSuccess(@Nullable Collection<? extends KuksaValV1.SetResponse> result) {
@@ -312,13 +310,13 @@ void update() {
 
 void subscribe() {
     VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
+    VssNodeSubscribeRequest request = new VssNodeSubscribeRequest(vssSpeed)
     dataBrokerConnection.subscribe(
-        vssSpeed,
-        Collections.singleton(Types.Field.FIELD_VALUE),
-        new VssSpecificationListener<VssVehicle.VssSpeed>() {
+        request,
+        new VssNodeListener<VssVehicle.VssSpeed>() {
             @Override
-            public void onSpecificationChanged(@NonNull VssVehicle.VssSpeed vssSpecification) {
-                Float speed = vssSpecification.getValue();
+            public void onNodeChanged(@NonNull VssVehicle.VssSpeed vssNode) {
+                Float speed = vssNode.getValue();
             }
     
             @Override

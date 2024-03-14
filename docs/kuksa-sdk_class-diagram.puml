@@ -26,8 +26,7 @@ package kuksa {
     DataBrokerConnector -down-> DataBrokerConnection
     DataBrokerConnection -down-> DataBrokerTransporter
     DataBrokerConnection -down-> DataBrokerSubscriber
-    DataBrokerConnection -down-> PropertyListener
-    DataBrokerConnection -down-> Property
+    DataBrokerConnection -down-> VssPathListener
     DataBrokerConnection -left-> DataBrokerException
     DataBrokerConnection -up-> MultiListener
     DataBrokerSubscriber -up-> DataBrokerTransporter
@@ -53,35 +52,54 @@ package kuksa {
     }
 
     class DataBrokerSubscriber {
-        + subscribe(vssPath: String, Field, PropertyListener)
-        + subscribe<T : VssSpecification>(T, Field, VssSpecificationListener<T>)
-        + unsubscribe(vssPath: String, Field, PropertyListener)
-        + unsubscribe<T : VssSpecification>(T, Field, VssSpecificationListener<T>)
+        + subscribe(vssPath: String, Field, VssPathListener)
+        + subscribe<T : VssNode>(T, Field, VssNodeListener<T>)
+        + unsubscribe(vssPath: String, Field, VssPathListener)
+        + unsubscribe<T : VssNode>(T, Field, VssNodeListener<T>)
     }
 
     class DataBrokerConnection {
         + disconnectListeners: MultiListener<DisconnectListener>
         + jsonWebToken: JsonWebToken
 
-        + subscribe(Property, PropertyListener)
-        + subscribe<T : VssSpecification>(T, Collection<Field>, VssSpecificationListener<T>)
-        + unsubscribe(Property, PropertyListener)
-        + unsubscribe<T : VssSpecification>(T, Collection<Field>, VssSpecificationListener<T>)
-        + fetch(Property): GetResponse
-        + fetch<T : VssSpecification>(T, Collection<Field>)
-        + update(Property, Datapoint): SetResponse
-        + update(VssSpecification, Collection<Field>): SetResponse
+        + subscribe(SubscribeRequest, VssPathListener)
+        + subscribe<T : VssNode>(VssNodeSubscribeRequest, VssNodeListener<T>)
+        + unsubscribe(SubscribeRequest, VssPathListener)
+        + unsubscribe<T : VssNode>(VssNodeSubscribeRequest<T>, VssNodeListener<T>)
+        + fetch(FetchRequest): GetResponse
+        + fetch<T : VssNode>(VssNodeFetchRequest<T>)
+        + update(UpdateRequest): SetResponse
+        + update(VssNodeUpdateRequest): SetResponse
         + disconnect()
     }
     
-    interface PropertyListener {
-        + onPropertyChanged(List<EntryUpdate>)
+    interface VssPathListener {
+        + onEntryChanged(List<EntryUpdate>)
         + onError(Throwable)
     }
 
-    class Property {
-        + vssPath: String
-        + fields: Collection<Types.Field>
+    package request {
+        interface DataBrokerRequest {
+            + vssPath: String
+            + fields: Array<out Field>
+        }
+
+        class UpdateRequest {
+            + dataPoint: Datapoint
+        }
+
+        class VssNodeDataBrokerRequest<T : VssNode> {
+            + vssNode: T
+        }
+
+        DataBrokerRequest <|-- FetchRequest
+        DataBrokerRequest <|-- SubscribeRequest
+        DataBrokerRequest <|-- UpdateRequest
+        DataBrokerRequest <|-- VssNodeDataBrokerRequest
+
+        VssNodeDataBrokerRequest <|-- VssNodeFetchRequest
+        VssNodeDataBrokerRequest <|-- VssNodeSubscribeRequest
+        VssNodeDataBrokerRequest <|-- VssNodeUpdateRequest
     }
 
     class DataBrokerException
@@ -103,5 +121,6 @@ package kuksa {
 
 DataBrokerConnector -up-> ManagedChannel
 DataBrokerConnection -right-> proto
+DataBrokerConnection -right-> request
 
 @enduml

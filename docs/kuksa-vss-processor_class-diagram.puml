@@ -4,39 +4,39 @@
 !includesub kuksa-vss-core_class-diagram.puml!VssCore
 
 package App {
-    MainActivity --o VssDefinition
+    MainActivity --o VssModelGenerator
 
     class MainActivity
 }
 
 package VssProcessor {
 
-    VssDefinitionProcessor -down-> VssDefinitionVisitor
-    VssDefinitionProcessor -down-> VssDefinitionParser
-    VssDefinitionProcessor -down-> SpecModel
-    VssDefinitionParser <|- YamlDefinitionParser
-    SpecModel <|- VssSpecificationSpecModel
-    VssSpecification <|- VssSpecificationSpecModel
+    VssModelGeneratorProcessor -down-> VssModelGeneratorVisitor
+    VssModelGeneratorProcessor -down-> VssParser
+    VssModelGeneratorProcessor -down-> SpecModel
+    VssParser <|- YamlVssParser
+    SpecModel <|- VssNodeSpecModel
+    VssNode <|-- VssNodeSpecModel
 
-    class VssDefinitionProcessor {
-        + VssDefinitionProcessor(CodeGenerator, KSPLogger)
+    class VssModelGeneratorProcessor {
+        + VssModelGeneratorProcessor(CodeGenerator, KSPLogger)
     }
 
-    class VssDefinitionVisitor {
+    class VssModelGeneratorVisitor {
         + visitClassDeclaration(KSClassDeclaration)
     }
 
-    interface VssDefinitionParser {
-        + parseSpecifications(File, elementDelimiter: String,): Collection<VssSpecificationSpecModel>
+    interface VssParser {
+        + parseNodes(File, elementDelimiter: String,): Collection<VssNodeSpecModel>
     }
 
-    class YamlDefinitionParser
+    class YamlVssParser
 
     interface SpecModel<T : SpecModel<T>> {
-        + createClassSpec(packageName: String, relatedSpecifications: Collection<T>, nestedClasses: Collection<String>): TypeSpec
+        + createClassSpec(packageName: String, relatedNodes: Collection<T>, nestedClasses: Collection<String>): TypeSpec
     }
 
-    class VssSpecificationSpecModel {
+    class VssNodeSpecModel {
     }
 }
 

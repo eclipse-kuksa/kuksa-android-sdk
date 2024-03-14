@@ -31,11 +31,11 @@ import kotlinx.coroutines.flow.onEach
 class TopAppBarViewModel : ViewModel() {
     enum class DataBrokerMode {
         VSS_PATH,
-        SPECIFICATION,
+        VSS_FILE,
     }
 
     var isCompatibilityModeEnabled by mutableStateOf(false)
-    var isSpecificationModeEnabled by mutableStateOf(false)
+    var isVssFileModeEnabled by mutableStateOf(false)
         private set
 
     var onCompatibilityModeChanged: ((Boolean) -> Unit)? = null
@@ -49,16 +49,16 @@ class TopAppBarViewModel : ViewModel() {
             .onEach { onCompatibilityModeChanged?.invoke(it) }
             .launchIn(viewModelScope)
 
-        snapshotFlow { isSpecificationModeEnabled }
+        snapshotFlow { isVssFileModeEnabled }
             .onEach {
-                val mode = if (isSpecificationModeEnabled) DataBrokerMode.SPECIFICATION else DataBrokerMode.VSS_PATH
+                val mode = if (isVssFileModeEnabled) DataBrokerMode.VSS_FILE else DataBrokerMode.VSS_PATH
                 onDataBrokerModeChanged?.invoke(mode)
             }
             .launchIn(viewModelScope)
 
         snapshotFlow { dataBrokerMode }
             .onEach {
-                isSpecificationModeEnabled = it == DataBrokerMode.SPECIFICATION
+                isVssFileModeEnabled = it == DataBrokerMode.VSS_FILE
             }
             .launchIn(viewModelScope)
     }

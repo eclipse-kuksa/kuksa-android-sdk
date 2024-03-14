@@ -32,8 +32,8 @@ class JsonVssParserTest : BehaviorSpec({
         val classUnderTest = JsonVssParser()
 
         `when`("Parsing the SpecModels of vss_rel_4.0.partial.json") {
-            val partialSpecFile = TestResourceFile("json/vss_rel_4.0.partial.json")
-            val specModels = classUnderTest.parseNodes(partialSpecFile)
+            val partialVssFile = TestResourceFile("json/vss_rel_4.0.partial.json")
+            val specModels = classUnderTest.parseNodes(partialVssFile)
 
             then("The following SpecModels should be parsed") {
                 val validVssPaths = listOf(
@@ -90,7 +90,7 @@ class JsonVssParserTest : BehaviorSpec({
             val fullSpecFile = TestResourceFile("json/vss_rel_4.0.json")
             val specModels = classUnderTest.parseNodes(fullSpecFile)
 
-            then("the correct number of specification models should be parsed") {
+            then("the correct number of models models should be parsed") {
                 specModels.size shouldBe 1197 // counted occurrences of '"uuid":' in specFile
             }
         }

@@ -26,9 +26,9 @@ import io.grpc.Grpc
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
-import org.eclipse.kuksa.DataBrokerConnector
-import org.eclipse.kuksa.TimeoutConfig
-import org.eclipse.kuksa.authentication.JsonWebToken
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
+import org.eclipse.kuksa.model.TimeoutConfig
 import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.extension.readAsText
 import java.io.IOException

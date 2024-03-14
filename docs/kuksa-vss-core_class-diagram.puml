@@ -3,19 +3,14 @@
 
 !startsub VssCore
 package VssCore {
-    VssNode <|- VssSpecification
-    VssSpecification <|- VssProperty
+    VssNode <|- VssBranch
+    VssNode <|-- VssSignal
 
-    annotation VssDefinition {
-        + vssDefinitionPath: String
-    }
+    annotation VssModelGenerator
 
     interface VssNode {
-        + children: Set<VssSpecification>
+        + children: Set<VssNode>
         + parentClass: KClass<*>
-    }
-
-    interface VssSpecification {
         + uuid: String
         + vssPath: String
         + description: String
@@ -23,7 +18,9 @@ package VssCore {
         + comment: String
     }
 
-    interface VssProperty<T : Any> {
+    interface VssBranch
+
+    interface VssSignal<T : Any> {
         + value: T
     }
 }

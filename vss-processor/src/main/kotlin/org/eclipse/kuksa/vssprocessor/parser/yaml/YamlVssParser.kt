@@ -19,7 +19,7 @@
 
 package org.eclipse.kuksa.vssprocessor.parser.yaml
 
-import org.eclipse.kuksa.vsscore.model.VssSpecification
+import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
@@ -28,15 +28,15 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
 
 internal class YamlVssParser(private val elementDelimiter: String = "") : VssParser {
-    override fun parseNodes(definitionFile: File): List<VssNodeSpecModel> {
-        val specificationElements = mutableListOf<VssNodeSpecModel>()
-        definitionFile.useLines { lines ->
+    override fun parseNodes(vssFile: File): List<VssNodeSpecModel> {
+        val vssNodeElements = mutableListOf<VssNodeSpecModel>()
+        vssFile.useLines { lines ->
             val yamlAttributes = mutableListOf<String>()
             for (line in lines.toList()) {
                 val trimmedLine = line.trim()
                 if (trimmedLine == elementDelimiter) { // A new element will follow after the delimiter
-                    parseYamlElement(yamlAttributes)?.let { specificationElement ->
-                        specificationElements.add(specificationElement)
+                    parseYamlElement(yamlAttributes)?.let { element ->
+                        vssNodeElements.add(element)
                     }
 
                     yamlAttributes.clear()
@@ -48,12 +48,12 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
             }
 
             // Add the last element because no empty line will follow
-            parseYamlElement(yamlAttributes)?.let { specificationElement ->
-                specificationElements.add(specificationElement)
+            parseYamlElement(yamlAttributes)?.let { element ->
+                vssNodeElements.add(element)
             }
         }
 
-        return specificationElements
+        return vssNodeElements
     }
 
     // Example .yaml element:
@@ -90,12 +90,12 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
             fieldsToSet.add(fieldInfo)
         }
 
-        val vssSpecificationMember = VssNodeSpecModel()
-        vssSpecificationMember.setFields(fieldsToSet)
+        val vssNodeSpec = VssNodeSpecModel()
+        vssNodeSpec.setFields(fieldsToSet)
 
-        if (vssSpecificationMember.uuid.isEmpty()) return null
+        if (vssNodeSpec.uuid.isEmpty()) return null
 
-        return vssSpecificationMember
+        return vssNodeSpec
     }
 }
 
@@ -103,7 +103,7 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
  * @param fields to set via reflection. Pair<PropertyName, anyValue>.
  * @param remapNames which can be used if the propertyName does not match with the input name
  */
-private fun VssSpecification.setFields(
+private fun VssNode.setFields(
     fields: List<Pair<String, Any?>>,
     remapNames: Map<String, String> = emptyMap(),
 ) {

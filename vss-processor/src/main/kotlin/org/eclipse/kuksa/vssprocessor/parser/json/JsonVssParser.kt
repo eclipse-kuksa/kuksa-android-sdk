@@ -46,11 +46,11 @@ internal class JsonVssParser : VssParser {
         KEY_DATA_CHILDREN,
     )
 
-    override fun parseNodes(definitionFile: File): List<VssNodeSpecModel> {
+    override fun parseNodes(vssFile: File): List<VssNodeSpecModel> {
         val vssNodeSpecModels = mutableListOf<VssNodeSpecModel>()
 
         try {
-            val jsonStreamReader = definitionFile.reader()
+            val jsonStreamReader = vssFile.reader()
 
             val gson = Gson()
             val rootJsonObject = gson.fromJson(jsonStreamReader, JsonObject::class.java)
@@ -59,10 +59,10 @@ internal class JsonVssParser : VssParser {
                 val vehicleJsonObject = rootJsonObject.getAsJsonObject(ROOT_KEY_VEHICLE)
                 vssNodeSpecModels += parseSpecModels(ROOT_KEY_VEHICLE, vehicleJsonObject)
             } else {
-                throw IOException("Invalid VSS Specification file '${definitionFile.path}'")
+                throw IOException("Invalid VSS file '${vssFile.path}'")
             }
         } catch (e: JsonParseException) {
-            throw IOException("Invalid VSS Specification file '${definitionFile.path}'", e)
+            throw IOException("Invalid VSS file '${vssFile.path}'", e)
         }
 
         return vssNodeSpecModels.toList()

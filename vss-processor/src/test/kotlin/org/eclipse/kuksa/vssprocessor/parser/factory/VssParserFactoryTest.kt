@@ -28,39 +28,39 @@ import java.io.File
 
 class VssParserFactoryTest : BehaviorSpec({
 
-    given("An instance of DefinitionParserFactory") {
+    given("An instance of VssParserFactory") {
         val classUnderTest = VssParserFactory()
 
         `when`("Calling create with supported extension 'json'") {
-            val vssDefinitionParser = classUnderTest.create("json")
+            val vssParser = classUnderTest.create("json")
 
-            then("It should return a JsonDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(JsonVssParser::class)
+            then("It should return a parser for JSON VSS files") {
+                vssParser shouldBe instanceOf(JsonVssParser::class)
             }
         }
 
         `when`("Calling create with supported extension 'yaml'") {
-            val vssDefinitionParser = classUnderTest.create("yaml")
+            val vssParser = classUnderTest.create("yaml")
 
-            then("It should return a YamlDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(YamlVssParser::class)
+            then("It should return a parser for YAML VSS files") {
+                vssParser shouldBe instanceOf(YamlVssParser::class)
             }
         }
 
         `when`("Calling create with supported extension 'yml'") {
-            val vssDefinitionParser = classUnderTest.create("yml")
+            val vssParser = classUnderTest.create("yml")
 
-            then("It should return a YamlDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(YamlVssParser::class)
+            then("It should return a parser for YAML VSS files") {
+                vssParser shouldBe instanceOf(YamlVssParser::class)
             }
         }
 
         `when`("Calling create with a File with a supported file extension") {
             val supportedFile = File("someVssFile.with-multiple-dots.json")
-            val vssDefinitionParser = classUnderTest.create(supportedFile)
+            val vssParser = classUnderTest.create(supportedFile)
 
-            then("It should correctly extract the extension and return the corresponding VssDefinitionParser") {
-                vssDefinitionParser shouldBe instanceOf(JsonVssParser::class)
+            then("It should correctly extract the extension and return the corresponding VssParser") {
+                vssParser shouldBe instanceOf(JsonVssParser::class)
             }
         }
 

@@ -22,14 +22,19 @@ package com.example.sample;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.eclipse.kuksa.CoroutineCallback;
-import org.eclipse.kuksa.DataBrokerConnection;
-import org.eclipse.kuksa.DataBrokerConnector;
-import org.eclipse.kuksa.DisconnectListener;
-import org.eclipse.kuksa.PropertyListener;
-import org.eclipse.kuksa.VssSpecificationListener;
-import org.eclipse.kuksa.authentication.JsonWebToken;
-import org.eclipse.kuksa.model.Property;
+import org.eclipse.kuksa.connectivity.authentication.JsonWebToken;
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection;
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector;
+import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener;
+import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener;
+import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener;
+import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest;
+import org.eclipse.kuksa.coroutine.CoroutineCallback;
 import org.eclipse.kuksa.proto.v1.KuksaValV1;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.Types;
@@ -39,7 +44,6 @@ import org.eclipse.kuksa.vss.VssVehicle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -53,7 +57,7 @@ import io.grpc.TlsChannelCredentials;
 /**
  * @noinspection unused
  */
-//@VssDefinition // Commented out to prevent conflicts with the Kotlin activity
+//@VssModelGenerator // Commented out to prevent conflicts with the Kotlin activity
 public class JavaActivity extends AppCompatActivity {
 
     private final DisconnectListener disconnectListener = () -> {
@@ -135,10 +139,11 @@ public class JavaActivity extends AppCompatActivity {
         dataBrokerConnection = null;
     }
 
-    public void fetchProperty(Property property) {
+    public void fetch() {
         if (dataBrokerConnection == null) return;
 
-        dataBrokerConnection.fetch(property, new CoroutineCallback<GetResponse>() {
+        FetchRequest request = new FetchRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
+        dataBrokerConnection.fetch(request, new CoroutineCallback<GetResponse>() {
             @Override
             public void onSuccess(GetResponse result) {
                 // handle result
@@ -151,10 +156,14 @@ public class JavaActivity extends AppCompatActivity {
         });
     }
 
-    public void updateProperty(Property property, Datapoint datapoint) {
+    public void update() {
         if (dataBrokerConnection == null) return;
 
-        dataBrokerConnection.update(property, datapoint, new CoroutineCallback<KuksaValV1.SetResponse>() {
+        Datapoint datapoint = Datapoint.newBuilder()
+            .setFloat(50f)
+            .build();
+        UpdateRequest request = new UpdateRequest("Vehicle.Speed", datapoint, Types.Field.FIELD_VALUE);
+        dataBrokerConnection.update(request, new CoroutineCallback<KuksaValV1.SetResponse>() {
             @Override
             public void onSuccess(KuksaValV1.SetResponse result) {
                 // handle result
@@ -167,16 +176,17 @@ public class JavaActivity extends AppCompatActivity {
         });
     }
 
-    public void subscribeProperty(Property property) {
+    public void subscribe() {
         if (dataBrokerConnection == null) return;
 
-        dataBrokerConnection.subscribe(property, new PropertyListener() {
+        SubscribeRequest request = new SubscribeRequest("Vehicle.Speed", Types.Field.FIELD_VALUE);
+        dataBrokerConnection.subscribe(request, new VssPathListener() {
             @Override
-            public void onPropertyChanged(@NonNull List<KuksaValV1.EntryUpdate> entryUpdates) {
+            public void onEntryChanged(@NonNull List<KuksaValV1.EntryUpdate> entryUpdates) {
                 for (KuksaValV1.EntryUpdate entryUpdate : entryUpdates) {
                     Types.DataEntry updatedValue = entryUpdate.getEntry();
 
-                    // handle property change
+                    // handle value change
                     //noinspection SwitchStatementWithTooFewBranches
                     switch (updatedValue.getPath()) {
                         case "VSS.Speed":
@@ -193,14 +203,17 @@ public class JavaActivity extends AppCompatActivity {
         });
     }
 
-    // region: Specifications
-    public void fetchSpecification() {
+    // region: VSS generated models
+    public void fetchNode() {
         if (dataBrokerConnection == null) return;
 
         VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
-        dataBrokerConnection.fetch(
+        VssNodeFetchRequest<VssVehicle.VssSpeed> request = new VssNodeFetchRequest<>(
             vssSpeed,
-            Collections.singleton(Types.Field.FIELD_VALUE),
+            Types.Field.FIELD_VALUE
+        );
+        dataBrokerConnection.fetch(
+            request,
             new CoroutineCallback<VssVehicle.VssSpeed>() {
                 @Override
                 public void onSuccess(@Nullable VssVehicle.VssSpeed result) {
@@ -217,13 +230,16 @@ public class JavaActivity extends AppCompatActivity {
         );
     }
 
-    public void updateSpecification() {
+    public void updateNode() {
         if (dataBrokerConnection == null) return;
 
         VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed(100f);
-        dataBrokerConnection.update(
+        VssNodeUpdateRequest<VssVehicle.VssSpeed> request = new VssNodeUpdateRequest<>(
             vssSpeed,
-            Collections.singleton(Types.Field.FIELD_VALUE),
+            Types.Field.FIELD_VALUE
+        );
+        dataBrokerConnection.update(
+            request,
             new CoroutineCallback<Collection<? extends KuksaValV1.SetResponse>>() {
                 @Override
                 public void onSuccess(@Nullable Collection<? extends KuksaValV1.SetResponse> result) {
@@ -238,17 +254,20 @@ public class JavaActivity extends AppCompatActivity {
         );
     }
 
-    public void subscribeSpecification() {
+    public void subscribeNode() {
         if (dataBrokerConnection == null) return;
 
         VssVehicle.VssSpeed vssSpeed = new VssVehicle.VssSpeed();
-        dataBrokerConnection.subscribe(
+        VssNodeSubscribeRequest<VssVehicle.VssSpeed> request = new VssNodeSubscribeRequest<>(
             vssSpeed,
-            Collections.singleton(Types.Field.FIELD_VALUE),
-            new VssSpecificationListener<VssVehicle.VssSpeed>() {
+            Types.Field.FIELD_VALUE
+        );
+        dataBrokerConnection.subscribe(
+            request,
+            new VssNodeListener<VssVehicle.VssSpeed>() {
                 @Override
-                public void onSpecificationChanged(@NonNull VssVehicle.VssSpeed vssSpecification) {
-                    Float speed = vssSpecification.getValue();
+                public void onNodeChanged(@NonNull VssVehicle.VssSpeed vssNode) {
+                    Float speed = vssNode.getValue();
                 }
 
                 @Override

@@ -36,8 +36,7 @@ import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
-import org.eclipse.kuksa.vsscore.annotation.VssDefinition
-import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.annotation.VssModelGenerator
 import org.eclipse.kuksa.vsscore.model.parentClassName
 import org.eclipse.kuksa.vssprocessor.parser.factory.VssParserFactory
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
@@ -45,8 +44,8 @@ import org.eclipse.kuksa.vssprocessor.spec.VssPath
 import java.io.File
 
 /**
- * Generates a [VssNode] for every specification listed in the input file.
- * These nodes are a usable kotlin data class reflection of the specification.
+ * Generates a [org.eclipse.kuksa.vsscore.model.VssNode] for every entry listed in the input file.
+ * These nodes are a usable kotlin data class reflection of the element.
  *
  * @param codeGenerator to generate class files with
  * @param logger to log output with
@@ -55,11 +54,11 @@ class VssModelGeneratorProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
 ) : SymbolProcessor {
-    private val visitor = VssDefinitionVisitor()
+    private val visitor = VssModelGeneratorVisitor()
     private val vssParserFactory = VssParserFactory()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(VssDefinition::class.qualifiedName.toString())
+        val symbols = resolver.getSymbolsWithAnnotation(VssModelGenerator::class.qualifiedName.toString())
         val deferredSymbols = symbols.filterNot { it.validate() }
 
         symbols.forEach { it.accept(visitor, Unit) }
@@ -68,7 +67,7 @@ class VssModelGeneratorProcessor(
         return emptyList()
     }
 
-    private inner class VssDefinitionVisitor : KSVisitorVoid() {
+    private inner class VssModelGeneratorVisitor : KSVisitorVoid() {
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             val containingFile = classDeclaration.containingFile ?: return
 
@@ -80,30 +79,30 @@ class VssModelGeneratorProcessor(
                 annotatedProcessorFileName,
             )
 
-            val definitionFiles = loadVssDefinitionFiles()
-            if (definitionFiles.isEmpty()) {
-                logger.error("No VSS definition files were found! Is the plugin correctly configured?")
+            val vssFiles = loadVssFiles()
+            if (vssFiles.isEmpty()) {
+                logger.error("No VSS files were found! Is the plugin correctly configured?")
                 return
             }
 
-            val simpleSpecificationElements = mutableListOf<VssNodeSpecModel>()
-            definitionFiles.forEach { definitionFile ->
+            val simpleNodeElements = mutableListOf<VssNodeSpecModel>()
+            vssFiles.forEach { definitionFile ->
                 logger.info("Parsing models for definition file: ${definitionFile.name}")
-                val vssDefinitionParser = vssParserFactory.create(definitionFile)
-                val specModels = vssDefinitionParser.parseNodes(definitionFile)
+                val vssParser = vssParserFactory.create(definitionFile)
+                val specModels = vssParser.parseNodes(definitionFile)
 
-                simpleSpecificationElements.addAll(specModels)
+                simpleNodeElements.addAll(specModels)
             }
 
-            val vssPathToSpecificationElement = simpleSpecificationElements
+            val vssPathToVssNodeElement = simpleNodeElements
                 .distinctBy { it.uuid }
                 .associateBy({ VssPath(it.vssPath) }, { it })
 
-            generateModelFiles(vssPathToSpecificationElement)
+            generateModelFiles(vssPathToVssNodeElement)
         }
 
         // Uses the default file path for generated files (from the code generator) and searches for the given file.
-        private fun loadVssDefinitionFiles(): Collection<File> {
+        private fun loadVssFiles(): Collection<File> {
             val generatedFile = codeGenerator.generatedFile.firstOrNull() ?: return emptySet()
             val generationPath = generatedFile.absolutePath
             val buildPath = generationPath.replaceAfterLast("$BUILD_FOLDER_NAME$fileSeparator", "")
@@ -116,26 +115,26 @@ class VssModelGeneratorProcessor(
                 .toSet()
         }
 
-        private fun generateModelFiles(vssPathToSpecification: Map<VssPath, VssNodeSpecModel>) {
-            val duplicateSpecificationNames = vssPathToSpecification.keys
+        private fun generateModelFiles(vssPathToVssNode: Map<VssPath, VssNodeSpecModel>) {
+            val duplicateNodeNames = vssPathToVssNode.keys
                 .groupBy { it.leaf }
                 .filter { it.value.size > 1 }
                 .keys
 
-            logger.info("Ambiguous specifications - Generate nested classes: $duplicateSpecificationNames")
+            logger.info("Ambiguous VssNode - Generate nested classes: $duplicateNodeNames")
 
             val generatedFilesVssPathToClassName = mutableMapOf<String, String>()
-            for ((vssPath, specModel) in vssPathToSpecification) {
+            for ((vssPath, specModel) in vssPathToVssNode) {
                 // Every duplicate is produced as a nested class - No separate file should be generated
-                if (duplicateSpecificationNames.contains(vssPath.leaf)) {
+                if (duplicateNodeNames.contains(vssPath.leaf)) {
                     continue
                 }
 
                 specModel.logger = logger
                 val classSpec = specModel.createClassSpec(
                     PACKAGE_NAME,
-                    vssPathToSpecification.values,
-                    duplicateSpecificationNames,
+                    vssPathToVssNode.values,
+                    duplicateNodeNames,
                 )
 
                 val className = classSpec.name ?: throw NoSuchFieldException("Class spec $classSpec has no name field!")
@@ -202,7 +201,7 @@ class VssModelGeneratorProcessor(
 /**
  * Provides the environment for the [VssModelGeneratorProcessor].
  */
-class VssDefinitionProcessorProvider : SymbolProcessorProvider {
+class VssModelGeneratorProcessorProvider : SymbolProcessorProvider {
     override fun create(
         environment: SymbolProcessorEnvironment,
     ): SymbolProcessor {

@@ -24,9 +24,9 @@ import java.io.File
 
 internal interface VssParser {
     /**
-     * @param definitionFile to parse [VssNodeSpecModel] with
+     * Uses the given [vssFile] to parse [VssNodeSpecModel] with.
      *
      * @throws java.io.IOException will be thrown when parsing the SpecModels failed
      */
-    fun parseNodes(definitionFile: File): List<VssNodeSpecModel>
+    fun parseNodes(vssFile: File): List<VssNodeSpecModel>
 }

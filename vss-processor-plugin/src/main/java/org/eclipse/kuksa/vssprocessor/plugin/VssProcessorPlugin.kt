@@ -54,7 +54,7 @@ internal constructor(objectFactory: ObjectFactory) {
 private val fileSeparator = File.separator
 
 /**
- * This Plugin searches for compatible specification files and copies them into an input folder for the
+ * This Plugin searches for compatible VSS files and copies them into an input folder for the
  * KSP VSS Processor. This is necessary because the Symbol Processor does not have access to the android assets folder.
  */
 class VssProcessorPlugin : Plugin<Project> {
@@ -67,15 +67,15 @@ class VssProcessorPlugin : Plugin<Project> {
             val buildDirPath = buildDir.absolutePath
             val vssDir = "${rootDir}${fileSeparator}$VSS_FOLDER_NAME"
 
-            val provideVssDefinitionTask =
-                project.tasks.register<ProvideVssDefinitionTask>(PROVIDE_VSS_DEFINITION_TASK_NAME) {
+            val provideVssFilesTask =
+                project.tasks.register<ProvideVssFilesTask>(PROVIDE_VSS_FILES_TASK_NAME) {
                     val searchPath = extension.searchPath.get().ifEmpty { vssDir }
-                    val vssDefinitionFilePath = StringBuilder(buildDirPath)
+                    val vssFilePath = StringBuilder(buildDirPath)
                         .append(fileSeparator)
                         .append(KSP_INPUT_BUILD_DIRECTORY)
                         .append(fileSeparator)
                         .toString()
-                    val vssDefinitionBuildFile = File(vssDefinitionFilePath)
+                    val vssFile = File(vssFilePath)
 
                     logger.info("Searching directory $searchPath for VSS definitions")
 
@@ -88,11 +88,11 @@ class VssProcessorPlugin : Plugin<Project> {
                     }
 
                     inputDir.set(searchDir)
-                    outputDir.set(vssDefinitionBuildFile)
+                    outputDir.set(vssFile)
                 }
 
             tasks.getByName("preBuild").dependsOn(
-                provideVssDefinitionTask.get(),
+                provideVssFilesTask.get(),
             )
         }
     }
@@ -100,17 +100,17 @@ class VssProcessorPlugin : Plugin<Project> {
     companion object {
         private const val KSP_INPUT_BUILD_DIRECTORY = "kspInput"
         private const val EXTENSION_NAME = "vssProcessor"
-        private const val PROVIDE_VSS_DEFINITION_TASK_NAME = "provideVssDefinition"
+        private const val PROVIDE_VSS_FILES_TASK_NAME = "provideVssFiles"
         private const val VSS_FOLDER_NAME = "vss"
     }
 }
 
 /**
- * This task takes an input directory [inputDir] which should contain all available VSS definition files and an
+ * This task takes an input directory [inputDir] which should contain all available VSS files and an
  * output directory [outputDir] where all files are copied to so the VSSProcessor can work with them.
  */
 @CacheableTask
-private abstract class ProvideVssDefinitionTask : DefaultTask() {
+private abstract class ProvideVssFilesTask : DefaultTask() {
     @get:Incremental
     @get:IgnoreEmptyDirectories
     @get:PathSensitive(PathSensitivity.NAME_ONLY)

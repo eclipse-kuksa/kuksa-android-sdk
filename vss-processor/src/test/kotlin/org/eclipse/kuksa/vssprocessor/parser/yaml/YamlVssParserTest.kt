@@ -27,13 +27,13 @@ class YamlVssParserTest : BehaviorSpec({
     given("A parser for yaml files") {
         val parser = YamlVssParser()
 
-        and("a specification file of version 4") {
+        and("a VSS file of version 4") {
             val fullSpecificationFile = TestResourceFile("yaml/vss_rel_4.0.yaml")
 
             `when`("parsing the file") {
                 val parsedSpecifications = parser.parseNodes(fullSpecificationFile)
 
-                then("the correct number of specification models should be parsed") {
+                then("the correct number of VSS models should be parsed") {
                     parsedSpecifications.size shouldBe 1197 // counted occurrences of '"uuid":' in specFile
                 }
             }

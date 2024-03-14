@@ -28,14 +28,14 @@ import com.squareup.kotlinpoet.TypeSpec
 internal interface SpecModel<T : SpecModel<T>> {
     /**
      * @param packageName to use for the generated class specs.
-     * @param relatedSpecifications which can be used to generate children dependencies for the current and all
+     * @param relatedNodes which can be used to generate children dependencies for the current and all
      * [nestedClasses] models. The information used are depended on [T].
      * @param nestedClasses which can be used to create a class spec with nested classes. The string can be used as
      * identifier for finding the nested classes.
      */
     fun createClassSpec(
         packageName: String,
-        relatedSpecifications: Collection<T> = emptyList(),
+        relatedNodes: Collection<T> = emptyList(),
         nestedClasses: Collection<String> = emptySet(),
     ): TypeSpec
 }
