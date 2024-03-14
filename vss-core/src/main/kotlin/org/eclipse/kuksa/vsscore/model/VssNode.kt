@@ -146,9 +146,7 @@ val VssNode.parentClassName: String
  * big collection.
  */
 val VssNode.heritage: Collection<VssNode>
-    get() = children.toList() + children
-        .filterIsInstance<VssBranch>()
-        .flatMap { it.heritage }
+    get() = children.toList() + children.flatMap { it.heritage }
 
 /**
  * Finds the latest generation in the form of [VssSignal] for the current [VssNode].
