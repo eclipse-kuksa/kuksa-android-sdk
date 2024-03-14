@@ -223,9 +223,8 @@ fun VssNode.findHeritageLine(
 /**
  * Finds the given [signal] inside the current [VssNode].
  */
-inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(signal: T): T {
+inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(signal: T): VssNode {
     return heritage
-        .filterIsInstance<T>()
         .first { it.uuid == signal.uuid }
 }
 
@@ -233,9 +232,8 @@ inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(signal: T): T 
  * Finds all [VssSignal] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
  * with the same Name exists but are pretty much the same besides the [VssNode.vssPath] etc.
  */
-inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(type: KClass<T>): Map<String, T> {
+inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(type: KClass<T>): Map<String, VssNode> {
     return heritage
-        .filterIsInstance<T>()
         .filter { it::class.simpleName == type.simpleName }
         .associateBy { it.vssPath }
 }
