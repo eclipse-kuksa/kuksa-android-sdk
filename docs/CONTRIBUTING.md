@@ -83,11 +83,11 @@ We have multiple Fail-Early-Builds which run different versions of the KUKSA And
 Our goal is to have an early indication which allows us more easily to find breaking or behavioral changes when running our SDK on a specific version of the Databroker. 
 
 When one of these builds fail a short validity check should be done:
-- Where the correct versions of the SDK and Databroker used? 
-- Is it a sporadically failing test? Does a re-run fix it? 
+- Were the correct versions of the SDK and Databroker used? 
+- Is it a sporadically failing test? Does a re-run fixes it? 
 - Is apparent if the issue is inside the SDK (e.g. wrongly written test, bug) or inside the Databroker (e.g. behavioral change, bug)?
 
-Using different versions of SDK and Databroker give different indications with varying importance. See the following list:
+Using different versions of the SDK and Databroker give different indications with varying importance. See the following list:
 
 **SDK:latestRelease -> Databroker:latestRelease**
 This means that issues exist between the latest released version of the SDK and the latest released version of the Databroker.
