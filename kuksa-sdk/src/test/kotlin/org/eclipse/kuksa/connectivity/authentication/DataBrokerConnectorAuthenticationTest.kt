@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.connectivity.authentication
@@ -21,6 +22,8 @@ package org.eclipse.kuksa.connectivity.authentication
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerSecureDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.proto.v1.Types
@@ -29,7 +32,6 @@ import org.eclipse.kuksa.test.kotest.Authentication
 import org.eclipse.kuksa.test.kotest.CustomDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
-import java.io.InputStream
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -40,15 +42,32 @@ import kotlin.random.nextInt
 class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
     tags(Integration, Authentication, Insecure, CustomDatabroker)
 
+    var databrokerContainer: DockerDatabrokerContainer? = null
+    beforeSpec {
+        databrokerContainer = DockerSecureDatabrokerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
+
     val random = Random(System.nanoTime())
+    val tlsCertificate = TestResourceFile("tls/CA.pem")
 
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
         val speedVssPath = "Vehicle.Speed"
 
         and("an insecure DataBrokerConnector with a READ_WRITE_ALL JWT") {
-            val jwtFileStream = JwtType.READ_WRITE_ALL.asInputStream()
-            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(jwtFileStream = jwtFileStream)
+            val jwtFile = JwtType.READ_WRITE_ALL
+
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                rootCertFileStream = tlsCertificate.inputStream(),
+                jwtFileStream = jwtFile.asInputStream(),
+            )
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
@@ -77,8 +96,11 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
         }
 
         and("an insecure DataBrokerConnector with a READ_ALL JWT") {
-            val jwtFileStream = JwtType.READ_ALL.asInputStream()
-            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(jwtFileStream = jwtFileStream)
+            val jwtFile = JwtType.READ_ALL
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                rootCertFileStream = tlsCertificate.inputStream(),
+                jwtFileStream = jwtFile.asInputStream(),
+            )
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
@@ -106,8 +128,11 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
         }
 
         and("an insecure DataBrokerConnector with a READ_WRITE_ALL_VALUES_ONLY JWT") {
-            val jwtFileStream = JwtType.READ_WRITE_ALL_VALUES_ONLY.asInputStream()
-            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(jwtFileStream = jwtFileStream)
+            val jwtFile = JwtType.READ_WRITE_ALL_VALUES_ONLY
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                rootCertFileStream = tlsCertificate.inputStream(),
+                jwtFileStream = jwtFile.asInputStream(),
+            )
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()

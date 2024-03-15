@@ -30,6 +30,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
@@ -49,6 +51,18 @@ import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerConnectionTest : BehaviorSpec({
     tags(Integration, DefaultDatabroker)
+
+    var databrokerContainer: DockerDatabrokerContainer? = null
+    beforeSpec {
+        databrokerContainer = DockerInsecureDatabrokerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
 
     given("A successfully established connection to the DataBroker") {
         val dataBrokerConnection = connectToDataBrokerBlocking()

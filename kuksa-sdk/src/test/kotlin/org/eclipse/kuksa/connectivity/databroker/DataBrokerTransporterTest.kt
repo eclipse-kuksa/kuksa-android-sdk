@@ -25,6 +25,8 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.instanceOf
 import io.mockk.mockk
 import io.mockk.verify
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.proto.v1.KuksaValV1
@@ -36,6 +38,18 @@ import kotlin.random.Random
 
 class DataBrokerTransporterTest : BehaviorSpec({
     tags(Integration, Insecure, DefaultDatabroker)
+
+    var databrokerContainer: DockerDatabrokerContainer? = null
+    beforeSpec {
+        databrokerContainer = DockerInsecureDatabrokerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
 
     given("An active Connection to the DataBroker") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()

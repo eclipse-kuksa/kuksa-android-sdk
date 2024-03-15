@@ -19,6 +19,8 @@
 package org.eclipse.kuksa.connectivity.databroker
 
 import io.kotest.core.spec.style.BehaviorSpec
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerSecureDatabrokerContainer
 import org.eclipse.kuksa.test.TestResourceFile
 import org.eclipse.kuksa.test.kotest.CustomDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
@@ -29,13 +31,27 @@ import org.junit.jupiter.api.Assertions
 class DataBrokerConnectorSecureTest : BehaviorSpec({
     tags(Integration, Secure, CustomDatabroker)
 
+    var databrokerContainer: DockerDatabrokerContainer? = null
+    beforeSpec {
+        databrokerContainer = DockerSecureDatabrokerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
+
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
 
         and("a secure DataBrokerConnector with valid Host, Port and TLS certificate") {
-            val certificate = TestResourceFile("CA.pem")
-            val dataBrokerConnector =
-                dataBrokerConnectorProvider.createSecure(rootCertFileStream = certificate.inputStream())
+            val tlsCertificate = TestResourceFile("tls/CA.pem")
+
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                rootCertFileStream = tlsCertificate.inputStream(),
+            )
 
             `when`("Trying to establish a secure connection") {
                 val connection = dataBrokerConnector.connect()

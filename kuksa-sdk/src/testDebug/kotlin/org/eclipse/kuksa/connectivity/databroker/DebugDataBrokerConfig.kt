@@ -19,9 +19,5 @@
 
 package org.eclipse.kuksa.connectivity.databroker
 
-import java.util.concurrent.TimeUnit
-
-const val DATABROKER_HOST = "127.0.0.1"
-
-const val DATABROKER_TIMEOUT_SECONDS = 5L
-val DATABROKER_TIMEOUT_UNIT = TimeUnit.SECONDS
+const val DATABROKER_PORT = 55557
+const val DATABROKER_CONTAINER_NAME = "databroker_testDebug"

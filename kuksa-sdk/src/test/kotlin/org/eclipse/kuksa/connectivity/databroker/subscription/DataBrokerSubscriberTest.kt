@@ -29,6 +29,8 @@ import io.mockk.verify
 import kotlinx.coroutines.delay
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
@@ -47,6 +49,18 @@ import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerSubscriberTest : BehaviorSpec({
     tags(Integration, Insecure, DefaultDatabroker)
+
+    var databrokerContainer: DockerDatabrokerContainer? = null
+    beforeSpec {
+        databrokerContainer = DockerInsecureDatabrokerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
 
     given("An active Connection to the DataBroker") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
