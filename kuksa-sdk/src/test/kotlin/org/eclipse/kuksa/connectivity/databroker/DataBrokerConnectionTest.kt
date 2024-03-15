@@ -42,7 +42,8 @@ import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
 import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.test.kotest.DefaultDatabroker
+import org.eclipse.kuksa.test.kotest.Insecure
+import org.eclipse.kuksa.test.kotest.InsecureDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.vssNode.VssDriver
 import org.junit.jupiter.api.Assertions
@@ -50,7 +51,7 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerConnectionTest : BehaviorSpec({
-    tags(Integration, DefaultDatabroker)
+    tags(Integration, Insecure, InsecureDatabroker)
 
     var databrokerContainer: DockerDatabrokerContainer? = null
     beforeSpec {

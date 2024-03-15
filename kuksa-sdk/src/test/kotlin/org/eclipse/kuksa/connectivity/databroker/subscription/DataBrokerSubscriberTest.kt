@@ -40,15 +40,15 @@ import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
+import org.eclipse.kuksa.test.kotest.InsecureDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.vssNode.VssDriver
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerSubscriberTest : BehaviorSpec({
-    tags(Integration, Insecure, DefaultDatabroker)
+    tags(Integration, Insecure, InsecureDatabroker)
 
     var databrokerContainer: DockerDatabrokerContainer? = null
     beforeSpec {

@@ -31,13 +31,13 @@ import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
+import org.eclipse.kuksa.test.kotest.InsecureDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import kotlin.random.Random
 
 class DataBrokerTransporterTest : BehaviorSpec({
-    tags(Integration, Insecure, DefaultDatabroker)
+    tags(Integration, Insecure, InsecureDatabroker)
 
     var databrokerContainer: DockerDatabrokerContainer? = null
     beforeSpec {

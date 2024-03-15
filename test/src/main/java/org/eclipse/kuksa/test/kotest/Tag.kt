@@ -22,10 +22,13 @@ package org.eclipse.kuksa.test.kotest
 import io.kotest.core.NamedTag
 
 val Integration = NamedTag("Integration")
-val DefaultDatabroker = NamedTag("DefaultDatabroker") // unsecure => no tls, no authentication
-val CustomDatabroker = NamedTag("CustomDatabroker")
-val Secure = NamedTag("Secure") // tls enabled, no authentication
-val Authentication = NamedTag("Authentication") // no tls, authentication enabled
-val Unit = NamedTag("Unit")
 
+val InsecureDatabroker = NamedTag("InsecureDatabroker") // no tls, no authentication
 val Insecure = NamedTag("Insecure")
+
+val SecureDatabroker = NamedTag("SecureDatabroker")
+val Secure = NamedTag("Secure") // tls enabled, authentication enabled
+val Authentication = NamedTag("Authentication")
+val Tls = NamedTag("Tls")
+
+val Unit = NamedTag("Unit")

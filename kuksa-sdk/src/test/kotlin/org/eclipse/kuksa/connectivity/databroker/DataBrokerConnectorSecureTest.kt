@@ -22,14 +22,15 @@ import io.kotest.core.spec.style.BehaviorSpec
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerSecureDatabrokerContainer
 import org.eclipse.kuksa.test.TestResourceFile
-import org.eclipse.kuksa.test.kotest.CustomDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.Secure
+import org.eclipse.kuksa.test.kotest.SecureDatabroker
+import org.eclipse.kuksa.test.kotest.Tls
 import org.junit.jupiter.api.Assertions
 
 // run command: ./gradlew clean test -Dkotest.tags="Secure"
 class DataBrokerConnectorSecureTest : BehaviorSpec({
-    tags(Integration, Secure, CustomDatabroker)
+    tags(Integration, Secure, Tls, SecureDatabroker)
 
     var databrokerContainer: DockerDatabrokerContainer? = null
     beforeSpec {

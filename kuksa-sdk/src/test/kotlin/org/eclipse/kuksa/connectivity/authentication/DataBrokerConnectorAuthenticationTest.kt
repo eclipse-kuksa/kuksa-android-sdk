@@ -29,9 +29,9 @@ import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.TestResourceFile
 import org.eclipse.kuksa.test.kotest.Authentication
-import org.eclipse.kuksa.test.kotest.CustomDatabroker
-import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
+import org.eclipse.kuksa.test.kotest.Secure
+import org.eclipse.kuksa.test.kotest.SecureDatabroker
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -40,7 +40,7 @@ import kotlin.random.nextInt
 
 // ./gradlew clean test -Dkotest.tags="Authentication"
 class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
-    tags(Integration, Authentication, Insecure, CustomDatabroker)
+    tags(Integration, Authentication, Secure, SecureDatabroker)
 
     var databrokerContainer: DockerDatabrokerContainer? = null
     beforeSpec {
