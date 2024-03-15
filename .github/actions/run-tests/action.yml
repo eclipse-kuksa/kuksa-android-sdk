@@ -14,19 +14,14 @@ inputs:
   kotest-tag:
     description: >
       The Kotest Tag to use when executing the tests. Check Tag.kt for valid options. Different Tags might require the
-      Databroker to be started in a different mode. Currently only unsecured mode (no tls, no authentication) is
-      supported.
-    default: '!CustomDatabroker'
+      Databroker to be started in a different mode.
+    default: ''
 
 runs:
   using: "composite"
   steps:
-    - name: "Run Docker Container of Databroker in detached mode"
-      run: docker run --pull=always --rm --publish 55556:55556/tcp --detach --name databroker ghcr.io/eclipse/kuksa.val/databroker:${{ inputs.databroker-version }} --port 55556 --insecure
-      shell: bash
-
     - name: Run 'test' with Gradle Wrapper
-      run: ./gradlew test -Dkotest.tags="${{ inputs.kotest-tag}}"
+      run: ./gradlew test -Ddatabroker.tag="${{ inputs.databroker-version }}" -Dkotest.tags="${{ inputs.kotest-tag}}"
       shell: bash
 
     - name: Upload Test Reports
@@ -51,8 +46,3 @@ runs:
         path: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/html/*
         if-no-files-found: error
         retention-days: 14
-
-    - name: "Stop Docker Container of Databroker"
-      if: always()
-      run: docker stop databroker
-      shell: bash
