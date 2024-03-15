@@ -19,19 +19,27 @@
 
 package org.eclipse.kuksa.connectivity.authentication
 
+import io.grpc.StatusRuntimeException
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.instanceOf
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerSecureDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
+import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.test.TestResourceFile
 import org.eclipse.kuksa.test.kotest.Authentication
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.Secure
 import org.eclipse.kuksa.test.kotest.SecureDatabroker
+import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -55,17 +63,15 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
     }
 
     val random = Random(System.nanoTime())
-    val tlsCertificate = TestResourceFile("tls/CA.pem")
 
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
         val speedVssPath = "Vehicle.Speed"
 
-        and("an insecure DataBrokerConnector with a READ_WRITE_ALL JWT") {
+        and("a secure DataBrokerConnector with a READ_WRITE_ALL JWT") {
             val jwtFile = JwtType.READ_WRITE_ALL
 
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
-                rootCertFileStream = tlsCertificate.inputStream(),
                 jwtFileStream = jwtFile.asInputStream(),
             )
 
@@ -95,10 +101,9 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
             }
         }
 
-        and("an insecure DataBrokerConnector with a READ_ALL JWT") {
+        and("a secure DataBrokerConnector with a READ_ALL JWT") {
             val jwtFile = JwtType.READ_ALL
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
-                rootCertFileStream = tlsCertificate.inputStream(),
                 jwtFileStream = jwtFile.asInputStream(),
             )
 
@@ -127,10 +132,9 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
             }
         }
 
-        and("an insecure DataBrokerConnector with a READ_WRITE_ALL_VALUES_ONLY JWT") {
+        and("a secure DataBrokerConnector with a READ_WRITE_ALL_VALUES_ONLY JWT") {
             val jwtFile = JwtType.READ_WRITE_ALL_VALUES_ONLY
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
-                rootCertFileStream = tlsCertificate.inputStream(),
                 jwtFileStream = jwtFile.asInputStream(),
             )
 
@@ -178,6 +182,72 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
+                    }
+                }
+            }
+        }
+
+        and("a secure DataBrokerConnector with no JWT") {
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                jwtFileStream = null,
+            )
+
+            `when`("Trying to connect") {
+                val result = runCatching {
+                    dataBrokerConnector.connect()
+                }
+
+                then("The connection should be successful") {
+                    result.getOrNull() shouldNotBe null
+                }
+
+                val connection = result.getOrNull()!!
+
+                `when`("Reading the VALUE of Vehicle.Speed") {
+                    val fetchRequest = FetchRequest(speedVssPath)
+                    val fetchResult = runCatching {
+                        connection.fetch(fetchRequest)
+                    }
+
+                    then("An error should occur") {
+                        val exception = fetchResult.exceptionOrNull()
+                        exception shouldNotBe null
+                        exception shouldBe instanceOf(DataBrokerException::class)
+                        exception!!.message shouldContain "UNAUTHENTICATED"
+                    }
+                }
+
+                `when`("Writing the VALUE of Vehicle.Speed") {
+                    val nextFloat = random.nextFloat() * 100F
+                    val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
+                    val updateRequest = UpdateRequest(speedVssPath, datapoint)
+
+                    val updateResult = runCatching {
+                        connection.update(updateRequest)
+                    }
+
+                    then("An error should occur") {
+                        val exception = updateResult.exceptionOrNull()
+                        exception shouldNotBe null
+                        exception shouldBe instanceOf(DataBrokerException::class)
+                        exception!!.message shouldContain "UNAUTHENTICATED"
+                    }
+                }
+
+                `when`("Subscribing to the VALUE of Vehicle.Speed") {
+                    val subscribeRequest = SubscribeRequest(speedVssPath)
+                    val vssPathListener = FriendlyVssPathListener()
+
+                    connection.subscribe(subscribeRequest, vssPathListener)
+
+                    then("An error should occur") {
+                        eventually(eventuallyConfiguration) {
+                            vssPathListener.errors.size shouldBe 1
+
+                            val exception = vssPathListener.errors.first()
+                            exception shouldBe instanceOf(StatusRuntimeException::class)
+                            exception.message shouldContain "UNAUTHENTICATED"
+                        }
                     }
                 }
             }

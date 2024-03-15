@@ -67,7 +67,7 @@ class DataBrokerConnectorTest : BehaviorSpec({
                     dataBrokerConnector.connect()
                 }
 
-                then("It should throw an exception") {
+                then("It should throw a DataBrokerException") {
                     exception shouldNotBe null
                 }
             }

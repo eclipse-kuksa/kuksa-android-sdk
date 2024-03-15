@@ -19,7 +19,18 @@
 
 package org.eclipse.kuksa.test.kotest
 
+import io.kotest.assertions.nondeterministic.continuallyConfig
+import io.kotest.assertions.nondeterministic.eventuallyConfig
 import io.kotest.core.config.AbstractProjectConfig
+import kotlin.time.Duration.Companion.seconds
+
+val eventuallyConfiguration = eventuallyConfig {
+    duration = 1.seconds
+}
+
+val continuallyConfiguration = continuallyConfig<Any> {
+    duration = 1.seconds
+}
 
 // https://kotest.io/docs/framework/project-config.html
 object KotestProjectConfig : AbstractProjectConfig() {

@@ -19,6 +19,7 @@
 package org.eclipse.kuksa.connectivity.databroker
 
 import io.grpc.ManagedChannelBuilder
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -29,11 +30,13 @@ import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContaine
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
+import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.InsecureDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
+import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import kotlin.random.Random
 
 class DataBrokerTransporterTest : BehaviorSpec({
@@ -135,12 +138,14 @@ class DataBrokerTransporterTest : BehaviorSpec({
                         Types.Field.FIELD_VALUE,
                     )
 
-                    val vssPathListener = mockk<VssPathListener>(relaxed = true)
+                    val vssPathListener = FriendlyVssPathListener()
                     subscription.listeners.register(vssPathListener)
 
                     then("An Error should be triggered") {
-                        verify(timeout = 100L) {
-                            vssPathListener.onError(any())
+                        eventually(eventuallyConfiguration) {
+                            vssPathListener.errors.count {
+                                it.message?.contains("NOT_FOUND") == true
+                            } shouldBe 1
                         }
                     }
                 }

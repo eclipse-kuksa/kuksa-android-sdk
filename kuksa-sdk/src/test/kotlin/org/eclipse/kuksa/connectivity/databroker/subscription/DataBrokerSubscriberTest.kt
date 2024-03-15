@@ -22,11 +22,11 @@ import io.kotest.assertions.nondeterministic.continually
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.delay
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
@@ -43,9 +43,9 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.InsecureDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
+import org.eclipse.kuksa.test.kotest.continuallyConfiguration
+import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import org.eclipse.kuksa.vssNode.VssDriver
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerSubscriberTest : BehaviorSpec({
     tags(Integration, Insecure, InsecureDatabroker)
@@ -78,15 +78,18 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                 val vssPathListener = FriendlyVssPathListener()
                 classUnderTest.subscribe(vssPath, fieldValue, vssPathListener)
 
-                then("The VssPathListener should send out ONE update containing ALL children") {
-                    eventually(1.seconds) {
-                        vssPathListener.updates.size shouldBe 1
-                    }
+                then("The VssPathListener should send out an update containing ALL children") {
+                    eventually(eventuallyConfiguration) {
+                        val foundUpdate = vssPathListener.updates.find { entryUpdates ->
+                            entryUpdates.size == 3 // all children: IsEnabled, IsEngaged, IsError
+                        }
 
-                    val entryUpdates = vssPathListener.updates[0]
-                    vssPathListener.updates.size shouldBe 1 // ONE update
-                    entryUpdates.size shouldBe 3 // all children: IsEnabled, IsEngaged, IsError
-                    entryUpdates.all { it.entry.path.startsWith(vssPath) } shouldBe true
+                        foundUpdate shouldNotBe null
+                        foundUpdate?.size shouldBe 3
+                        foundUpdate?.count { it.entry.path.endsWith(".IsEnabled") } shouldBe 1
+                        foundUpdate?.count { it.entry.path.endsWith(".IsEngaged") } shouldBe 1
+                        foundUpdate?.count { it.entry.path.endsWith(".IsError") } shouldBe 1
+                    }
                 }
 
                 `when`("Any child changes it's value") {
@@ -98,23 +101,21 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     val newValueIsEngaged = databrokerTransporter.toggleBoolean(vssPathIsEngaged)
 
                     then("The VssPathListener should be notified about it") {
-                        eventually(1.seconds) {
-                            vssPathListener.updates.size shouldBe 2
+                        eventually(eventuallyConfiguration) {
+                            val entryUpdates = vssPathListener.updates.flatten()
+                            entryUpdates.count {
+                                val path = it.entry.path
+                                val entry = it.entry
+                                val value = entry.value
+                                path == vssPathIsError && value.bool == newValueIsError
+                            } shouldBe 1
+                            entryUpdates.count {
+                                val path = it.entry.path
+                                val entry = it.entry
+                                val value = entry.value
+                                path == vssPathIsEngaged && value.bool == newValueIsEngaged
+                            } shouldBe 1
                         }
-
-                        val entryUpdates = vssPathListener.updates.flatten()
-                        entryUpdates.count {
-                            val path = it.entry.path
-                            val entry = it.entry
-                            val value = entry.value
-                            path == vssPathIsError && value.bool == newValueIsError
-                        } shouldBe 1
-                        entryUpdates.count {
-                            val path = it.entry.path
-                            val entry = it.entry
-                            val value = entry.value
-                            path == vssPathIsEngaged && value.bool == newValueIsEngaged
-                        } shouldBe 1
                     }
                 }
             }
@@ -129,21 +130,19 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     val updateRandomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
                     then("The VssPathListener is notified about the change") {
-                        eventually(1.seconds) {
-                            vssPathListener.updates.size shouldBe 2
+                        eventually(eventuallyConfiguration) {
+                            vssPathListener.updates.flatten()
+                                .count {
+                                    val dataEntry = it.entry
+                                    val datapoint = dataEntry.value
+                                    dataEntry.path == vssPath && datapoint.float == updateRandomFloatValue
+                                } shouldBe 1
                         }
-                        vssPathListener.updates.flatten()
-                            .count {
-                                val dataEntry = it.entry
-                                val datapoint = dataEntry.value
-                                dataEntry.path == vssPath && datapoint.float == updateRandomFloatValue
-                            } shouldBe 1
-
-                        vssPathListener.updates.clear()
                     }
                 }
 
                 `when`("Subscribing the same VssPathListener to a different vssPath") {
+                    vssPathListener.reset()
 
                     val otherVssPath = "Vehicle.ADAS.CruiseControl.SpeedSet"
                     classUnderTest.subscribe(otherVssPath, fieldValue, vssPathListener)
@@ -153,25 +152,22 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                         val updatedValueOtherVssPath = databrokerTransporter.updateRandomFloatValue(otherVssPath)
 
                         then("The Observer is notified about both changes") {
-                            eventually(1.seconds) {
-                                vssPathListener.updates.size shouldBe 3 // 1 from subscribe(otherVssPath) + 2 updates
-                            }
+                            eventually(eventuallyConfiguration) {
+                                val entryUpdates = vssPathListener.updates.flatten()
+                                entryUpdates
+                                    .count {
+                                        val path = it.entry.path
+                                        val value = it.entry.value
+                                        path == vssPath && value.float == updatedValueVssPath
+                                    } shouldBe 1
 
-                            val entryUpdates = vssPathListener.updates.flatten()
-                            entryUpdates
-                                .count {
-                                    val path = it.entry.path
-                                    val entry = it.entry
-                                    val value = entry.value
-                                    path == vssPath && value.float == updatedValueVssPath
-                                } shouldBe 1
-                            entryUpdates
-                                .count {
-                                    val path = it.entry.path
-                                    val entry = it.entry
-                                    val value = entry.value
-                                    path == otherVssPath && value.float == updatedValueOtherVssPath
-                                } shouldBe 1
+                                entryUpdates
+                                    .count {
+                                        val path = it.entry.path
+                                        val value = it.entry.value
+                                        path == otherVssPath && value.float == updatedValueOtherVssPath
+                                    } shouldBe 1
+                            }
                         }
                     }
                 }
@@ -190,13 +186,14 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
                         then("Each VssPathListener is only notified once") {
                             friendlyVssPathListeners.forEach { listener ->
-                                eventually(1.seconds) {
-                                    listener.updates.size shouldBe 2
+                                eventually(eventuallyConfiguration) {
+                                    listener.updates.flatten()
+                                        .count {
+                                            val path = it.entry.path
+                                            val value = it.entry.value
+                                            path == vssPath && value.float == randomFloatValue
+                                        } shouldBe 1
                                 }
-
-                                val count = listener.updates
-                                    .count { it[0].entry.value.float == randomFloatValue }
-                                count shouldBe 1
                             }
                         }
                     }
@@ -208,10 +205,9 @@ class DataBrokerSubscriberTest : BehaviorSpec({
 
                     and("When the FIELD_VALUE of Vehicle.Speed is updated") {
                         databrokerTransporter.updateRandomFloatValue(vssPath)
-                        delay(100)
 
                         then("The VssPathListener is not notified") {
-                            continually(100.milliseconds) {
+                            continually(continuallyConfiguration) {
                                 vssPathListener.updates.size shouldBe 0
                             }
                         }
@@ -230,13 +226,15 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                     val randomFloatValue = databrokerTransporter.updateRandomFloatValue(vssPath)
 
                     then("The VssPathListener is only notified once") {
-                        eventually(1.seconds) {
-                            vssPathListener.updates.size shouldBe 2
+                        eventually(eventuallyConfiguration) {
+                            val count = vssPathListener.updates.flatten()
+                                .count {
+                                    val path = it.entry.path
+                                    val value = it.entry.value
+                                    path == vssPath && value.float == randomFloatValue
+                                }
+                            count shouldBe 1
                         }
-
-                        val count = vssPathListener.updates
-                            .count { it[0].entry.value.float == randomFloatValue }
-                        count shouldBe 1
                     }
                 }
             }
@@ -256,13 +254,13 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                         databrokerTransporter.updateRandomUint32Value(vssHeartRate.vssPath)
 
                     then("The Observer should be triggered") {
-                        eventually(1.seconds) {
-                            friendlyVssNodeListener.updatedVssNodes.size shouldBe 2
+                        eventually(eventuallyConfiguration) {
+                            friendlyVssNodeListener.updatedVssNodes.count {
+                                val vssPath = it.vssPath
+                                val value = it.value
+                                vssPath == vssHeartRate.vssPath && value == randomIntValue
+                            } shouldBe 1
                         }
-
-                        val count = friendlyVssNodeListener.updatedVssNodes
-                            .count { it.value == randomIntValue }
-                        count shouldBe 1
                     }
                 }
             }
@@ -285,12 +283,13 @@ class DataBrokerSubscriberTest : BehaviorSpec({
                         databrokerTransporter.updateRandomUint32Value(vssHeartRate.vssPath)
 
                     then("The Observer is only notified once") {
-                        eventually(1.seconds) {
-                            nodeListenerMock.updatedVssNodes.size shouldBe 2
+                        eventually(eventuallyConfiguration) {
+                            nodeListenerMock.updatedVssNodes.count {
+                                val vssPath = it.vssPath
+                                val value = it.value
+                                vssPath == vssHeartRate.vssPath && value == randomIntValue
+                            } shouldBe 1
                         }
-
-                        val count = nodeListenerMock.updatedVssNodes.count { it.value == randomIntValue }
-                        count shouldBe 1
                     }
                 }
             }

@@ -23,32 +23,29 @@ import io.grpc.ManagedChannel
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
-import kotlinx.coroutines.runBlocking
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
-import org.eclipse.kuksa.proto.v1.KuksaValV1
+import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.proto.v1.Types
+import org.eclipse.kuksa.test.extension.equals
 import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.InsecureDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
+import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import org.eclipse.kuksa.vssNode.VssDriver
 import org.junit.jupiter.api.Assertions
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.seconds
 
 class DataBrokerConnectionTest : BehaviorSpec({
     tags(Integration, Insecure, InsecureDatabroker)
@@ -66,49 +63,50 @@ class DataBrokerConnectionTest : BehaviorSpec({
     }
 
     given("A successfully established connection to the DataBroker") {
-        val dataBrokerConnection = connectToDataBrokerBlocking()
+        val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
+        val connector = dataBrokerConnectorProvider.createInsecure()
+        val dataBrokerConnection = connector.connect()
+
+        val dataBrokerTransporter = DataBrokerTransporter(dataBrokerConnectorProvider.managedChannel)
 
         and("A request with a valid VSS Path") {
             val vssPath = "Vehicle.Acceleration.Lateral"
             val field = Types.Field.FIELD_VALUE
-            val subscribeRequest = SubscribeRequest(vssPath, field)
 
+            val initialValue = dataBrokerTransporter.updateRandomFloatValue(vssPath)
+
+            val subscribeRequest = SubscribeRequest(vssPath, field)
             `when`("Subscribing to the VSS path") {
-                val vssPathListener = mockk<VssPathListener>(relaxed = true)
+                val vssPathListener = FriendlyVssPathListener()
                 dataBrokerConnection.subscribe(subscribeRequest, vssPathListener)
 
                 then("The #onEntryChanged method is triggered") {
-                    val capturingSlot = slot<List<KuksaValV1.EntryUpdate>>()
-                    verify(timeout = 100L) {
-                        vssPathListener.onEntryChanged(capture(capturingSlot))
+                    eventually(eventuallyConfiguration) {
+                        vssPathListener.updates.flatten().count {
+                            val entry = it.entry
+                            val value = entry.value
+                            entry.path == vssPath && value.float.equals(initialValue, 0.0001f)
+                        } shouldBe 1
                     }
-
-                    val entryUpdates = capturingSlot.captured
-                    entryUpdates.size shouldBe 1
-                    entryUpdates[0].entry.path shouldBe vssPath
                 }
 
                 `when`("The observed VSS path changes") {
-                    clearMocks(vssPathListener)
+                    vssPathListener.reset()
 
                     val random = Random(System.currentTimeMillis())
-                    val newValue = random.nextFloat()
-                    val datapoint = Types.Datapoint.newBuilder().setFloat(newValue).build()
+                    val updatedValue = random.nextFloat()
+                    val datapoint = Types.Datapoint.newBuilder().setFloat(updatedValue).build()
                     val updateRequest = UpdateRequest(vssPath, datapoint, field)
                     dataBrokerConnection.update(updateRequest)
 
                     then("The #onEntryChanged callback is triggered with the new value") {
-                        val capturingSlot = slot<List<KuksaValV1.EntryUpdate>>()
-
-                        verify(timeout = 100) {
-                            vssPathListener.onEntryChanged(capture(capturingSlot))
+                        eventually(eventuallyConfiguration) {
+                            vssPathListener.updates.flatten().count {
+                                val entry = it.entry
+                                val value = entry.value
+                                entry.path == vssPath && value.float.equals(updatedValue, 0.0001f)
+                            } shouldBe 1
                         }
-
-                        val entryUpdates = capturingSlot.captured
-                        val capturedDatapoint = entryUpdates[0].entry.value
-                        val float = capturedDatapoint.float
-
-                        Assertions.assertEquals(newValue, float, 0.0001f)
                     }
                 }
             }
@@ -193,7 +191,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 dataBrokerConnection.subscribe(subscribeRequest, listener = vssNodeListener)
 
                 then("The #onNodeChanged method is triggered") {
-                    eventually(1.seconds) {
+                    eventually(eventuallyConfiguration) {
                         vssNodeListener.updatedVssNodes.size shouldBe 1
                     }
                 }
@@ -206,14 +204,12 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     dataBrokerConnection.update(updateRequest)
 
                     then("Every child node has been updated with the correct value") {
-                        eventually(1.seconds) {
-                            vssNodeListener.updatedVssNodes.size shouldBe 2
+                        eventually(eventuallyConfiguration) {
+                            vssNodeListener.updatedVssNodes.count {
+                                val heartRate = it.heartRate
+                                heartRate.value == newHeartRateValue
+                            } shouldBe 1
                         }
-
-                        val updatedDriver = vssNodeListener.updatedVssNodes.last()
-                        val heartRate = updatedDriver.heartRate
-
-                        heartRate.value shouldBe newHeartRateValue
                     }
                 }
 
@@ -225,14 +221,12 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     dataBrokerConnection.update(updateRequest)
 
                     then("The subscribed vssNode should be updated") {
-                        eventually(1.seconds) {
-                            vssNodeListener.updatedVssNodes.size shouldBe 3
+                        eventually(eventuallyConfiguration) {
+                            vssNodeListener.updatedVssNodes.count {
+                                val heartRate = it.heartRate
+                                heartRate.value == newHeartRateValue
+                            } shouldBe 1
                         }
-
-                        val updatedDriver = vssNodeListener.updatedVssNodes.last()
-                        val heartRate = updatedDriver.heartRate
-
-                        heartRate.value shouldBe newHeartRateValue
                     }
                 }
             }
@@ -242,15 +236,16 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val invalidVssPath = "Vehicle.Some.Unknown.Path"
 
             `when`("Trying to subscribe to the INVALID VSS path") {
-                val vssPathListener = mockk<VssPathListener>(relaxed = true)
+                val vssPathListener = FriendlyVssPathListener()
                 val subscribeRequest = SubscribeRequest(invalidVssPath)
                 dataBrokerConnection.subscribe(subscribeRequest, vssPathListener)
 
                 then("The VssPathListener#onError method should be triggered with 'NOT_FOUND' (Path not found)") {
-                    val capturingSlot = slot<Throwable>()
-                    verify(timeout = 100L) { vssPathListener.onError(capture(capturingSlot)) }
-                    val capturedThrowable = capturingSlot.captured
-                    capturedThrowable.message shouldContain "NOT_FOUND"
+                    eventually(eventuallyConfiguration) {
+                        vssPathListener.errors.count {
+                            it.message?.contains("NOT_FOUND") == true
+                        } shouldBe 1
+                    }
                 }
             }
 
@@ -330,21 +325,4 @@ private fun createRandomIntDatapoint(): Types.Datapoint {
     val random = Random(System.currentTimeMillis())
     val newValue = random.nextInt()
     return Types.Datapoint.newBuilder().setInt32(newValue).build()
-}
-
-private fun connectToDataBrokerBlocking(): DataBrokerConnection {
-    var connection: DataBrokerConnection
-
-    runBlocking {
-        val connector = DataBrokerConnectorProvider().createInsecure()
-        try {
-            connection = connector.connect()
-        } catch (ignored: DataBrokerException) {
-            val errorMessage = "Could not establish a connection to the DataBroker. " +
-                "Check if the DataBroker is running and correctly configured in DataBrokerConfig."
-            throw IllegalStateException(errorMessage)
-        }
-    }
-
-    return connection
 }
