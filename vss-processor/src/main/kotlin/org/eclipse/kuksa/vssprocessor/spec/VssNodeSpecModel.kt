@@ -20,10 +20,12 @@
 package org.eclipse.kuksa.vssprocessor.spec
 
 import com.google.devtools.ksp.processing.KSPLogger
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.plusParameter
 import com.squareup.kotlinpoet.PropertySpec
@@ -58,9 +60,11 @@ internal class VssNodeSpecModel(
 
     private val stringTypeName = String::class.asTypeName()
     private val vssNodeSetTypeName = Set::class.parameterizedBy(VssNode::class)
-    private val genericClassTypeName = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
+    private val genericClassTypeName = KClass::class.asClassName().parameterizedBy(STAR)
+    private val genericClassTypeNameNullable = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
 
-    private val datatypeProperty: TypeName
+    @OptIn(ExperimentalUnsignedTypes::class)
+    private val datatypeTypeName: TypeName
         get() {
             return when (datatype) {
                 "string" -> String::class.asTypeName()
@@ -73,19 +77,33 @@ internal class VssNodeSpecModel(
                 "double" -> Double::class.asTypeName()
                 "string[]" -> Array::class.parameterizedBy(String::class)
                 "boolean[]" -> BooleanArray::class.asTypeName()
-                "uint8[]", "uint16[]", "uint32[]", "int8[]", "int16[]", "int32[]" -> IntArray::class.asTypeName()
+                "int8[]", "int16[]", "int32[]" -> IntArray::class.asTypeName()
+                "uint8[]", "uint16[]", "uint32[]" -> UIntArray::class.asTypeName()
                 "int64[]", "uint64[]" -> LongArray::class.asTypeName()
                 "float[]" -> FloatArray::class.asTypeName()
                 else -> Any::class.asTypeName()
             }
         }
 
+    @OptIn(ExperimentalUnsignedTypes::class)
+    private val valueTypeName: TypeName
+        get() {
+            return when (datatypeTypeName) {
+                // Convert the following Kotlin types because they are incompatible with the @JvmOverloads annotation
+                UInt::class.asTypeName() -> Int::class.asTypeName()
+                ULong::class.asTypeName() -> Long::class.asTypeName()
+                UIntArray::class.asTypeName() -> IntArray::class.asTypeName()
+                else -> datatypeTypeName
+            }
+        }
+
     /**
      * Returns valid default values as string literals.
      */
+    @OptIn(ExperimentalUnsignedTypes::class)
     private val defaultValue: String
         get() {
-            return when (datatypeProperty) {
+            return when (valueTypeName) {
                 String::class.asTypeName() -> "\"\""
                 Boolean::class.asTypeName() -> "false"
                 Float::class.asTypeName() -> "0f"
@@ -97,8 +115,10 @@ internal class VssNodeSpecModel(
                 IntArray::class.asTypeName() -> "IntArray(0)"
                 BooleanArray::class.asTypeName() -> "BooleanArray(0)"
                 LongArray::class.asTypeName() -> "LongArray(0)"
+                UIntArray::class.asTypeName() -> "UIntArray(0)"
+                FloatArray::class.asTypeName() -> "FloatArray(0)"
 
-                else -> throw IllegalArgumentException("No default value found for $datatypeProperty!")
+                else -> throw IllegalArgumentException("No default value found for $valueTypeName!")
             }
         }
 
@@ -113,22 +133,21 @@ internal class VssNodeSpecModel(
 
         val nestedChildSpecs = mutableListOf<TypeSpec>()
         val constructorBuilder = FunSpec.constructorBuilder()
+            .addAnnotation(JvmOverloads::class)
         val propertySpecs = mutableListOf<PropertySpec>()
         val superInterfaces = mutableSetOf<TypeName>(VssBranch::class.asTypeName())
 
         // The last element in the chain should have a value like "isLocked".
-        if (childNodes.isEmpty()) {
-            val (valuePropertySpec, parameterSpec) = createValueSpec()
-
-            constructorBuilder.addParameter(parameterSpec)
-            propertySpecs.add(valuePropertySpec)
+        val isVssSignal = childNodes.isEmpty()
+        if (isVssSignal) {
+            val (vssSignalTypeName, vssSignalPropertySpecs, vssSignalParameterSpec) = createVssSignalSpec()
 
             // Final leafs should ONLY implement the VssSignal interface
             superInterfaces.clear()
-            val vssSignalInterface = VssSignal::class
-                .asTypeName()
-                .plusParameter(datatypeProperty)
-            superInterfaces.add(vssSignalInterface)
+            superInterfaces.add(vssSignalTypeName)
+
+            propertySpecs.addAll(vssSignalPropertySpecs)
+            vssSignalParameterSpec?.let { constructorBuilder.addParameter(it) }
         }
 
         val propertySpec = createVssNodeSpecs(className, packageName = packageName)
@@ -162,11 +181,10 @@ internal class VssNodeSpecModel(
                 }
 
                 val defaultClassName = childNode.className
-                val defaultParameter = createDefaultParameterSpec(
-                    mainClassPropertySpec.name,
-                    defaultClassName,
-                    uniquePackageName,
-                )
+                val defaultParameter = ParameterSpec
+                    .builder(mainClassPropertySpec.name, ClassName(uniquePackageName, defaultClassName))
+                    .defaultValue("%L()", defaultClassName)
+                    .build()
 
                 constructorBuilder.addParameter(defaultParameter)
             }
@@ -186,30 +204,61 @@ internal class VssNodeSpecModel(
             .build()
     }
 
-    private fun createValueSpec(): Pair<PropertySpec, ParameterSpec> {
-        val valuePropertySpec = PropertySpec
-            .builder(PROPERTY_VALUE_NAME, datatypeProperty)
-            .initializer(PROPERTY_VALUE_NAME)
+    private fun createVssSignalSpec(): Triple<ParameterizedTypeName, MutableList<PropertySpec>, ParameterSpec?> {
+        val propertySpecs = mutableListOf<PropertySpec>()
+        var parameterSpec: ParameterSpec? = null
+
+        val vssSignalMembers = VssSignal::class.declaredMemberProperties
+        vssSignalMembers.forEach { member ->
+            val memberName = member.name
+            when (val memberType = member.returnType.asTypeName()) {
+                genericClassTypeName -> {
+                    val genericClassSpec = createGenericClassSpec(
+                        memberName,
+                        memberType,
+                        datatypeTypeName.toString(),
+                    )
+                    propertySpecs.add(genericClassSpec)
+                }
+
+                else -> {
+                    val (classPropertySpec, classParameterSpec) = createClassParamSpec(
+                        memberName,
+                        valueTypeName,
+                        defaultValue,
+                    )
+                    parameterSpec = classParameterSpec
+                    propertySpecs.add(classPropertySpec)
+                }
+            }
+        }
+
+        val typeName = VssSignal::class
+            .asTypeName()
+            .plusParameter(valueTypeName)
+
+        return Triple(typeName, propertySpecs, parameterSpec)
+    }
+
+    private fun createClassParamSpec(
+        memberName: String,
+        typeName: TypeName,
+        defaultValue: String,
+    ): Pair<PropertySpec, ParameterSpec> {
+        val propertySpec = PropertySpec
+            .builder(memberName, typeName)
+            .initializer(memberName)
             .addModifiers(KModifier.OVERRIDE)
             .build()
 
         // Adds a default value (mainly 0 or an empty string)
         val parameterSpec = ParameterSpec.builder(
-            valuePropertySpec.name,
-            valuePropertySpec.type,
+            propertySpec.name,
+            propertySpec.type,
         ).defaultValue("%L", defaultValue).build()
 
-        return Pair(valuePropertySpec, parameterSpec)
+        return Pair(propertySpec, parameterSpec)
     }
-
-    private fun createDefaultParameterSpec(
-        parameterName: String,
-        defaultClassName: String,
-        packageName: String,
-    ) = ParameterSpec
-        .builder(parameterName, ClassName(packageName, defaultClassName))
-        .defaultValue("%L()", defaultClassName)
-        .build()
 
     private fun createVssNodeSpecs(
         className: String,
@@ -268,43 +317,14 @@ internal class VssNodeSpecModel(
     }
 
     private fun createVssNodeTreeSpecs(childNodes: List<VssNodeSpecModel>): List<PropertySpec> {
-        fun createSetSpec(memberName: String, memberType: TypeName): PropertySpec {
-            val vssNodeNamesJoined = childNodes.joinToString(", ") { it.variableName }
-
-            return PropertySpec
-                .builder(memberName, memberType)
-                .mutable(false)
-                .addModifiers(KModifier.OVERRIDE)
-                .getter(
-                    FunSpec.getterBuilder()
-                        .addStatement("return setOf(%L)", vssNodeNamesJoined)
-                        .build(),
-                )
-                .build()
-        }
-
-        fun createParentSpec(memberName: String, memberType: TypeName): PropertySpec {
-            val parentClass = if (parentClassName.isNotEmpty()) "$parentClassName::class" else "null"
-            return PropertySpec
-                .builder(memberName, memberType)
-                .mutable(false)
-                .addModifiers(KModifier.OVERRIDE)
-                .getter(
-                    FunSpec.getterBuilder()
-                        .addStatement("return %L", parentClass)
-                        .build(),
-                )
-                .build()
-        }
-
         val propertySpecs = mutableListOf<PropertySpec>()
 
         val members = VssNode::class.declaredMemberProperties
         members.forEach { member ->
             val memberName = member.name
             when (val memberType = member.returnType.asTypeName()) {
-                vssNodeSetTypeName -> createSetSpec(memberName, memberType)
-                genericClassTypeName -> createParentSpec(memberName, memberType)
+                vssNodeSetTypeName -> createSetSpec(memberName, memberType, childNodes)
+                genericClassTypeNameNullable -> createGenericClassSpec(memberName, memberType, parentClassName)
                 else -> null
             }?.let { propertySpec ->
                 propertySpecs.add(propertySpec)
@@ -312,6 +332,50 @@ internal class VssNodeSpecModel(
         }
 
         return propertySpecs
+    }
+
+    private fun createGenericClassSpec(memberName: String, memberType: TypeName, className: String): PropertySpec {
+        val parentClass = if (className.isNotEmpty()) "$className::class" else "null"
+
+        val propertySpecBuilder = PropertySpec
+            .builder(memberName, memberType)
+
+        // Removed the warning about ExperimentalUnsignedTypes
+        if (experimentalUnsignedTypes.contains(className)) {
+            val optInClassName = ClassName("kotlin", "OptIn")
+            val optInAnnotationSpec = AnnotationSpec.builder(optInClassName)
+                .addMember("ExperimentalUnsignedTypes::class")
+                .build()
+
+            propertySpecBuilder.addAnnotation(optInAnnotationSpec)
+        }
+
+        return propertySpecBuilder
+            .addModifiers(KModifier.OVERRIDE)
+            .getter(
+                FunSpec.getterBuilder()
+                    .addStatement("return %L", parentClass)
+                    .build(),
+            )
+            .build()
+    }
+
+    private fun createSetSpec(
+        memberName: String,
+        memberType: TypeName,
+        members: Collection<VssNodeSpecModel>,
+    ): PropertySpec {
+        val vssNodeNamesJoined = members.joinToString(", ") { it.variableName }
+
+        return PropertySpec
+            .builder(memberName, memberType)
+            .addModifiers(KModifier.OVERRIDE)
+            .getter(
+                FunSpec.getterBuilder()
+                    .addStatement("return setOf(%L)", vssNodeNamesJoined)
+                    .build(),
+            )
+            .build()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -329,7 +393,7 @@ internal class VssNodeSpecModel(
     }
 
     companion object {
-        private const val PROPERTY_VALUE_NAME = "value"
+        private val experimentalUnsignedTypes = setOf("kotlin.UIntArray")
     }
 }
 

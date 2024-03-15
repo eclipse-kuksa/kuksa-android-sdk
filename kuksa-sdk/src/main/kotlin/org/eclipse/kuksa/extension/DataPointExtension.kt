@@ -35,14 +35,16 @@ val Types.Metadata.valueType: ValueCase
     get() = dataType.dataPointValueCase
 
 /**
- * Converts the [VssSignal.value] into a [Datapoint] object.
+ * Converts the [VssSignal.value] into a [Datapoint] object. The [VssSignal.dataType] is used to derive the correct
+ * [ValueCase].
  *
  * @throws IllegalArgumentException if the [VssSignal] could not be converted to a [Datapoint].
  */
+@OptIn(ExperimentalUnsignedTypes::class)
 val <T : Any> VssSignal<T>.datapoint: Datapoint
     get() {
         val stringValue = value.toString()
-        return when (value::class) {
+        return when (dataType) {
             String::class -> ValueCase.STRING.createDatapoint(stringValue)
             Boolean::class -> ValueCase.BOOL.createDatapoint(stringValue)
             Float::class -> ValueCase.FLOAT.createDatapoint(stringValue)
@@ -54,6 +56,8 @@ val <T : Any> VssSignal<T>.datapoint: Datapoint
             IntArray::class -> ValueCase.INT32_ARRAY.createDatapoint(stringValue)
             BooleanArray::class -> ValueCase.BOOL_ARRAY.createDatapoint(stringValue)
             LongArray::class -> ValueCase.INT64_ARRAY.createDatapoint(stringValue)
+            FloatArray::class -> ValueCase.FLOAT_ARRAY.createDatapoint(stringValue)
+            UIntArray::class -> ValueCase.UINT32_ARRAY.createDatapoint(stringValue)
 
             else -> throw IllegalArgumentException("Could not create datapoint for the value class: ${value::class}!")
         }

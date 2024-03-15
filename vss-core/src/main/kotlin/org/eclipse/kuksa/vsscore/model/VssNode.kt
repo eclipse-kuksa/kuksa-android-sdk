@@ -82,11 +82,33 @@ interface VssBranch : VssNode {
  * Some [VssNode] may have an additional [value] property. These are children [VssSignal] which do not have other
  * children.
  */
-interface VssSignal<T : Any> : VssNode {
+interface VssSignal<out T : Any> : VssNode {
     /**
      * A primitive type value.
      */
     val value: T
+
+    /**
+     * The VSS data type which is compatible with the data broker. This may differ from the [value] type because
+     * Java compatibility needs to be ensured and inline classes like [UInt] (Kotlin) are not known to Java.
+     *
+     * ### Example
+     *     Vehicle.Driver.HeartRate:
+     *     datatype: uint16
+     *
+     * generates -->
+     *
+     *     public data class VssHeartRate (
+     *         override val `value`: Int = 0,
+     *     ) : VssSignal<Int> {
+     *         override val dataType: KClass<*>
+     *             get() = UInt:class
+     *     }
+     *
+     * To ensure java compatibility [UInt] is not used here for Kotlin (inline class).
+     */
+    val dataType: KClass<*>
+        get() = value::class
 }
 
 /**

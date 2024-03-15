@@ -27,7 +27,7 @@ import org.eclipse.kuksa.vsscore.model.VssSignal
 import org.eclipse.kuksa.vsscore.model.findHeritageLine
 import org.eclipse.kuksa.vsscore.model.heritage
 import org.eclipse.kuksa.vsscore.model.variableName
-import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.declaredMemberProperties
 
 /**
  * Creates a copy of the [VssNode] where the whole [VssNode.findHeritageLine] is replaced
@@ -92,8 +92,8 @@ fun <T : Any> VssSignal<T>.copy(datapoint: Datapoint): VssSignal<T> {
             BOOL -> bool
             INT32 -> int32
             INT64 -> int64
-            UINT32 -> uint32.toUInt()
-            UINT64 -> uint64.toULong()
+            UINT32 -> uint32
+            UINT64 -> uint64
             FLOAT -> float
             DOUBLE -> double
             STRING_ARRAY -> stringArray.valuesList
@@ -136,11 +136,12 @@ fun <T : Any> VssSignal<T>.copy(datapoint: Datapoint): VssSignal<T> {
  * Calls the generated copy method of the data class for the [VssSignal] and returns a new copy with the new [value].
  *
  * @throws [IllegalArgumentException] if the copied types do not match.
- * @throws [NoSuchElementException] if no copy method was found for the class.
+ * @throws [NoSuchElementException] if no copy method nor [valuePropertyName] was found for the class.
  */
-fun <T : Any> VssSignal<T>.copy(value: T): VssSignal<T> {
-    val memberProperties = VssSignal::class.memberProperties
-    val firstPropertyName = memberProperties.first().name
+@JvmOverloads
+fun <T : Any> VssSignal<T>.copy(value: T, valuePropertyName: String = "value"): VssSignal<T> {
+    val memberProperties = VssSignal::class.declaredMemberProperties
+    val firstPropertyName = memberProperties.first { it.name == valuePropertyName }.name
     val valueMap = mapOf(firstPropertyName to value)
 
     return this@copy.copy(valueMap)
