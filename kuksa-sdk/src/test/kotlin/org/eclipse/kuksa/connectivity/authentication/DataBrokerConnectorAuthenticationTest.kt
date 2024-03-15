@@ -184,18 +184,3 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
         }
     }
 })
-
-// The tokens provided here might need to be updated irregularly
-// see: https://github.com/eclipse/kuksa.val/tree/master/jwt
-// The tokens only work when the Databroker is started using the correct public key: jwt.key.pub
-enum class JwtType(private val fileName: String) {
-    READ_WRITE_ALL("actuate-provide-all.token"), // ACTUATOR_TARGET and VALUE
-    READ_WRITE_ALL_VALUES_ONLY("provide-all.token"), // VALUE
-    READ_ALL("read-all.token"),
-    ;
-
-    fun asInputStream(): InputStream {
-        val resourceFile = TestResourceFile(fileName)
-        return resourceFile.inputStream()
-    }
-}
