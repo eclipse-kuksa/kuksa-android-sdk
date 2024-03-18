@@ -29,8 +29,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.InsecureDataBrokerDockerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.toggleBoolean
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
@@ -41,18 +41,18 @@ import org.eclipse.kuksa.pattern.listener.MultiListener
 import org.eclipse.kuksa.pattern.listener.count
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Insecure
-import org.eclipse.kuksa.test.kotest.InsecureDatabroker
+import org.eclipse.kuksa.test.kotest.InsecureDataBroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.continuallyConfiguration
 import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import org.eclipse.kuksa.vssNode.VssDriver
 
 class DataBrokerSubscriberTest : BehaviorSpec({
-    tags(Integration, Insecure, InsecureDatabroker)
+    tags(Integration, Insecure, InsecureDataBroker)
 
-    var databrokerContainer: DockerDatabrokerContainer? = null
+    var databrokerContainer: DataBrokerDockerContainer? = null
     beforeSpec {
-        databrokerContainer = DockerInsecureDatabrokerContainer()
+        databrokerContainer = InsecureDataBrokerDockerContainer()
             .apply {
                 start()
             }

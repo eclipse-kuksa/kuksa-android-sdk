@@ -24,13 +24,13 @@ import org.eclipse.kuksa.connectivity.databroker.DATABROKER_CONTAINER_NAME
 import org.eclipse.kuksa.connectivity.databroker.DATABROKER_PORT
 
 // no tls, no authentication
-class DockerInsecureDatabrokerContainer(
+class InsecureDataBrokerDockerContainer(
     containerName: String = DATABROKER_CONTAINER_NAME,
     port: Int = DATABROKER_PORT,
-) : DockerDatabrokerContainer(containerName, port) {
+) : DataBrokerDockerContainer(containerName, port) {
 
     @Suppress("ArgumentListWrapping", "ktlint:standard:argument-list-wrapping") // better key-value pair readability
-    override fun createDatabrokerContainer(tag: String): CreateContainerResponse {
+    override fun createContainer(tag: String): CreateContainerResponse {
         return dockerClient.createContainerCmd("$repository:$tag")
             .withName(containerName)
             .withHostConfig(hostConfig)

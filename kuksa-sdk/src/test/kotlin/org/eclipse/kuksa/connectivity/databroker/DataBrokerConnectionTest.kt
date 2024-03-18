@@ -26,8 +26,8 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.InsecureDataBrokerDockerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
@@ -40,7 +40,7 @@ import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.extension.equals
 import org.eclipse.kuksa.test.kotest.Insecure
-import org.eclipse.kuksa.test.kotest.InsecureDatabroker
+import org.eclipse.kuksa.test.kotest.InsecureDataBroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import org.eclipse.kuksa.vssNode.VssDriver
@@ -48,11 +48,11 @@ import org.junit.jupiter.api.Assertions
 import kotlin.random.Random
 
 class DataBrokerConnectionTest : BehaviorSpec({
-    tags(Integration, Insecure, InsecureDatabroker)
+    tags(Integration, Insecure, InsecureDataBroker)
 
-    var databrokerContainer: DockerDatabrokerContainer? = null
+    var databrokerContainer: DataBrokerDockerContainer? = null
     beforeSpec {
-        databrokerContainer = DockerInsecureDatabrokerContainer()
+        databrokerContainer = InsecureDataBrokerDockerContainer()
             .apply {
                 start()
             }

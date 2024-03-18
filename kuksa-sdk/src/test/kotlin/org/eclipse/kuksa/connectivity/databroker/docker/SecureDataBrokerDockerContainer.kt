@@ -29,10 +29,10 @@ import org.eclipse.kuksa.connectivity.databroker.DATABROKER_PORT
 import org.eclipse.kuksa.test.TestResourceFile
 
 // tls enabled, authentication enabled
-class DockerSecureDatabrokerContainer(
+class SecureDataBrokerDockerContainer(
     containerName: String = DATABROKER_CONTAINER_NAME,
     port: Int = DATABROKER_PORT,
-) : DockerDatabrokerContainer(containerName, port) {
+) : DataBrokerDockerContainer(containerName, port) {
 
     private val authenticationFolder = TestResourceFile("authentication").toString()
     private val authenticationMount = "/resources/authentication"
@@ -47,7 +47,7 @@ class DockerSecureDatabrokerContainer(
         )
 
     @Suppress("ArgumentListWrapping", "ktlint:standard:argument-list-wrapping") // better key-value pair readability
-    override fun createDatabrokerContainer(tag: String): CreateContainerResponse {
+    override fun createContainer(tag: String): CreateContainerResponse {
         return dockerClient.createContainerCmd("$repository:$tag")
             .withName(containerName)
             .withHostConfig(hostConfig)

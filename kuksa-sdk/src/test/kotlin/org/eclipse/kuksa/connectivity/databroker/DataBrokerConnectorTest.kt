@@ -21,18 +21,18 @@ package org.eclipse.kuksa.connectivity.databroker
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldNotBe
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.InsecureDataBrokerDockerContainer
 import org.eclipse.kuksa.test.kotest.Insecure
-import org.eclipse.kuksa.test.kotest.InsecureDatabroker
+import org.eclipse.kuksa.test.kotest.InsecureDataBroker
 import org.eclipse.kuksa.test.kotest.Integration
 
 class DataBrokerConnectorTest : BehaviorSpec({
-    tags(Integration, Insecure, InsecureDatabroker)
+    tags(Integration, Insecure, InsecureDataBroker)
 
-    var databrokerContainer: DockerDatabrokerContainer? = null
+    var databrokerContainer: DataBrokerDockerContainer? = null
     beforeSpec {
-        databrokerContainer = DockerInsecureDatabrokerContainer()
+        databrokerContainer = InsecureDataBrokerDockerContainer()
             .apply {
                 start()
             }

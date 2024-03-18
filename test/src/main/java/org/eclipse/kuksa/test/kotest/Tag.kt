@@ -23,10 +23,10 @@ import io.kotest.core.NamedTag
 
 val Integration = NamedTag("Integration")
 
-val InsecureDatabroker = NamedTag("InsecureDatabroker") // no tls, no authentication
+val InsecureDataBroker = NamedTag("InsecureDataBroker") // no tls, no authentication
 val Insecure = NamedTag("Insecure")
 
-val SecureDatabroker = NamedTag("SecureDatabroker")
+val SecureDataBroker = NamedTag("SecureDataBroker")
 val Secure = NamedTag("Secure") // tls enabled, authentication enabled
 val Authentication = NamedTag("Authentication")
 val Tls = NamedTag("Tls")

@@ -28,8 +28,8 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.instanceOf
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerSecureDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.SecureDataBrokerDockerContainer
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
@@ -38,7 +38,7 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Authentication
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.Secure
-import org.eclipse.kuksa.test.kotest.SecureDatabroker
+import org.eclipse.kuksa.test.kotest.SecureDataBroker
 import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -48,11 +48,11 @@ import kotlin.random.nextInt
 
 // ./gradlew clean test -Dkotest.tags="Authentication"
 class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
-    tags(Integration, Authentication, Secure, SecureDatabroker)
+    tags(Integration, Authentication, Secure, SecureDataBroker)
 
-    var databrokerContainer: DockerDatabrokerContainer? = null
+    var databrokerContainer: DataBrokerDockerContainer? = null
     beforeSpec {
-        databrokerContainer = DockerSecureDatabrokerContainer()
+        databrokerContainer = SecureDataBrokerDockerContainer()
             .apply {
                 start()
             }

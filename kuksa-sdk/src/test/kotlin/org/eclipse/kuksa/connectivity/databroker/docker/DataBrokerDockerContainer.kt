@@ -60,7 +60,7 @@ private const val DEFAULT_DATABROKER_TAG = "master"
  * DATABROKER_TAG="0.4.1" ./gradlew clean build
  * ```
  */
-abstract class DockerDatabrokerContainer(
+abstract class DataBrokerDockerContainer(
     protected val containerName: String,
     protected val port: Int,
 ) {
@@ -99,8 +99,8 @@ abstract class DockerDatabrokerContainer(
     fun start() {
         stop()
 
-        pullDatabrokerImage(databrokerTag)
-        val databrokerContainer = createDatabrokerContainer(databrokerTag)
+        pullImage(databrokerTag)
+        val databrokerContainer = createContainer(databrokerTag)
         startContainer(databrokerContainer.id)
     }
 
@@ -119,14 +119,14 @@ abstract class DockerDatabrokerContainer(
         }
     }
 
-    private fun pullDatabrokerImage(tag: String) {
+    private fun pullImage(tag: String) {
         dockerClient.pullImageCmd(repository)
             .withTag(tag)
             .exec(PullImageResultCallback())
             .awaitCompletion(30, TimeUnit.SECONDS)
     }
 
-    protected abstract fun createDatabrokerContainer(tag: String): CreateContainerResponse
+    protected abstract fun createContainer(tag: String): CreateContainerResponse
 
     private fun startContainer(containerId: String) {
         try {

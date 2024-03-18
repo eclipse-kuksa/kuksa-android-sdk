@@ -26,25 +26,25 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.instanceOf
 import io.mockk.mockk
 import io.mockk.verify
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerDatabrokerContainer
-import org.eclipse.kuksa.connectivity.databroker.docker.DockerInsecureDatabrokerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.InsecureDataBrokerDockerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Insecure
-import org.eclipse.kuksa.test.kotest.InsecureDatabroker
+import org.eclipse.kuksa.test.kotest.InsecureDataBroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import kotlin.random.Random
 
 class DataBrokerTransporterTest : BehaviorSpec({
-    tags(Integration, Insecure, InsecureDatabroker)
+    tags(Integration, Insecure, InsecureDataBroker)
 
-    var databrokerContainer: DockerDatabrokerContainer? = null
+    var databrokerContainer: DataBrokerDockerContainer? = null
     beforeSpec {
-        databrokerContainer = DockerInsecureDatabrokerContainer()
+        databrokerContainer = InsecureDataBrokerDockerContainer()
             .apply {
                 start()
             }
