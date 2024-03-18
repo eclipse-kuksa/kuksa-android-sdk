@@ -89,7 +89,7 @@ interface VssSignal<out T : Any> : VssNode {
     val value: T
 
     /**
-     * The VSS data type which is compatible with the data broker. This may differ from the [value] type because
+     * The VSS data type which is compatible with the Databroker. This may differ from the [value] type because
      * Java compatibility needs to be ensured and inline classes like [UInt] (Kotlin) are not known to Java.
      *
      * ### Example

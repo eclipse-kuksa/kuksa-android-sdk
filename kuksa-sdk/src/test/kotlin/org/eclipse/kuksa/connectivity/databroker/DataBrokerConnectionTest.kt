@@ -23,6 +23,7 @@ import io.grpc.ManagedChannel
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.clearMocks
 import io.mockk.every
@@ -106,7 +107,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val response = dataBrokerConnection.update(updateRequest)
 
                 then("No error should appear") {
-                    Assertions.assertFalse(response.hasError())
+                    response.hasError() shouldBe false
                 }
 
                 and("When fetching it afterwards") {
@@ -177,12 +178,11 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 `when`("Updating the node with an invalid value") {
                     val invalidHeartRate = VssDriver.VssHeartRate(-5) // UInt on DataBroker side
                     val vssNodeUpdateRequest = VssNodeUpdateRequest(invalidHeartRate)
-                    dataBrokerConnection.update(vssNodeUpdateRequest)
+                    val response = dataBrokerConnection.update(vssNodeUpdateRequest)
 
-                    val fetchRequest = VssNodeFetchRequest(invalidHeartRate)
-                    val fetchedVssHeartRate = dataBrokerConnection.fetch(fetchRequest)
-                    then("the updated value should be ignored") {
-                        fetchedVssHeartRate.value shouldBe 60
+                    then("the updated show") {
+                        val errorResponse = response.firstOrNull { it.errorsCount >= 1 }
+                        errorResponse shouldNotBe null
                     }
                 }
             }

@@ -65,7 +65,7 @@ class VssNodeSpecModelTest : BehaviorSpec({
                 propertySpec.toString() shouldContain "kotlin.Int = 0"
             }
 
-            then("it should the correct inline class data type") {
+            then("it should have the correct inline class data type") {
                 val propertySpec = classSpec.propertySpecs.find { it.name == "dataType" }
 
                 propertySpec?.getter.toString() shouldContain "kotlin.UInt::class"
@@ -99,7 +99,7 @@ class VssNodeSpecModelTest : BehaviorSpec({
                 propertySpec.toString() shouldContain "kotlin.LongArray = LongArray(0)"
             }
 
-            then("it should the correct inline class data type") {
+            then("it should have the correct inline class data type") {
                 val propertySpec = classSpec.propertySpecs.find { it.name == "dataType" }
 
                 propertySpec?.getter.toString() shouldContain "kotlin.LongArray::class"

@@ -79,7 +79,8 @@ internal class VssNodeSpecModel(
                 "boolean[]" -> BooleanArray::class.asTypeName()
                 "int8[]", "int16[]", "int32[]" -> IntArray::class.asTypeName()
                 "uint8[]", "uint16[]", "uint32[]" -> UIntArray::class.asTypeName()
-                "int64[]", "uint64[]" -> LongArray::class.asTypeName()
+                "int64[]" -> LongArray::class.asTypeName()
+                "uint64[]" -> ULongArray::class.asTypeName()
                 "float[]" -> FloatArray::class.asTypeName()
                 else -> Any::class.asTypeName()
             }
@@ -93,6 +94,7 @@ internal class VssNodeSpecModel(
                 UInt::class.asTypeName() -> Int::class.asTypeName()
                 ULong::class.asTypeName() -> Long::class.asTypeName()
                 UIntArray::class.asTypeName() -> IntArray::class.asTypeName()
+                ULongArray::class.asTypeName() -> LongArray::class.asTypeName()
                 else -> datatypeTypeName
             }
         }
@@ -114,9 +116,10 @@ internal class VssNodeSpecModel(
                 Array::class.parameterizedBy(String::class) -> "emptyArray<String>()"
                 IntArray::class.asTypeName() -> "IntArray(0)"
                 BooleanArray::class.asTypeName() -> "BooleanArray(0)"
-                LongArray::class.asTypeName() -> "LongArray(0)"
-                UIntArray::class.asTypeName() -> "UIntArray(0)"
                 FloatArray::class.asTypeName() -> "FloatArray(0)"
+                LongArray::class.asTypeName() -> "LongArray(0)"
+                ULongArray::class.asTypeName() -> "ULongArray(0)"
+                UIntArray::class.asTypeName() -> "UIntArray(0)"
 
                 else -> throw IllegalArgumentException("No default value found for $valueTypeName!")
             }
