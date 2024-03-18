@@ -103,7 +103,7 @@ If this build fails it should be considered as a warning
 
 **SDK:main -> Databroker:master**
 
-![SDK:main <-> Databroker:master](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main-master.yaml/badge.svg)
+[![SDK:main <-> Databroker:master](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main-master.yaml/badge.svg)](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main-master.yaml?query=branch%3Amain)
 
 This means both the SDK and Databroker are running in a kind of "bleeding edge" state in their currently developed version.
 
