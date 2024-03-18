@@ -13,7 +13,7 @@
           <option value=":kuksa-sdk:testDebugUnitTest" />
         </list>
       </option>
-      <option name="vmOptions" value="-Dkotest.tags=&quot;Integration &amp; DefaultDatabroker&quot;" />
+      <option name="vmOptions" value="-Dkotest.tags=&quot;Integration&quot;" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
