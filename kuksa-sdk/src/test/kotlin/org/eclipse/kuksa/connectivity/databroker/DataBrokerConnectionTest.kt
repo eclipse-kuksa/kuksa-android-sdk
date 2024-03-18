@@ -153,22 +153,36 @@ class DataBrokerConnectionTest : BehaviorSpec({
         and("A VssNode") {
             val vssDriver = VssDriver()
 
-            `when`("Fetching the node") {
+            and("A default HeartRate") {
+                val newHeartRateValue = 60
+                val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+                val defaultUpdateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
 
-                and("The initial value is different from the default for a child") {
-                    val newHeartRateValue = 60
-                    val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
-                    val updateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
+                dataBrokerConnection.update(defaultUpdateRequest)
 
-                    dataBrokerConnection.update(updateRequest)
+                `when`("Fetching the node") {
 
-                    val fetchRequest = VssNodeFetchRequest(vssDriver)
-                    val updatedDriver = dataBrokerConnection.fetch(fetchRequest)
+                    and("The initial value is different from the default for a child") {
+                        val fetchRequest = VssNodeFetchRequest(vssDriver)
+                        val updatedDriver = dataBrokerConnection.fetch(fetchRequest)
 
-                    then("Every child node has been updated with the correct value") {
-                        val heartRate = updatedDriver.heartRate
+                        then("Every child node has been updated with the correct value") {
+                            val heartRate = updatedDriver.heartRate
 
-                        heartRate.value shouldBe newHeartRateValue
+                            heartRate.value shouldBe newHeartRateValue
+                        }
+                    }
+                }
+
+                `when`("Updating the node with an invalid value") {
+                    val invalidHeartRate = VssDriver.VssHeartRate(-5) // UInt on DataBroker side
+                    val vssNodeUpdateRequest = VssNodeUpdateRequest(invalidHeartRate)
+                    dataBrokerConnection.update(vssNodeUpdateRequest)
+
+                    val fetchRequest = VssNodeFetchRequest(invalidHeartRate)
+                    val fetchedVssHeartRate = dataBrokerConnection.fetch(fetchRequest)
+                    then("the updated value should be ignored") {
+                        fetchedVssHeartRate.value shouldBe 60
                     }
                 }
             }
