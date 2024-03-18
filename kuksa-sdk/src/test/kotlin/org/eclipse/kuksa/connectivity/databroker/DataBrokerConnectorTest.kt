@@ -21,12 +21,26 @@ package org.eclipse.kuksa.connectivity.databroker
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldNotBe
-import org.eclipse.kuksa.test.kotest.DefaultDatabroker
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.InsecureDataBrokerDockerContainer
 import org.eclipse.kuksa.test.kotest.Insecure
+import org.eclipse.kuksa.test.kotest.InsecureDataBroker
 import org.eclipse.kuksa.test.kotest.Integration
 
 class DataBrokerConnectorTest : BehaviorSpec({
-    tags(Integration, Insecure, DefaultDatabroker)
+    tags(Integration, Insecure, InsecureDataBroker)
+
+    var databrokerContainer: DataBrokerDockerContainer? = null
+    beforeSpec {
+        databrokerContainer = InsecureDataBrokerDockerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
 
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
@@ -53,7 +67,7 @@ class DataBrokerConnectorTest : BehaviorSpec({
                     dataBrokerConnector.connect()
                 }
 
-                then("It should throw an exception") {
+                then("It should throw a DataBrokerException") {
                     exception shouldNotBe null
                 }
             }

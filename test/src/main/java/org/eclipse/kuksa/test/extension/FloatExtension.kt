@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,10 @@
  *
  */
 
-package org.eclipse.kuksa.test.kotest
+package org.eclipse.kuksa.test.extension
 
-import io.kotest.core.NamedTag
+import kotlin.math.abs
 
-val Integration = NamedTag("Integration")
-
-val InsecureDataBroker = NamedTag("InsecureDataBroker") // no tls, no authentication
-val Insecure = NamedTag("Insecure")
-
-val SecureDataBroker = NamedTag("SecureDataBroker")
-val Secure = NamedTag("Secure") // tls enabled, authentication enabled
-val Authentication = NamedTag("Authentication")
-val Tls = NamedTag("Tls")
-
-val Unit = NamedTag("Unit")
+fun Float.equals(other: Float, epsilon: Float): Boolean {
+    return abs(this - other) <= epsilon
+}

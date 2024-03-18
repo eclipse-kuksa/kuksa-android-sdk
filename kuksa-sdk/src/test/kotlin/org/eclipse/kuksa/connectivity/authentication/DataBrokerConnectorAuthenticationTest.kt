@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,32 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.connectivity.authentication
 
+import io.grpc.StatusRuntimeException
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.instanceOf
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnectorProvider
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.SecureDataBrokerDockerContainer
 import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
+import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.test.TestResourceFile
 import org.eclipse.kuksa.test.kotest.Authentication
-import org.eclipse.kuksa.test.kotest.CustomDatabroker
-import org.eclipse.kuksa.test.kotest.Insecure
 import org.eclipse.kuksa.test.kotest.Integration
-import java.io.InputStream
+import org.eclipse.kuksa.test.kotest.Secure
+import org.eclipse.kuksa.test.kotest.SecureDataBroker
+import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -38,7 +48,19 @@ import kotlin.random.nextInt
 
 // ./gradlew clean test -Dkotest.tags="Authentication"
 class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
-    tags(Integration, Authentication, Insecure, CustomDatabroker)
+    tags(Integration, Authentication, Secure, SecureDataBroker)
+
+    var databrokerContainer: DataBrokerDockerContainer? = null
+    beforeSpec {
+        databrokerContainer = SecureDataBrokerDockerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
 
     val random = Random(System.nanoTime())
 
@@ -46,9 +68,12 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
         val speedVssPath = "Vehicle.Speed"
 
-        and("an insecure DataBrokerConnector with a READ_WRITE_ALL JWT") {
-            val jwtFileStream = JwtType.READ_WRITE_ALL.asInputStream()
-            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(jwtFileStream = jwtFileStream)
+        and("a secure DataBrokerConnector with a READ_WRITE_ALL JWT") {
+            val jwtFile = JwtType.READ_WRITE_ALL
+
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                jwtFileStream = jwtFile.asInputStream(),
+            )
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
@@ -76,9 +101,11 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
             }
         }
 
-        and("an insecure DataBrokerConnector with a READ_ALL JWT") {
-            val jwtFileStream = JwtType.READ_ALL.asInputStream()
-            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(jwtFileStream = jwtFileStream)
+        and("a secure DataBrokerConnector with a READ_ALL JWT") {
+            val jwtFile = JwtType.READ_ALL
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                jwtFileStream = jwtFile.asInputStream(),
+            )
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
@@ -105,9 +132,11 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
             }
         }
 
-        and("an insecure DataBrokerConnector with a READ_WRITE_ALL_VALUES_ONLY JWT") {
-            val jwtFileStream = JwtType.READ_WRITE_ALL_VALUES_ONLY.asInputStream()
-            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(jwtFileStream = jwtFileStream)
+        and("a secure DataBrokerConnector with a READ_WRITE_ALL_VALUES_ONLY JWT") {
+            val jwtFile = JwtType.READ_WRITE_ALL_VALUES_ONLY
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                jwtFileStream = jwtFile.asInputStream(),
+            )
 
             and("a successfully established connection") {
                 val connection = dataBrokerConnector.connect()
@@ -157,20 +186,71 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 }
             }
         }
+
+        and("a secure DataBrokerConnector with no JWT") {
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                jwtFileStream = null,
+            )
+
+            `when`("Trying to connect") {
+                val result = runCatching {
+                    dataBrokerConnector.connect()
+                }
+
+                then("The connection should be successful") {
+                    result.getOrNull() shouldNotBe null
+                }
+
+                val connection = result.getOrNull()!!
+
+                `when`("Reading the VALUE of Vehicle.Speed") {
+                    val fetchRequest = FetchRequest(speedVssPath)
+                    val fetchResult = runCatching {
+                        connection.fetch(fetchRequest)
+                    }
+
+                    then("An error should occur") {
+                        val exception = fetchResult.exceptionOrNull()
+                        exception shouldNotBe null
+                        exception shouldBe instanceOf(DataBrokerException::class)
+                        exception!!.message shouldContain "UNAUTHENTICATED"
+                    }
+                }
+
+                `when`("Writing the VALUE of Vehicle.Speed") {
+                    val nextFloat = random.nextFloat() * 100F
+                    val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
+                    val updateRequest = UpdateRequest(speedVssPath, datapoint)
+
+                    val updateResult = runCatching {
+                        connection.update(updateRequest)
+                    }
+
+                    then("An error should occur") {
+                        val exception = updateResult.exceptionOrNull()
+                        exception shouldNotBe null
+                        exception shouldBe instanceOf(DataBrokerException::class)
+                        exception!!.message shouldContain "UNAUTHENTICATED"
+                    }
+                }
+
+                `when`("Subscribing to the VALUE of Vehicle.Speed") {
+                    val subscribeRequest = SubscribeRequest(speedVssPath)
+                    val vssPathListener = FriendlyVssPathListener()
+
+                    connection.subscribe(subscribeRequest, vssPathListener)
+
+                    then("An error should occur") {
+                        eventually(eventuallyConfiguration) {
+                            vssPathListener.errors.size shouldBe 1
+
+                            val exception = vssPathListener.errors.first()
+                            exception shouldBe instanceOf(StatusRuntimeException::class)
+                            exception.message shouldContain "UNAUTHENTICATED"
+                        }
+                    }
+                }
+            }
+        }
     }
 })
-
-// The tokens provided here might need to be updated irregularly
-// see: https://github.com/eclipse/kuksa.val/tree/master/jwt
-// The tokens only work when the Databroker is started using the correct public key: jwt.key.pub
-enum class JwtType(private val fileName: String) {
-    READ_WRITE_ALL("actuate-provide-all.token"), // ACTUATOR_TARGET and VALUE
-    READ_WRITE_ALL_VALUES_ONLY("provide-all.token"), // VALUE
-    READ_ALL("read-all.token"),
-    ;
-
-    fun asInputStream(): InputStream {
-        val resourceFile = TestResourceFile(fileName)
-        return resourceFile.inputStream()
-    }
-}

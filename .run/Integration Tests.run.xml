@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="app:UnitTests" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="Integration Tests" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -10,14 +10,15 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":app:testDebugUnitTest" />
+          <option value="test" />
         </list>
       </option>
-      <option name="vmOptions" value="-Dkotest.tags=&quot;Unit&quot;" />
+      <option name="vmOptions" value="-Dkotest.tags=&quot;Integration&quot;" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
+    <RunAsTest>false</RunAsTest>
     <method v="2" />
   </configuration>
 </component>

@@ -19,23 +19,40 @@
 package org.eclipse.kuksa.connectivity.databroker
 
 import io.grpc.ManagedChannelBuilder
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.instanceOf
 import io.mockk.mockk
 import io.mockk.verify
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.InsecureDataBrokerDockerContainer
 import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
+import org.eclipse.kuksa.mocking.FriendlyVssPathListener
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.test.kotest.DefaultDatabroker
 import org.eclipse.kuksa.test.kotest.Insecure
+import org.eclipse.kuksa.test.kotest.InsecureDataBroker
 import org.eclipse.kuksa.test.kotest.Integration
+import org.eclipse.kuksa.test.kotest.eventuallyConfiguration
 import kotlin.random.Random
 
 class DataBrokerTransporterTest : BehaviorSpec({
-    tags(Integration, Insecure, DefaultDatabroker)
+    tags(Integration, Insecure, InsecureDataBroker)
+
+    var databrokerContainer: DataBrokerDockerContainer? = null
+    beforeSpec {
+        databrokerContainer = InsecureDataBrokerDockerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
 
     given("An active Connection to the DataBroker") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
@@ -121,12 +138,14 @@ class DataBrokerTransporterTest : BehaviorSpec({
                         Types.Field.FIELD_VALUE,
                     )
 
-                    val vssPathListener = mockk<VssPathListener>(relaxed = true)
+                    val vssPathListener = FriendlyVssPathListener()
                     subscription.listeners.register(vssPathListener)
 
                     then("An Error should be triggered") {
-                        verify(timeout = 100L) {
-                            vssPathListener.onError(any())
+                        eventually(eventuallyConfiguration) {
+                            vssPathListener.errors.count {
+                                it.message?.contains("NOT_FOUND") == true
+                            } shouldBe 1
                         }
                     }
                 }

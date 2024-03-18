@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.connectivity.databroker
 
 import java.util.concurrent.TimeUnit
 
-object DataBrokerConfig {
-    const val HOST = "127.0.0.1"
-    const val PORT = 55556
+const val DATABROKER_HOST = "127.0.0.1"
 
-    // low timeout should be okay, since we are testing against a local service
-    const val TIMEOUT_SECONDS = 3L
-    val TIMEOUT_UNIT = TimeUnit.SECONDS
-}
+const val DATABROKER_TIMEOUT_SECONDS = 5L
+val DATABROKER_TIMEOUT_UNIT = TimeUnit.SECONDS
