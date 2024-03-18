@@ -14,25 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.test.kotest
+package org.eclipse.kuksa.connectivity.databroker
 
-import io.kotest.assertions.nondeterministic.continuallyConfig
-import io.kotest.assertions.nondeterministic.eventuallyConfig
-import io.kotest.core.config.AbstractProjectConfig
-import kotlin.time.Duration.Companion.seconds
-
-val eventuallyConfiguration = eventuallyConfig {
-    duration = 1.seconds
-}
-
-val continuallyConfiguration = continuallyConfig<Any> {
-    duration = 1.seconds
-}
-
-// https://kotest.io/docs/framework/project-config.html
-object KotestProjectConfig : AbstractProjectConfig() {
-    override var displayFullTestPath: Boolean? = true
-}
+const val DATABROKER_PORT = 55558
+const val DATABROKER_CONTAINER_NAME = "databroker_testRelease"

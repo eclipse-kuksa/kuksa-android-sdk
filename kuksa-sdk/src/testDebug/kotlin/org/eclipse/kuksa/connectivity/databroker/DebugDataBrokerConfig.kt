@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.test.kotest
+package org.eclipse.kuksa.connectivity.databroker
 
-import io.kotest.core.NamedTag
-
-val Integration = NamedTag("Integration")
-
-val InsecureDataBroker = NamedTag("InsecureDataBroker") // no tls, no authentication
-val Insecure = NamedTag("Insecure")
-
-val SecureDataBroker = NamedTag("SecureDataBroker")
-val Secure = NamedTag("Secure") // tls enabled, authentication enabled
-val Authentication = NamedTag("Authentication")
-val Tls = NamedTag("Tls")
-
-val Unit = NamedTag("Unit")
+const val DATABROKER_PORT = 55557
+const val DATABROKER_CONTAINER_NAME = "databroker_testDebug"

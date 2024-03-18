@@ -19,23 +19,40 @@
 package org.eclipse.kuksa.connectivity.databroker
 
 import io.kotest.core.spec.style.BehaviorSpec
+import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
+import org.eclipse.kuksa.connectivity.databroker.docker.SecureDataBrokerDockerContainer
 import org.eclipse.kuksa.test.TestResourceFile
-import org.eclipse.kuksa.test.kotest.CustomDatabroker
 import org.eclipse.kuksa.test.kotest.Integration
 import org.eclipse.kuksa.test.kotest.Secure
+import org.eclipse.kuksa.test.kotest.SecureDataBroker
+import org.eclipse.kuksa.test.kotest.Tls
 import org.junit.jupiter.api.Assertions
 
 // run command: ./gradlew clean test -Dkotest.tags="Secure"
 class DataBrokerConnectorSecureTest : BehaviorSpec({
-    tags(Integration, Secure, CustomDatabroker)
+    tags(Integration, Secure, Tls, SecureDataBroker)
+
+    var databrokerContainer: DataBrokerDockerContainer? = null
+    beforeSpec {
+        databrokerContainer = SecureDataBrokerDockerContainer()
+            .apply {
+                start()
+            }
+    }
+
+    afterSpec {
+        databrokerContainer?.stop()
+    }
 
     given("A DataBrokerConnectorProvider") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
 
         and("a secure DataBrokerConnector with valid Host, Port and TLS certificate") {
-            val certificate = TestResourceFile("CA.pem")
-            val dataBrokerConnector =
-                dataBrokerConnectorProvider.createSecure(rootCertFileStream = certificate.inputStream())
+            val tlsCertificate = TestResourceFile("tls/CA.pem")
+
+            val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                rootCertFileStream = tlsCertificate.inputStream(),
+            )
 
             `when`("Trying to establish a secure connection") {
                 val connection = dataBrokerConnector.connect()

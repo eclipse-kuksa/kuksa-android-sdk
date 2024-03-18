@@ -24,15 +24,17 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
+import org.eclipse.kuksa.connectivity.authentication.JwtType
 import org.eclipse.kuksa.model.TimeoutConfig
+import org.eclipse.kuksa.test.TestResourceFile
 import java.io.IOException
 import java.io.InputStream
 
 class DataBrokerConnectorProvider {
     lateinit var managedChannel: ManagedChannel
     fun createInsecure(
-        host: String = DataBrokerConfig.HOST,
-        port: Int = DataBrokerConfig.PORT,
+        host: String = DATABROKER_HOST,
+        port: Int = DATABROKER_PORT,
         jwtFileStream: InputStream? = null,
     ): DataBrokerConnector {
         managedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
@@ -46,16 +48,16 @@ class DataBrokerConnectorProvider {
             managedChannel,
             jsonWebToken,
         ).apply {
-            timeoutConfig = TimeoutConfig(DataBrokerConfig.TIMEOUT_SECONDS, DataBrokerConfig.TIMEOUT_UNIT)
+            timeoutConfig = TimeoutConfig(DATABROKER_TIMEOUT_SECONDS, DATABROKER_TIMEOUT_UNIT)
         }
     }
 
     fun createSecure(
-        host: String = DataBrokerConfig.HOST,
-        port: Int = DataBrokerConfig.PORT,
-        rootCertFileStream: InputStream,
+        host: String = DATABROKER_HOST,
+        port: Int = DATABROKER_PORT,
         overrideAuthority: String = "",
-        jwtFileStream: InputStream? = null,
+        rootCertFileStream: InputStream = TestResourceFile("tls/CA.pem").inputStream(),
+        jwtFileStream: InputStream? = JwtType.READ_WRITE_ALL.asInputStream(),
     ): DataBrokerConnector {
         val tlsCredentials: ChannelCredentials
         try {
@@ -86,7 +88,7 @@ class DataBrokerConnectorProvider {
             managedChannel,
             jsonWebToken,
         ).apply {
-            timeoutConfig = TimeoutConfig(DataBrokerConfig.TIMEOUT_SECONDS, DataBrokerConfig.TIMEOUT_UNIT)
+            timeoutConfig = TimeoutConfig(DATABROKER_TIMEOUT_SECONDS, DATABROKER_TIMEOUT_UNIT)
         }
     }
 }
