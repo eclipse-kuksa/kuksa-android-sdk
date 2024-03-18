@@ -102,7 +102,7 @@ class VssNodeSpecModelTest : BehaviorSpec({
             then("it should have the correct inline class data type") {
                 val propertySpec = classSpec.propertySpecs.find { it.name == "dataType" }
 
-                propertySpec?.getter.toString() shouldContain "kotlin.LongArray::class"
+                propertySpec?.getter.toString() shouldContain "kotlin.ULongArray::class"
             }
         }
     }
