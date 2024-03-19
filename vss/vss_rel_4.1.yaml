@@ -208,6 +208,12 @@ Vehicle.ADAS.ESC.RoadFriction.UpperBound:
   unit: percent
   uuid: ad0415a799575fcd8d1f49bed9a2baeb
 
+Vehicle.ADAS.IsAutoPowerOptimize:
+  datatype: boolean
+  description: Auto Power Optimization Flag When set to 'true', the system enables automatic power optimization, dynamically adjusting the power optimization level based on runtime conditions or features managed by the OEM. When set to 'false', manual control of the power optimization level is allowed.
+  type: actuator
+  uuid: 42553349ce4357a3900b80771c8481b1
+
 Vehicle.ADAS.LaneDepartureDetection:
   description: Signals from Lane Departure Detection System.
   type: branch
@@ -371,15 +377,37 @@ Vehicle.Body.BodyType:
 
 Vehicle.Body.Hood:
   comment: The hood is the hinged cover over the engine compartment of a motor vehicles. Depending on vehicle, it can be either in the front or back of the vehicle. Luggage compartments are in VSS called trunks, even if they are located at the front of the vehicle.
-  description: Hood status.
+  description: Hood status. Start position for Hood is Closed.
   type: branch
   uuid: 84510652bf915bbe8bf5f477aab2b44a
 
 Vehicle.Body.Hood.IsOpen:
   datatype: boolean
-  description: Hood open or closed. True = Open. False = Closed.
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
   type: actuator
   uuid: 890aa3359e1a579288af1cf8e6b5b71f
+
+Vehicle.Body.Hood.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
+  datatype: uint8
+  description: Item position. 0 = Start position 100 = End position.
+  max: 100
+  min: 0
+  type: actuator
+  unit: percent
+  uuid: b79e060142095986aaeffcddd26d0d53
+
+Vehicle.Body.Hood.Switch:
+  allowed:
+  - INACTIVE
+  - CLOSE
+  - OPEN
+  - ONE_SHOT_CLOSE
+  - ONE_SHOT_OPEN
+  datatype: string
+  description: Switch controlling sliding action such as window, sunroof, or blind.
+  type: actuator
+  uuid: 256f856f00725f1fbd733b78f864c10d
 
 Vehicle.Body.Horn:
   description: Horn signals.
@@ -391,6 +419,12 @@ Vehicle.Body.Horn.IsActive:
   description: Horn active or inactive. True = Active. False = Inactive.
   type: actuator
   uuid: ba20deed9314525bb9d552a2b787fb20
+
+Vehicle.Body.IsAutoPowerOptimize:
+  datatype: boolean
+  description: Auto Power Optimization Flag When set to 'true', the system enables automatic power optimization, dynamically adjusting the power optimization level based on runtime conditions or features managed by the OEM. When set to 'false', manual control of the power optimization level is allowed.
+  type: actuator
+  uuid: 88dbf1bf7bbd5b94b8cc5d93113abb44
 
 Vehicle.Body.Lights:
   description: Exterior lights.
@@ -624,7 +658,7 @@ Vehicle.Body.Lights.Parking.IsOn:
   uuid: 6ba0825427335408ad7d0f148d6250ea
 
 Vehicle.Body.Lights.Running:
-  description: Running lights.
+  description: Daytime running lights (DRL).
   type: branch
   uuid: 38868a9f1bda573595501302c1f0a1db
 
@@ -650,11 +684,23 @@ Vehicle.Body.Mirrors.DriverSide:
   type: branch
   uuid: 3c62705bbcf654489c8179b63118829f
 
+Vehicle.Body.Mirrors.DriverSide.IsFolded:
+  datatype: boolean
+  description: Is mirror folded? True = Fully or partially folded. False = Fully unfolded.
+  type: actuator
+  uuid: 0ade6b89326052829a49da918aacf0b7
+
 Vehicle.Body.Mirrors.DriverSide.IsHeatingOn:
   datatype: boolean
   description: Mirror Heater on or off. True = Heater On. False = Heater Off.
   type: actuator
   uuid: 21262ce775a85abe9f6354f9c3ac9988
+
+Vehicle.Body.Mirrors.DriverSide.IsLocked:
+  datatype: boolean
+  description: Is mirror movement locked? True = Locked, mirror will not react to Tilt/Pan change. False = Unlocked.
+  type: actuator
+  uuid: d267fc64959e59ce8335911faa87980f
 
 Vehicle.Body.Mirrors.DriverSide.Pan:
   datatype: int8
@@ -679,11 +725,23 @@ Vehicle.Body.Mirrors.PassengerSide:
   type: branch
   uuid: 8025a1e06e9d5ddb96405cce1f1f38cb
 
+Vehicle.Body.Mirrors.PassengerSide.IsFolded:
+  datatype: boolean
+  description: Is mirror folded? True = Fully or partially folded. False = Fully unfolded.
+  type: actuator
+  uuid: 2b0bedf76d29520d9b96469695c3e0e8
+
 Vehicle.Body.Mirrors.PassengerSide.IsHeatingOn:
   datatype: boolean
   description: Mirror Heater on or off. True = Heater On. False = Heater Off.
   type: actuator
   uuid: 9d64ad38532658298e5f59a2f999ef57
+
+Vehicle.Body.Mirrors.PassengerSide.IsLocked:
+  datatype: boolean
+  description: Is mirror movement locked? True = Locked, mirror will not react to Tilt/Pan change. False = Unlocked.
+  type: actuator
+  uuid: b919c8699dae540a840fbd296df49aca
 
 Vehicle.Body.Mirrors.PassengerSide.Pan:
   datatype: int8
@@ -742,19 +800,20 @@ Vehicle.Body.RefuelPosition:
   - REAR_LEFT
   - REAR_RIGHT
   datatype: string
+  deprecation: v4.1 replaced with Vehicle.Powertrain.TractionBattery.Charging.ChargePortPosition and Vehicle.Powertrain.FuelSystem.RefuelPortPosition
   description: Location of the fuel cap or charge port.
   type: attribute
   uuid: 53ef90a851fa57f0810d50238e852f02
 
 Vehicle.Body.Trunk:
   comment: A trunk is a luggage compartment in a vehicle. Depending on vehicle, it can be either in the front or back of the vehicle. Some vehicles may have trunks both at the front and at the rear of the vehicle.
-  description: Trunk status.
+  description: Trunk status. Start position for Trunk is Closed.
   type: branch
   uuid: a584c6a5aa235cb88ac686f8d72a1dff
 
 Vehicle.Body.Trunk.Front:
   comment: A trunk is a luggage compartment in a vehicle. Depending on vehicle, it can be either in the front or back of the vehicle. Some vehicles may have trunks both at the front and at the rear of the vehicle.
-  description: Trunk status.
+  description: Trunk status. Start position for Trunk is Closed.
   type: branch
   uuid: a455aca5bae55c22b7949fd31a765a6c
 
@@ -767,19 +826,41 @@ Vehicle.Body.Trunk.Front.IsLightOn:
 
 Vehicle.Body.Trunk.Front.IsLocked:
   datatype: boolean
-  description: Is trunk locked or unlocked. True = Locked. False = Unlocked.
+  description: Is item locked or unlocked. True = Locked. False = Unlocked.
   type: actuator
   uuid: e0eabc210f07505fa1b66b67729d681b
 
 Vehicle.Body.Trunk.Front.IsOpen:
   datatype: boolean
-  description: Trunk open or closed. True = Open. False = Closed.
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
   type: actuator
   uuid: 2047de0896a352fcaf02baa06819a023
 
+Vehicle.Body.Trunk.Front.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
+  datatype: uint8
+  description: Item position. 0 = Start position 100 = End position.
+  max: 100
+  min: 0
+  type: actuator
+  unit: percent
+  uuid: 6d871111a565517098cd29936a30dd22
+
+Vehicle.Body.Trunk.Front.Switch:
+  allowed:
+  - INACTIVE
+  - CLOSE
+  - OPEN
+  - ONE_SHOT_CLOSE
+  - ONE_SHOT_OPEN
+  datatype: string
+  description: Switch controlling sliding action such as window, sunroof, or blind.
+  type: actuator
+  uuid: 63a651cd414652aba970a937af0b3621
+
 Vehicle.Body.Trunk.Rear:
   comment: A trunk is a luggage compartment in a vehicle. Depending on vehicle, it can be either in the front or back of the vehicle. Some vehicles may have trunks both at the front and at the rear of the vehicle.
-  description: Trunk status.
+  description: Trunk status. Start position for Trunk is Closed.
   type: branch
   uuid: a6170ff5e4325f38b5d57402e1d95e5a
 
@@ -792,15 +873,37 @@ Vehicle.Body.Trunk.Rear.IsLightOn:
 
 Vehicle.Body.Trunk.Rear.IsLocked:
   datatype: boolean
-  description: Is trunk locked or unlocked. True = Locked. False = Unlocked.
+  description: Is item locked or unlocked. True = Locked. False = Unlocked.
   type: actuator
   uuid: 8f9b55b002ed59d3ac2ef0b014abf4aa
 
 Vehicle.Body.Trunk.Rear.IsOpen:
   datatype: boolean
-  description: Trunk open or closed. True = Open. False = Closed.
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
   type: actuator
   uuid: 3d3249e59306594698367b839b12c938
+
+Vehicle.Body.Trunk.Rear.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
+  datatype: uint8
+  description: Item position. 0 = Start position 100 = End position.
+  max: 100
+  min: 0
+  type: actuator
+  unit: percent
+  uuid: 574ae721a062565b9c057d813782909e
+
+Vehicle.Body.Trunk.Rear.Switch:
+  allowed:
+  - INACTIVE
+  - CLOSE
+  - OPEN
+  - ONE_SHOT_CLOSE
+  - ONE_SHOT_OPEN
+  datatype: string
+  description: Switch controlling sliding action such as window, sunroof, or blind.
+  type: actuator
+  uuid: 7a9f400abf875713adb5c696ae29b2be
 
 Vehicle.Body.Windshield:
   description: Windshield signals.
@@ -1161,24 +1264,41 @@ Vehicle.Cabin.Door.Row1.DriverSide.IsChildLockActive:
 
 Vehicle.Cabin.Door.Row1.DriverSide.IsLocked:
   datatype: boolean
-  description: Is door locked or unlocked. True = Locked. False = Unlocked.
+  description: Is item locked or unlocked. True = Locked. False = Unlocked.
   type: actuator
   uuid: 9080712219dc57eaacf85d6630e01ca0
 
 Vehicle.Cabin.Door.Row1.DriverSide.IsOpen:
   datatype: boolean
-  description: Is door open or closed
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
   type: actuator
   uuid: da3dccb4ab085fcabca24efd99435d87
 
+Vehicle.Cabin.Door.Row1.DriverSide.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
+  datatype: uint8
+  description: Item position. 0 = Start position 100 = End position.
+  max: 100
+  min: 0
+  type: actuator
+  unit: percent
+  uuid: 6ef9c60445f9577e83ffff4ea6d863b9
+
 Vehicle.Cabin.Door.Row1.DriverSide.Shade:
-  description: Side window shade
+  description: Side window shade. Open = Retracted, Closed = Deployed. Start position for Shade is Open/Retracted.
   type: branch
   uuid: 7220d013b9205e1b9e7ca6b95cb14058
 
+Vehicle.Cabin.Door.Row1.DriverSide.Shade.IsOpen:
+  datatype: boolean
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
+  uuid: 112a180977c956aab6c5422cb6cc46e7
+
 Vehicle.Cabin.Door.Row1.DriverSide.Shade.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Position of window blind. 0 = Fully retracted. 100 = Fully deployed.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1197,20 +1317,33 @@ Vehicle.Cabin.Door.Row1.DriverSide.Shade.Switch:
   type: actuator
   uuid: fea7f9577a8456128c548daf3c548ea4
 
+Vehicle.Cabin.Door.Row1.DriverSide.Switch:
+  allowed:
+  - INACTIVE
+  - CLOSE
+  - OPEN
+  - ONE_SHOT_CLOSE
+  - ONE_SHOT_OPEN
+  datatype: string
+  description: Switch controlling sliding action such as window, sunroof, or blind.
+  type: actuator
+  uuid: 1b93676e79ea5a9095327bde69927a21
+
 Vehicle.Cabin.Door.Row1.DriverSide.Window:
-  description: Door window status
+  description: Door window status. Start position for Window is Closed.
   type: branch
   uuid: 6ab9b77468d45cdfadebe124256aa910
 
 Vehicle.Cabin.Door.Row1.DriverSide.Window.IsOpen:
   datatype: boolean
-  description: Is window open or closed?
-  type: sensor
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
   uuid: ff58aae512475431bec02b5c4a36b6f9
 
 Vehicle.Cabin.Door.Row1.DriverSide.Window.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Window position. 0 = Fully closed 100 = Fully opened.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1242,24 +1375,41 @@ Vehicle.Cabin.Door.Row1.PassengerSide.IsChildLockActive:
 
 Vehicle.Cabin.Door.Row1.PassengerSide.IsLocked:
   datatype: boolean
-  description: Is door locked or unlocked. True = Locked. False = Unlocked.
+  description: Is item locked or unlocked. True = Locked. False = Unlocked.
   type: actuator
   uuid: 48d4388ec67b519ab500ee424ce4b6cb
 
 Vehicle.Cabin.Door.Row1.PassengerSide.IsOpen:
   datatype: boolean
-  description: Is door open or closed
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
   type: actuator
   uuid: 80aca3884840557db10f1314a27a5eeb
 
+Vehicle.Cabin.Door.Row1.PassengerSide.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
+  datatype: uint8
+  description: Item position. 0 = Start position 100 = End position.
+  max: 100
+  min: 0
+  type: actuator
+  unit: percent
+  uuid: 7002316cdf9852afb027abc03309b15d
+
 Vehicle.Cabin.Door.Row1.PassengerSide.Shade:
-  description: Side window shade
+  description: Side window shade. Open = Retracted, Closed = Deployed. Start position for Shade is Open/Retracted.
   type: branch
   uuid: dfe64259f26a54bda64b9aa24362c7eb
 
+Vehicle.Cabin.Door.Row1.PassengerSide.Shade.IsOpen:
+  datatype: boolean
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
+  uuid: 46bec5f9c4ef594fb41836d413e79400
+
 Vehicle.Cabin.Door.Row1.PassengerSide.Shade.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Position of window blind. 0 = Fully retracted. 100 = Fully deployed.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1278,20 +1428,33 @@ Vehicle.Cabin.Door.Row1.PassengerSide.Shade.Switch:
   type: actuator
   uuid: c700d6a13a16522ead84b81314fd452b
 
+Vehicle.Cabin.Door.Row1.PassengerSide.Switch:
+  allowed:
+  - INACTIVE
+  - CLOSE
+  - OPEN
+  - ONE_SHOT_CLOSE
+  - ONE_SHOT_OPEN
+  datatype: string
+  description: Switch controlling sliding action such as window, sunroof, or blind.
+  type: actuator
+  uuid: c1244ebb7ef35c2a9e0f6ebf47710536
+
 Vehicle.Cabin.Door.Row1.PassengerSide.Window:
-  description: Door window status
+  description: Door window status. Start position for Window is Closed.
   type: branch
   uuid: c588ac43d3945dc0a45994c4d298d9b0
 
 Vehicle.Cabin.Door.Row1.PassengerSide.Window.IsOpen:
   datatype: boolean
-  description: Is window open or closed?
-  type: sensor
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
   uuid: 120e3b950fd657fabd90069e6e01f44e
 
 Vehicle.Cabin.Door.Row1.PassengerSide.Window.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Window position. 0 = Fully closed 100 = Fully opened.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1328,24 +1491,41 @@ Vehicle.Cabin.Door.Row2.DriverSide.IsChildLockActive:
 
 Vehicle.Cabin.Door.Row2.DriverSide.IsLocked:
   datatype: boolean
-  description: Is door locked or unlocked. True = Locked. False = Unlocked.
+  description: Is item locked or unlocked. True = Locked. False = Unlocked.
   type: actuator
   uuid: df98641aae1553a68b741826496d9d42
 
 Vehicle.Cabin.Door.Row2.DriverSide.IsOpen:
   datatype: boolean
-  description: Is door open or closed
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
   type: actuator
   uuid: 49c55921d1825bc1a82334a40eeb45f9
 
+Vehicle.Cabin.Door.Row2.DriverSide.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
+  datatype: uint8
+  description: Item position. 0 = Start position 100 = End position.
+  max: 100
+  min: 0
+  type: actuator
+  unit: percent
+  uuid: bf1d5b2f6a0b59bcb18abf24ea45c11e
+
 Vehicle.Cabin.Door.Row2.DriverSide.Shade:
-  description: Side window shade
+  description: Side window shade. Open = Retracted, Closed = Deployed. Start position for Shade is Open/Retracted.
   type: branch
   uuid: 9b08a5dc400253b8bf31776582f275fd
 
+Vehicle.Cabin.Door.Row2.DriverSide.Shade.IsOpen:
+  datatype: boolean
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
+  uuid: 69c6da83b3aa51cd8156e57b2ba431a5
+
 Vehicle.Cabin.Door.Row2.DriverSide.Shade.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Position of window blind. 0 = Fully retracted. 100 = Fully deployed.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1364,20 +1544,33 @@ Vehicle.Cabin.Door.Row2.DriverSide.Shade.Switch:
   type: actuator
   uuid: 81f6196e909d590d858fe4da18c60590
 
+Vehicle.Cabin.Door.Row2.DriverSide.Switch:
+  allowed:
+  - INACTIVE
+  - CLOSE
+  - OPEN
+  - ONE_SHOT_CLOSE
+  - ONE_SHOT_OPEN
+  datatype: string
+  description: Switch controlling sliding action such as window, sunroof, or blind.
+  type: actuator
+  uuid: 3e46afea496054afb12653a9c82c66ad
+
 Vehicle.Cabin.Door.Row2.DriverSide.Window:
-  description: Door window status
+  description: Door window status. Start position for Window is Closed.
   type: branch
   uuid: bb6ac206a45b507f9f1fe5fdfcf82b31
 
 Vehicle.Cabin.Door.Row2.DriverSide.Window.IsOpen:
   datatype: boolean
-  description: Is window open or closed?
-  type: sensor
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
   uuid: 1fa3b2f43118575aa2f136fdd15ff61f
 
 Vehicle.Cabin.Door.Row2.DriverSide.Window.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Window position. 0 = Fully closed 100 = Fully opened.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1409,24 +1602,41 @@ Vehicle.Cabin.Door.Row2.PassengerSide.IsChildLockActive:
 
 Vehicle.Cabin.Door.Row2.PassengerSide.IsLocked:
   datatype: boolean
-  description: Is door locked or unlocked. True = Locked. False = Unlocked.
+  description: Is item locked or unlocked. True = Locked. False = Unlocked.
   type: actuator
   uuid: 32fa3a8c0b2d5451a4a1976438417305
 
 Vehicle.Cabin.Door.Row2.PassengerSide.IsOpen:
   datatype: boolean
-  description: Is door open or closed
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
   type: actuator
   uuid: 84cab77c9c1d59aba1565b3484c5e01f
 
+Vehicle.Cabin.Door.Row2.PassengerSide.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
+  datatype: uint8
+  description: Item position. 0 = Start position 100 = End position.
+  max: 100
+  min: 0
+  type: actuator
+  unit: percent
+  uuid: 74e971377a1053d284a6bf80cf1aa1c1
+
 Vehicle.Cabin.Door.Row2.PassengerSide.Shade:
-  description: Side window shade
+  description: Side window shade. Open = Retracted, Closed = Deployed. Start position for Shade is Open/Retracted.
   type: branch
   uuid: 8dc8133322a65057844f9b7eceee6ef9
 
+Vehicle.Cabin.Door.Row2.PassengerSide.Shade.IsOpen:
+  datatype: boolean
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
+  uuid: d667cda8637e518e900f0e599f59ca1d
+
 Vehicle.Cabin.Door.Row2.PassengerSide.Shade.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Position of window blind. 0 = Fully retracted. 100 = Fully deployed.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1445,20 +1655,33 @@ Vehicle.Cabin.Door.Row2.PassengerSide.Shade.Switch:
   type: actuator
   uuid: 0c33dd31375452d6ad0c531eac1637c6
 
+Vehicle.Cabin.Door.Row2.PassengerSide.Switch:
+  allowed:
+  - INACTIVE
+  - CLOSE
+  - OPEN
+  - ONE_SHOT_CLOSE
+  - ONE_SHOT_OPEN
+  datatype: string
+  description: Switch controlling sliding action such as window, sunroof, or blind.
+  type: actuator
+  uuid: 1411f865d2065849aeb214875d0c099b
+
 Vehicle.Cabin.Door.Row2.PassengerSide.Window:
-  description: Door window status
+  description: Door window status. Start position for Window is Closed.
   type: branch
   uuid: b64ba696bf7b5fdc8dba79ae5cb119d1
 
 Vehicle.Cabin.Door.Row2.PassengerSide.Window.IsOpen:
   datatype: boolean
-  description: Is window open or closed?
-  type: sensor
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
   uuid: 13e37e2924115c73a36df78f09fad493
 
 Vehicle.Cabin.Door.Row2.PassengerSide.Window.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Window position. 0 = Fully closed 100 = Fully opened.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -1512,6 +1735,12 @@ Vehicle.Cabin.HVAC.IsAirConditioningActive:
   description: Is Air conditioning active.
   type: actuator
   uuid: dc4f79e4211c54a6b4eed0236aae84a6
+
+Vehicle.Cabin.HVAC.IsAutoPowerOptimize:
+  datatype: boolean
+  description: Auto Power Optimization Flag When set to 'true', the system enables automatic power optimization, dynamically adjusting the power optimization level based on runtime conditions or features managed by the OEM. When set to 'false', manual control of the power optimization level is allowed.
+  type: actuator
+  uuid: 83abc4d9c05f557d83482f2d4347eb32
 
 Vehicle.Cabin.HVAC.IsFrontDefrosterActive:
   datatype: boolean
@@ -1890,6 +2119,17 @@ Vehicle.Cabin.Infotainment.HMI.EVEconomyUnits:
   type: actuator
   uuid: 914846f6804757ba81ca6bcfac8d2c48
 
+Vehicle.Cabin.Infotainment.HMI.EVEnergyUnits:
+  allowed:
+  - WATT_HOURS
+  - AMPERE_HOURS
+  - KILOWATT_HOURS
+  comment: Ampere hours is by definition not an energy unit, but can be used as a measurement of energy if the voltage, like nominal voltage of the battery, is known.
+  datatype: string
+  description: EV energy unit used in the current HMI
+  type: actuator
+  uuid: cf09b365499859c5a916d7fc1ea2d3ba
+
 Vehicle.Cabin.Infotainment.HMI.FontSize:
   allowed:
   - STANDARD
@@ -1932,7 +2172,18 @@ Vehicle.Cabin.Infotainment.HMI.LastActionTime:
   datatype: string
   description: Time for last hmi action, formatted according to ISO 8601 with UTC time zone.
   type: sensor
+  unit: iso8601
   uuid: 19b4f7e950bc526f8c263b4cc5954960
+
+Vehicle.Cabin.Infotainment.HMI.SpeedUnit:
+  allowed:
+  - METERS_PER_SECOND
+  - MILES_PER_HOUR
+  - KILOMETERS_PER_HOUR
+  datatype: string
+  description: Speed unit used in the current HMI
+  type: actuator
+  uuid: 9bb9811aaa1c5ce79e0c19f5ba6049bb
 
 Vehicle.Cabin.Infotainment.HMI.TemperatureUnit:
   allowed:
@@ -1961,6 +2212,12 @@ Vehicle.Cabin.Infotainment.HMI.TirePressureUnit:
   description: Tire pressure unit used in the current HMI
   type: actuator
   uuid: e5ffaf58cc10523fa0858deafb61a8ce
+
+Vehicle.Cabin.Infotainment.IsAutoPowerOptimize:
+  datatype: boolean
+  description: Auto Power Optimization Flag When set to 'true', the system enables automatic power optimization, dynamically adjusting the power optimization level based on runtime conditions or features managed by the OEM. When set to 'false', manual control of the power optimization level is allowed.
+  type: actuator
+  uuid: e4b9efd3fc8d588cb7220058e0406868
 
 Vehicle.Cabin.Infotainment.Media:
   description: All Media actions
@@ -2099,6 +2356,18 @@ Vehicle.Cabin.Infotainment.Navigation.GuidanceVoice:
   type: actuator
   uuid: f5404f515db05e518d7b74460cf83eee
 
+Vehicle.Cabin.Infotainment.Navigation.Map:
+  description: All map actions
+  type: branch
+  uuid: 4df6f1ab5f6c51d6b9c7af2b13daa2bc
+
+Vehicle.Cabin.Infotainment.Navigation.Map.IsAutoScaleModeUsed:
+  comment: If true, then auto-scaling mode is used. If false, then manual-scaling mode is used.
+  datatype: boolean
+  description: Used to select auto-scaling mode. This feature dynamically adjusts the zoom level of the map to provide an optimal view based on the current speed of the vehicle
+  type: actuator
+  uuid: 86cb8301b6205fa98a737cb02d3d5ce9
+
 Vehicle.Cabin.Infotainment.Navigation.Mute:
   allowed:
   - MUTED
@@ -2162,6 +2431,12 @@ Vehicle.Cabin.Infotainment.SmartphoneProjection.SupportedMode:
   description: Supportable list for projection.
   type: attribute
   uuid: 80fa132703655d989386bc6711afed49
+
+Vehicle.Cabin.IsAutoPowerOptimize:
+  datatype: boolean
+  description: Auto Power Optimization Flag When set to 'true', the system enables automatic power optimization, dynamically adjusting the power optimization level based on runtime conditions or features managed by the OEM. When set to 'false', manual control of the power optimization level is allowed.
+  type: actuator
+  uuid: b1fa47b39a275bea8606460005de2b33
 
 Vehicle.Cabin.IsWindowChildLockEngaged:
   comment: Window child lock refers to the functionality to disable the move window button next to most windows, so that they only can be operated by the driver.
@@ -2618,13 +2893,20 @@ Vehicle.Cabin.PowerOptimizeLevel:
   uuid: 728b62b170055bd8b1530ec423dd5a9a
 
 Vehicle.Cabin.RearShade:
-  description: Rear window shade.
+  description: Rear window shade. Open = Retracted, Closed = Deployed. Start position for RearShade is Open/Retracted.
   type: branch
   uuid: 8a0c86f4fc6f5ea8ac8cf8f327969dcc
 
+Vehicle.Cabin.RearShade.IsOpen:
+  datatype: boolean
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
+  uuid: 4190436709bc5b1896fad8fd5c624ff2
+
 Vehicle.Cabin.RearShade.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Position of window blind. 0 = Fully retracted. 100 = Fully deployed.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -2753,12 +3035,22 @@ Vehicle.Cabin.Seat.Row1.DriverSide.Headrest.Height:
 
 Vehicle.Cabin.Seat.Row1.DriverSide.Heating:
   datatype: int8
+  deprecation: v4.1 replaced with HeatingCooling
   description: Seat cooling / heating. 0 = off. -100 = max cold. +100 = max heat.
   max: 100
   min: -100
   type: actuator
   unit: percent
   uuid: efeb2be118bb5f5eb796a81d298ab560
+
+Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling:
+  datatype: int8
+  description: Heating or Cooling requsted for the Item. -100 = Maximum cooling, 0 = Heating/cooling deactivated, 100 = Maximum heating.
+  max: 100
+  min: -100
+  type: actuator
+  unit: percent
+  uuid: 32ee42cdcf0c5ba3a963d0c11881e0c2
 
 Vehicle.Cabin.Seat.Row1.DriverSide.Height:
   datatype: uint16
@@ -2818,6 +3110,13 @@ Vehicle.Cabin.Seat.Row1.DriverSide.Position:
   type: actuator
   unit: mm
   uuid: b9587caa89dd50d2af7167c99c13bc85
+
+Vehicle.Cabin.Seat.Row1.DriverSide.SeatBeltHeight:
+  datatype: uint16
+  description: Seat belt position on vehicle z-axis. Position is relative within available movable range of the seat belt. 0 = Lowermost position supported.
+  type: actuator
+  unit: mm
+  uuid: 4e5f01eef7ce5005b4d8420fcd233336
 
 Vehicle.Cabin.Seat.Row1.DriverSide.Seating:
   comment: Seating is here considered as the part of the seat that supports the thighs. Additional cushions (if any) for support of lower legs is not covered by this branch.
@@ -3107,12 +3406,22 @@ Vehicle.Cabin.Seat.Row1.Middle.Headrest.Height:
 
 Vehicle.Cabin.Seat.Row1.Middle.Heating:
   datatype: int8
+  deprecation: v4.1 replaced with HeatingCooling
   description: Seat cooling / heating. 0 = off. -100 = max cold. +100 = max heat.
   max: 100
   min: -100
   type: actuator
   unit: percent
   uuid: 85e4a1400e1455149687f608cd4a4d08
+
+Vehicle.Cabin.Seat.Row1.Middle.HeatingCooling:
+  datatype: int8
+  description: Heating or Cooling requsted for the Item. -100 = Maximum cooling, 0 = Heating/cooling deactivated, 100 = Maximum heating.
+  max: 100
+  min: -100
+  type: actuator
+  unit: percent
+  uuid: fa7d96abfc2351fbbac29047c3bb46cd
 
 Vehicle.Cabin.Seat.Row1.Middle.Height:
   datatype: uint16
@@ -3172,6 +3481,13 @@ Vehicle.Cabin.Seat.Row1.Middle.Position:
   type: actuator
   unit: mm
   uuid: a9c61deb42ac5bb1b2c92fb5ee222db9
+
+Vehicle.Cabin.Seat.Row1.Middle.SeatBeltHeight:
+  datatype: uint16
+  description: Seat belt position on vehicle z-axis. Position is relative within available movable range of the seat belt. 0 = Lowermost position supported.
+  type: actuator
+  unit: mm
+  uuid: 7e7b9ef4f3b350e9adf8091dff7e799f
 
 Vehicle.Cabin.Seat.Row1.Middle.Seating:
   comment: Seating is here considered as the part of the seat that supports the thighs. Additional cushions (if any) for support of lower legs is not covered by this branch.
@@ -3461,12 +3777,22 @@ Vehicle.Cabin.Seat.Row1.PassengerSide.Headrest.Height:
 
 Vehicle.Cabin.Seat.Row1.PassengerSide.Heating:
   datatype: int8
+  deprecation: v4.1 replaced with HeatingCooling
   description: Seat cooling / heating. 0 = off. -100 = max cold. +100 = max heat.
   max: 100
   min: -100
   type: actuator
   unit: percent
   uuid: f62e56245db158508c9535a07474eed7
+
+Vehicle.Cabin.Seat.Row1.PassengerSide.HeatingCooling:
+  datatype: int8
+  description: Heating or Cooling requsted for the Item. -100 = Maximum cooling, 0 = Heating/cooling deactivated, 100 = Maximum heating.
+  max: 100
+  min: -100
+  type: actuator
+  unit: percent
+  uuid: 9545cb7d8a4c53b6a0c27aeacc2c229f
 
 Vehicle.Cabin.Seat.Row1.PassengerSide.Height:
   datatype: uint16
@@ -3526,6 +3852,13 @@ Vehicle.Cabin.Seat.Row1.PassengerSide.Position:
   type: actuator
   unit: mm
   uuid: 3d09265704af56d59e5d80f92be3d66f
+
+Vehicle.Cabin.Seat.Row1.PassengerSide.SeatBeltHeight:
+  datatype: uint16
+  description: Seat belt position on vehicle z-axis. Position is relative within available movable range of the seat belt. 0 = Lowermost position supported.
+  type: actuator
+  unit: mm
+  uuid: 3ad476825c6b598e8c468c49f0aaec10
 
 Vehicle.Cabin.Seat.Row1.PassengerSide.Seating:
   comment: Seating is here considered as the part of the seat that supports the thighs. Additional cushions (if any) for support of lower legs is not covered by this branch.
@@ -3820,12 +4153,22 @@ Vehicle.Cabin.Seat.Row2.DriverSide.Headrest.Height:
 
 Vehicle.Cabin.Seat.Row2.DriverSide.Heating:
   datatype: int8
+  deprecation: v4.1 replaced with HeatingCooling
   description: Seat cooling / heating. 0 = off. -100 = max cold. +100 = max heat.
   max: 100
   min: -100
   type: actuator
   unit: percent
   uuid: 7ae50ab2fea25798adc27814579bd33b
+
+Vehicle.Cabin.Seat.Row2.DriverSide.HeatingCooling:
+  datatype: int8
+  description: Heating or Cooling requsted for the Item. -100 = Maximum cooling, 0 = Heating/cooling deactivated, 100 = Maximum heating.
+  max: 100
+  min: -100
+  type: actuator
+  unit: percent
+  uuid: 2b4be8391f405e99a77ba65e3ea80aba
 
 Vehicle.Cabin.Seat.Row2.DriverSide.Height:
   datatype: uint16
@@ -3885,6 +4228,13 @@ Vehicle.Cabin.Seat.Row2.DriverSide.Position:
   type: actuator
   unit: mm
   uuid: 71b34d4141225b77bc232bd3a2efa86f
+
+Vehicle.Cabin.Seat.Row2.DriverSide.SeatBeltHeight:
+  datatype: uint16
+  description: Seat belt position on vehicle z-axis. Position is relative within available movable range of the seat belt. 0 = Lowermost position supported.
+  type: actuator
+  unit: mm
+  uuid: 6a6313644782587d84fb04eb2c6397d8
 
 Vehicle.Cabin.Seat.Row2.DriverSide.Seating:
   comment: Seating is here considered as the part of the seat that supports the thighs. Additional cushions (if any) for support of lower legs is not covered by this branch.
@@ -4174,12 +4524,22 @@ Vehicle.Cabin.Seat.Row2.Middle.Headrest.Height:
 
 Vehicle.Cabin.Seat.Row2.Middle.Heating:
   datatype: int8
+  deprecation: v4.1 replaced with HeatingCooling
   description: Seat cooling / heating. 0 = off. -100 = max cold. +100 = max heat.
   max: 100
   min: -100
   type: actuator
   unit: percent
   uuid: 3b6a82f5f68f56bba88b7c5349e1a45d
+
+Vehicle.Cabin.Seat.Row2.Middle.HeatingCooling:
+  datatype: int8
+  description: Heating or Cooling requsted for the Item. -100 = Maximum cooling, 0 = Heating/cooling deactivated, 100 = Maximum heating.
+  max: 100
+  min: -100
+  type: actuator
+  unit: percent
+  uuid: 1b0129f265225acba5f18aef705b9c54
 
 Vehicle.Cabin.Seat.Row2.Middle.Height:
   datatype: uint16
@@ -4239,6 +4599,13 @@ Vehicle.Cabin.Seat.Row2.Middle.Position:
   type: actuator
   unit: mm
   uuid: c7e61a5fe6f35d0fb50a4cbb3c5d15e8
+
+Vehicle.Cabin.Seat.Row2.Middle.SeatBeltHeight:
+  datatype: uint16
+  description: Seat belt position on vehicle z-axis. Position is relative within available movable range of the seat belt. 0 = Lowermost position supported.
+  type: actuator
+  unit: mm
+  uuid: 6c22e3d28bcd51ae97e01c8ace4dee74
 
 Vehicle.Cabin.Seat.Row2.Middle.Seating:
   comment: Seating is here considered as the part of the seat that supports the thighs. Additional cushions (if any) for support of lower legs is not covered by this branch.
@@ -4528,12 +4895,22 @@ Vehicle.Cabin.Seat.Row2.PassengerSide.Headrest.Height:
 
 Vehicle.Cabin.Seat.Row2.PassengerSide.Heating:
   datatype: int8
+  deprecation: v4.1 replaced with HeatingCooling
   description: Seat cooling / heating. 0 = off. -100 = max cold. +100 = max heat.
   max: 100
   min: -100
   type: actuator
   unit: percent
   uuid: 4c0ab40eaf745f12a09dc2c5acbedae9
+
+Vehicle.Cabin.Seat.Row2.PassengerSide.HeatingCooling:
+  datatype: int8
+  description: Heating or Cooling requsted for the Item. -100 = Maximum cooling, 0 = Heating/cooling deactivated, 100 = Maximum heating.
+  max: 100
+  min: -100
+  type: actuator
+  unit: percent
+  uuid: 61dbad56f18e5ecba04d189ebd943770
 
 Vehicle.Cabin.Seat.Row2.PassengerSide.Height:
   datatype: uint16
@@ -4593,6 +4970,13 @@ Vehicle.Cabin.Seat.Row2.PassengerSide.Position:
   type: actuator
   unit: mm
   uuid: 07a8fe28cc1850dc96458e827a9ebeb5
+
+Vehicle.Cabin.Seat.Row2.PassengerSide.SeatBeltHeight:
+  datatype: uint16
+  description: Seat belt position on vehicle z-axis. Position is relative within available movable range of the seat belt. 0 = Lowermost position supported.
+  type: actuator
+  unit: mm
+  uuid: 9648e0ea501b583a86d211d09a953b14
 
 Vehicle.Cabin.Seat.Row2.PassengerSide.Seating:
   comment: Seating is here considered as the part of the seat that supports the thighs. Additional cushions (if any) for support of lower legs is not covered by this branch.
@@ -4828,13 +5212,20 @@ Vehicle.Cabin.Sunroof.Position:
   uuid: ab598697f1c852eda4df9ed62a956d17
 
 Vehicle.Cabin.Sunroof.Shade:
-  description: Sun roof shade status.
+  description: Sun roof shade status. Open = Retracted, Closed = Deployed. Start position for Sunroof.Shade is Open/Retracted.
   type: branch
   uuid: eeaae5977adb5683b16f405993405b2e
 
+Vehicle.Cabin.Sunroof.Shade.IsOpen:
+  datatype: boolean
+  description: Is item open or closed? True = Fully or partially open. False = Fully closed.
+  type: actuator
+  uuid: f6c7020849fe5431b648a8a283d9751b
+
 Vehicle.Cabin.Sunroof.Shade.Position:
+  comment: Relationship between Open/Close and Start/End position is item dependent.
   datatype: uint8
-  description: Position of window blind. 0 = Fully retracted. 100 = Fully deployed.
+  description: Item position. 0 = Start position 100 = End position.
   max: 100
   min: 0
   type: actuator
@@ -5411,6 +5802,15 @@ Vehicle.Chassis.SteeringWheel.Extension:
   unit: percent
   uuid: 6a84cc3604fc5960a1fb384fe63fae72
 
+Vehicle.Chassis.SteeringWheel.HeatingCooling:
+  datatype: int8
+  description: Heating or Cooling requsted for the Item. -100 = Maximum cooling, 0 = Heating/cooling deactivated, 100 = Maximum heating.
+  max: 100
+  min: -100
+  type: actuator
+  unit: percent
+  uuid: 74e1f4888a9a5dc6b3bbdda9ecafef39
+
 Vehicle.Chassis.SteeringWheel.Tilt:
   datatype: uint8
   description: Steering wheel column tilt. 0 = Lowest position. 100 = Highest position.
@@ -5545,6 +5945,7 @@ Vehicle.CurrentLocation.Timestamp:
   datatype: string
   description: Timestamp from GNSS system for current location, formatted according to ISO 8601 with UTC time zone.
   type: sensor
+  unit: iso8601
   uuid: 094aeff73be05c08905690be0e82a438
 
 Vehicle.CurrentLocation.VerticalAccuracy:
@@ -5682,6 +6083,12 @@ Vehicle.Height:
   type: attribute
   unit: mm
   uuid: 9784d39f68b8541f90c355178ded7d7c
+
+Vehicle.IsAutoPowerOptimize:
+  datatype: boolean
+  description: Auto Power Optimization Flag When set to 'true', the system enables automatic power optimization, dynamically adjusting the power optimization level based on runtime conditions or features managed by the OEM. When set to 'false', manual control of the power optimization level is allowed.
+  type: actuator
+  uuid: 233a02ed58b65171907e0d395cbe1b5f
 
 Vehicle.IsBrokenDown:
   comment: Actual criteria and method used to decide if a vehicle is broken down is implementation specific.
@@ -7240,12 +7647,37 @@ Vehicle.Powertrain.FuelSystem.IsFuelLevelLow:
   type: sensor
   uuid: 65f18ee3b04f5d4c8bb76083227dd9fe
 
+Vehicle.Powertrain.FuelSystem.IsFuelPortFlapOpen:
+  datatype: boolean
+  description: Status of the fuel port flap(s). True if at least one is open.
+  type: actuator
+  uuid: fded7edb113c5894a21722085834f3ae
+
 Vehicle.Powertrain.FuelSystem.Range:
   datatype: uint32
   description: Remaining range in meters using only liquid fuel.
   type: sensor
   unit: m
   uuid: c5a0dbe5e754553897f0aed0069af57a
+
+Vehicle.Powertrain.FuelSystem.RefuelPortPosition:
+  allowed:
+  - FRONT_LEFT
+  - FRONT_MIDDLE
+  - FRONT_RIGHT
+  - REAR_LEFT
+  - REAR_MIDDLE
+  - REAR_RIGHT
+  - LEFT_FRONT
+  - LEFT_MIDDLE
+  - LEFT_REAR
+  - RIGHT_FRONT
+  - RIGHT_MIDDLE
+  - RIGHT_REAR
+  datatype: string[]
+  description: Position of refuel port(s). First part indicates side of vehicle, second part relative position on that side.
+  type: attribute
+  uuid: a7b5eb269b345ef7b18602b66517f952
 
 Vehicle.Powertrain.FuelSystem.RelativeLevel:
   datatype: uint8
@@ -7303,6 +7735,19 @@ Vehicle.Powertrain.FuelSystem.TankCapacity:
   unit: l
   uuid: 362643b866c55d5386fdbdf383464e90
 
+Vehicle.Powertrain.FuelSystem.TimeRemaining:
+  datatype: uint32
+  description: Time remaining in seconds before the fuel tank is empty.
+  type: sensor
+  unit: s
+  uuid: a531b80a16bc59949abb2ab5228a1034
+
+Vehicle.Powertrain.IsAutoPowerOptimize:
+  datatype: boolean
+  description: Auto Power Optimization Flag When set to 'true', the system enables automatic power optimization, dynamically adjusting the power optimization level based on runtime conditions or features managed by the OEM. When set to 'false', manual control of the power optimization level is allowed.
+  type: actuator
+  uuid: 2f76567bacce582aac9d9e62da78ce9c
+
 Vehicle.Powertrain.PowerOptimizeLevel:
   datatype: uint8
   description: Power optimization level for this branch/subsystem. A higher number indicates more aggressive power optimization. Level 0 indicates that all functionality is enabled, no power optimization enabled. Level 10 indicates most aggressive power optimization mode, only essential functionality enabled.
@@ -7317,6 +7762,13 @@ Vehicle.Powertrain.Range:
   type: sensor
   unit: m
   uuid: ea4b6de772d65d20b1fa611f997aa7b8
+
+Vehicle.Powertrain.TimeRemaining:
+  datatype: uint32
+  description: Time remaining in seconds before all energy sources available in the vehicle are empty.
+  type: sensor
+  unit: s
+  uuid: f0154f73e2575ab5a39fd10a44ec7149
 
 Vehicle.Powertrain.TractionBattery:
   description: Battery Management data.
@@ -7356,6 +7808,27 @@ Vehicle.Powertrain.TractionBattery.CellVoltage:
   type: branch
   uuid: 0070210b80125f1a8e9473f8875fe3d1
 
+Vehicle.Powertrain.TractionBattery.CellVoltage.CellVoltages:
+  comment: Cells are identified by relative position in array.
+  datatype: float[]
+  description: Array of cell voltages. Length or array shall correspond to number of cells in vehicle.
+  type: sensor
+  uuid: 1970692bc3a457f1b6f58aa53c905264
+
+Vehicle.Powertrain.TractionBattery.CellVoltage.IdMax:
+  comment: Identifier is supposed to be relative index of the cell, starting with 0 the first cell.
+  datatype: uint16
+  description: Identifier of the battery cell with highest voltage.
+  type: sensor
+  uuid: c84a89bd5faa5e9cb0a9bf191bfeec9c
+
+Vehicle.Powertrain.TractionBattery.CellVoltage.IdMin:
+  comment: Identifier is supposed to be relative index of the cell, starting with 0 the first cell.
+  datatype: uint16
+  description: Identifier of the battery cell with lowest voltage.
+  type: sensor
+  uuid: cbaef92ad3f55b20bc71188fba79d00d
+
 Vehicle.Powertrain.TractionBattery.CellVoltage.Max:
   datatype: float
   description: Current voltage of the battery cell with highest voltage.
@@ -7374,6 +7847,13 @@ Vehicle.Powertrain.TractionBattery.Charging:
   description: Properties related to battery charging.
   type: branch
   uuid: 49b9ef0c8b145a36afdf17d0cb44131b
+
+Vehicle.Powertrain.TractionBattery.Charging.AveragePower:
+  datatype: float
+  description: Average charging power of last or current charging event.
+  type: sensor
+  unit: kW
+  uuid: acc1728f1839516287d86975f679ec33
 
 Vehicle.Powertrain.TractionBattery.Charging.ChargeCurrent:
   description: Current charging current.
@@ -7432,10 +7912,11 @@ Vehicle.Powertrain.TractionBattery.Charging.ChargePlugType:
   - GBT_AC
   - GBT_DC
   - OTHER
-  comment: A vehicle may have multiple charging inlets. IEC_TYPE_1_AC refers to Type 1 as defined in IEC 62196-2. Also known as Yazaki or J1772 connector. IEC_TYPE_2_AC refers to Type 2 as defined in IEC 62196-2. Also known as Mennekes connector. IEC_TYPE_3_AC refers to Type 3 as defined in IEC 62196-2. Also known as Scame connector. IEC_TYPE_4_DC refers to AA configuration as defined in IEC 62196-3. Also known as Type 4 or CHAdeMO connector. IEC_TYPE_1_CCS_DC refers to EE Configuration as defined in IEC 62196-3. Also known as CCS1 or Combo1 connector. IEC_TYPE_2_CCS_DC refers to FF Configuration as defined in IEC 62196-3. Also known as CCS2 or Combo2 connector. TESLA_ROADSTER, TESLA_HPWC (High Power Wall Connector) and TESLA_SUPERCHARGER refer to non-standardized charging inlets/methods used by Tesla. GBT_AC refers to connector specified in GB/T 20234.2. GBT_DC refers to connector specified in GB/T 20234.3. Also specified as BB Configuration in IEC 62196-3. OTHER shall be used if the vehicle has a charging connector,
-    but not one of the connectors listed above. For additional information see https://en.wikipedia.org/wiki/IEC_62196.
+  comment: A vehicle may have multiple charging inlets. The signal Charging.ChargePlugPosition can be used to indicate position of the charge plug. IEC_TYPE_1_AC refers to Type 1 as defined in IEC 62196-2. Also known as Yazaki or J1772 connector. IEC_TYPE_2_AC refers to Type 2 as defined in IEC 62196-2. Also known as Mennekes connector. IEC_TYPE_3_AC refers to Type 3 as defined in IEC 62196-2. Also known as Scame connector. IEC_TYPE_4_DC refers to AA configuration as defined in IEC 62196-3. Also known as Type 4 or CHAdeMO connector. IEC_TYPE_1_CCS_DC refers to EE Configuration as defined in IEC 62196-3. Also known as CCS1 or Combo1 connector. IEC_TYPE_2_CCS_DC refers to FF Configuration as defined in IEC 62196-3. Also known as CCS2 or Combo2 connector. TESLA_ROADSTER, TESLA_HPWC (High Power Wall Connector) and TESLA_SUPERCHARGER refer to non-standardized charging inlets/methods used by Tesla. GBT_AC refers to connector specified in GB/T 20234.2. GBT_DC refers to connector specified in GB/T 20234.3. Also specified
+    as BB Configuration in IEC 62196-3. OTHER shall be used if the vehicle has a charging connector, but not one of the connectors listed above. For additional information see https://en.wikipedia.org/wiki/IEC_62196.
   datatype: string[]
-  description: Type of charge plug (charging inlet) available on the vehicle. IEC types refer to IEC 62196,  GBT refers to  GB/T 20234.
+  deprecation: V4.1 renamed to Charging.ChargePortType
+  description: Type of charge plugs (charging inlet) available on the vehicle. A charge plug type may occur multiple times in the list if there are multiple instances of that charge plug type. IEC types refer to IEC 62196,  GBT refers to  GB/T 20234.
   type: attribute
   uuid: 4c56357a6f1d586395215a9beeb26d91
 
@@ -7444,9 +7925,51 @@ Vehicle.Powertrain.TractionBattery.Charging.ChargePortFlap:
   - OPEN
   - CLOSED
   datatype: string
-  description: Status of the charge port cover, can potentially be controlled manually.
+  deprecation: V4.1 - Replaced with Charging.IsChargePortFlapOpen
+  description: Status of the charge port cover(s), can potentially be controlled manually. OPEN if at least one is open.
   type: actuator
   uuid: 71bdd2145bb55c3393df194bfc2e03e5
+
+Vehicle.Powertrain.TractionBattery.Charging.ChargePortPosition:
+  allowed:
+  - FRONT_LEFT
+  - FRONT_MIDDLE
+  - FRONT_RIGHT
+  - REAR_LEFT
+  - REAR_MIDDLE
+  - REAR_RIGHT
+  - LEFT_FRONT
+  - LEFT_MIDDLE
+  - LEFT_REAR
+  - RIGHT_FRONT
+  - RIGHT_MIDDLE
+  - RIGHT_REAR
+  comment: Example - If this signal is [LEFT_FRONT, RIGHT_FRONT] and Charging.ChargePortType is [IEC_TYPE_2_AC, GBT_AC] that means that there is Mennekes port on the left side of the vehicle near the front, and a GB/T AC port on the right side, near the front.
+  datatype: string[]
+  description: Location of the charge port(s). First part indicates side of vehicle, second part relative position on that side. If supported, the list in this attribute shall have the same length as Charging.ChargePortType, and use same the relative order.
+  type: attribute
+  uuid: 71ff249b26215714b9b28b1b8e066dba
+
+Vehicle.Powertrain.TractionBattery.Charging.ChargePortType:
+  allowed:
+  - IEC_TYPE_1_AC
+  - IEC_TYPE_2_AC
+  - IEC_TYPE_3_AC
+  - IEC_TYPE_4_DC
+  - IEC_TYPE_1_CCS_DC
+  - IEC_TYPE_2_CCS_DC
+  - TESLA_ROADSTER
+  - TESLA_HPWC
+  - TESLA_SUPERCHARGER
+  - GBT_AC
+  - GBT_DC
+  - OTHER
+  comment: A vehicle may have multiple charging ports. The signal Charging.ChargePortPosition can be used to indicate position of the charge port. IEC_TYPE_1_AC refers to Type 1 as defined in IEC 62196-2. Also known as Yazaki or J1772 connector. IEC_TYPE_2_AC refers to Type 2 as defined in IEC 62196-2. Also known as Mennekes connector. IEC_TYPE_3_AC refers to Type 3 as defined in IEC 62196-2. Also known as Scame connector. IEC_TYPE_4_DC refers to AA configuration as defined in IEC 62196-3. Also known as Type 4 or CHAdeMO connector. IEC_TYPE_1_CCS_DC refers to EE Configuration as defined in IEC 62196-3. Also known as CCS1 or Combo1 connector. IEC_TYPE_2_CCS_DC refers to FF Configuration as defined in IEC 62196-3. Also known as CCS2 or Combo2 connector. TESLA_ROADSTER, TESLA_HPWC (High Power Wall Connector) and TESLA_SUPERCHARGER refer to non-standardized charging ports/methods used by Tesla. GBT_AC refers to connector specified in GB/T 20234.2. GBT_DC refers to connector specified in GB/T 20234.3. Also specified
+    as BB Configuration in IEC 62196-3. OTHER shall be used for charging ports not included in the list above. For additional information see https://en.wikipedia.org/wiki/IEC_62196.
+  datatype: string[]
+  description: Type of charge ports (charging inlet) available on the vehicle. A charge port type may occur multiple times in the list if there are multiple instances of that charge port type. IEC types refer to IEC 62196,  GBT refers to  GB/T 20234.
+  type: attribute
+  uuid: c6f471ec8f51546ab45b8e1fd6119d30
 
 Vehicle.Powertrain.TractionBattery.Charging.ChargeRate:
   datatype: float
@@ -7488,6 +8011,19 @@ Vehicle.Powertrain.TractionBattery.Charging.ChargeVoltage.Phase3:
   unit: V
   uuid: 1ab06b48231e54e2ac27e543508c84f0
 
+Vehicle.Powertrain.TractionBattery.Charging.EvseId:
+  comment: Length of id between 7 and 37 characters. ZZ00000 to be used if SECC cannot provide id
+  datatype: string
+  description: EVSE charging point ID (without separators) of last or current charging event according to ISO 15118-2 Annex H.
+  type: sensor
+  uuid: 5cd32296574a5f0db05434ecb24ea778
+
+Vehicle.Powertrain.TractionBattery.Charging.IsChargePortFlapOpen:
+  datatype: boolean
+  description: Status of the charge port flap(s), can potentially be controlled manually. True if at least one is open.
+  type: actuator
+  uuid: 4999617956745477b905f7922b27d4ec
+
 Vehicle.Powertrain.TractionBattery.Charging.IsCharging:
   datatype: boolean
   description: True if charging is ongoing. Charging is considered to be ongoing if energy is flowing from charger to vehicle.
@@ -7512,6 +8048,44 @@ Vehicle.Powertrain.TractionBattery.Charging.IsDischarging:
   description: True if discharging (vehicle to grid) is ongoing. Discharging is considered to be ongoing if energy is flowing from vehicle to charger/grid.
   type: sensor
   uuid: 534d884fb36652688535543b52419529
+
+Vehicle.Powertrain.TractionBattery.Charging.Location:
+  comment: This may depending on implementation represent the location of (the charge port of) the vehicle during charging, or the actual location of the charger/load connected to the vehicle.
+  description: Location of last or current charging event.
+  type: branch
+  uuid: 5fef3925dfd55bbeb5d6590181fbbad8
+
+Vehicle.Powertrain.TractionBattery.Charging.Location.Altitude:
+  datatype: double
+  description: Altitude relative to WGS 84 reference ellipsoid of last or current charging event.
+  type: sensor
+  unit: m
+  uuid: eed551cc893a5e12ba6a3b977d93cc03
+
+Vehicle.Powertrain.TractionBattery.Charging.Location.Latitude:
+  datatype: double
+  description: Latitude of last or current charging event in WGS 84 geodetic coordinates.
+  max: 90
+  min: -90
+  type: sensor
+  unit: degrees
+  uuid: 33fc44c112735cc2bc0ee02f1786d948
+
+Vehicle.Powertrain.TractionBattery.Charging.Location.Longitude:
+  datatype: double
+  description: Longitude of last or current charging event in WGS 84 geodetic coordinates.
+  max: 180
+  min: -180
+  type: sensor
+  unit: degrees
+  uuid: 42db7473630c506eb5528c9bcaf8e8c6
+
+Vehicle.Powertrain.TractionBattery.Charging.MaxPower:
+  datatype: float
+  description: Maximum charging power of last or current charging event.
+  type: sensor
+  unit: kW
+  uuid: a8abad6796d55f8abe925c1efd76280a
 
 Vehicle.Powertrain.TractionBattery.Charging.MaximumChargingCurrent:
   description: Maximum charging current that can be accepted by the system, as measured at the charging inlet.
@@ -7548,13 +8122,18 @@ Vehicle.Powertrain.TractionBattery.Charging.MaximumChargingCurrent.Phase3:
 
 Vehicle.Powertrain.TractionBattery.Charging.Mode:
   allowed:
-  - MANUAL
+  - DEACTIVATED
+  - AUTOMATIC
+  - TRIGGERED
   - TIMER
-  - GRID
   - PROFILE
-  comment: The mechanism to provide a profile to the vehicle is currently not covered by VSS.
+  - EXTERNAL_ENTITY
+  - MANUAL
+  - GRID
+  comment: EXTERNAL_ENTITY is the only mode where discharge may occur. The mechanism to provide a profile to the vehicle is currently not covered by VSS.
   datatype: string
-  description: Control of the charge process. MANUAL means manually initiated (plug-in event, companion app, etc). TIMER means timer-based. GRID means grid-controlled (e.g. ISO 15118). PROFILE means controlled by profile download to vehicle.
+  deprecation: V4.1 - MANUAL and GRID are deprecated, please use AUTOMATIC/TRIGGERED or EXTERNAL_ENITY instead.
+  description: Describes how the charging process is controlled. DEACTIVATED means that charging and discharging is deactivated, nothing will happen if charger is connected. AUTOMATIC means charging will be initiated as soon as charger is connected. TRIGGERED means charging will be initiated when triggered by user. TIMER means charging is timer-based. PROFILE means charging is controlled by profile downloaded to vehicle. EXTERNAL_ENTITY means charging/discharging is controlled by the external entity connected to the vehicle. This includes GRID-controlled charging (e.g. ISO 15118), but also other cases where vehicle is connected to an arbitrary load that is powered by the vehicle. MANUAL means manually initiated (plug-in event, companion app, etc). GRID means grid-controlled (e.g. ISO 15118).
   type: actuator
   uuid: 1e4be3280b265873945531f6f6d0ec6b
 
@@ -7608,6 +8187,7 @@ Vehicle.Powertrain.TractionBattery.Charging.Timer.Time:
   datatype: string
   description: Time for next charging-related action, formatted according to ISO 8601 with UTC time zone. Value has no significance if Charging.Timer.Mode is 'inactive'.
   type: actuator
+  unit: iso8601
   uuid: c08dcaeda02b5e26aacd7e2542f0fc90
 
 Vehicle.Powertrain.TractionBattery.CurrentCurrent:
@@ -7649,6 +8229,13 @@ Vehicle.Powertrain.TractionBattery.DCDC.Temperature:
   type: sensor
   unit: celsius
   uuid: 4e587c3af2aa5fbb9205e42a64fc8d77
+
+Vehicle.Powertrain.TractionBattery.ErrorCodes:
+  comment: Error code format is not defined, it may be DTCs according to OBD II (SAE-J2012DA_201812) standard ([P|C|B|U]XXXXX ) or any other format.
+  datatype: string[]
+  description: Current error codes related to the battery, if any.
+  type: sensor
+  uuid: bbc1f199a5965e5eb4f99709052a7cc4
 
 Vehicle.Powertrain.TractionBattery.GrossCapacity:
   datatype: uint16
@@ -7711,6 +8298,7 @@ Vehicle.Powertrain.TractionBattery.ProductionDate:
   datatype: string
   description: Production date of battery in ISO8601 format, e.g. YYYY-MM-DD.
   type: attribute
+  unit: iso8601
   uuid: c9509ba4d76c56d9a8c1d6e2280ae02f
 
 Vehicle.Powertrain.TractionBattery.Range:
@@ -7773,6 +8361,13 @@ Vehicle.Powertrain.TractionBattery.Temperature.Average:
   unit: celsius
   uuid: ae28e502137f56b9a037ed9b32bc04e1
 
+Vehicle.Powertrain.TractionBattery.Temperature.CellTemperature:
+  comment: Cells are identified by relative position in array.
+  datatype: float[]
+  description: Array of cell temperatures. Length or array shall correspond to number of cells in vehicle.
+  type: sensor
+  uuid: e92fede319da5e428f4bd024d7dd6970
+
 Vehicle.Powertrain.TractionBattery.Temperature.Max:
   datatype: float
   description: Current maximum temperature of the battery cells, i.e. temperature of the hottest cell.
@@ -7786,6 +8381,13 @@ Vehicle.Powertrain.TractionBattery.Temperature.Min:
   type: sensor
   unit: celsius
   uuid: 4e3f630fefa7558fa302b175bc7eb5c7
+
+Vehicle.Powertrain.TractionBattery.TimeRemaining:
+  datatype: uint32
+  description: Time remaining in seconds before the battery is empty.
+  type: sensor
+  unit: s
+  uuid: 7a51820010f35dcabe968e669173b27e
 
 Vehicle.Powertrain.Transmission:
   description: Transmission-specific data, stopping at the drive shafts.
@@ -7992,6 +8594,7 @@ Vehicle.StartTime:
   default: 0000-01-01T00:00Z
   description: Start time of current or latest trip, formatted according to ISO 8601 with UTC time zone.
   type: attribute
+  unit: iso8601
   uuid: 3790b5f4513c5a3d90a0503a965bbbe0
 
 Vehicle.Trailer:
@@ -8036,6 +8639,13 @@ Vehicle.TripMeterReading:
   unit: km
   uuid: 81f51ebfe29c591190171d7b96e1c948
 
+Vehicle.TurningDiameter:
+  datatype: uint16
+  description: Minimum turning diameter, Wall-to-Wall, as defined by SAE J1100-2009 D102.
+  type: attribute
+  unit: mm
+  uuid: acc4b8faccf45139a948e97570767736
+
 Vehicle.VehicleIdentification:
   description: Attributes that identify a vehicle.
   type: branch
@@ -8063,6 +8673,7 @@ Vehicle.VehicleIdentification.DateVehicleFirstRegistered:
   datatype: string
   description: The date in ISO 8601 format of the first registration of the vehicle with the respective public authorities.
   type: attribute
+  unit: iso8601
   uuid: 046f47acf62e50bd863d6568d73743d7
 
 Vehicle.VehicleIdentification.KnownVehicleDamages:
@@ -8070,6 +8681,13 @@ Vehicle.VehicleIdentification.KnownVehicleDamages:
   description: A textual description of known damages, both repaired and unrepaired.
   type: attribute
   uuid: e87f352cddb15e94b340506b17207586
+
+Vehicle.VehicleIdentification.LicensePlate:
+  comment: Depending on the context, this attribute might not be up to date or might be misconfigured, and therefore should be considered untrustworthy in the absence of another method of verification.
+  datatype: string
+  description: The license plate of the vehicle.
+  type: attribute
+  uuid: 81ddd35883995a61a5fb71e26d31adaa
 
 Vehicle.VehicleIdentification.MeetsEmissionStandard:
   datatype: string
@@ -8094,12 +8712,14 @@ Vehicle.VehicleIdentification.ProductionDate:
   datatype: string
   description: The date in ISO 8601 format of production of the item, e.g. vehicle.
   type: attribute
+  unit: iso8601
   uuid: 5683877c4bac504d915b268c9476c190
 
 Vehicle.VehicleIdentification.PurchaseDate:
   datatype: string
   description: The date in ISO 8601 format of the item e.g. vehicle was purchased by the current owner.
   type: attribute
+  unit: iso8601
   uuid: 31302f8b57e85c4197afda3e3201fce8
 
 Vehicle.VehicleIdentification.VIN:
@@ -8113,6 +8733,12 @@ Vehicle.VehicleIdentification.VehicleConfiguration:
   description: A short text indicating the configuration of the vehicle, e.g. '5dr hatchback ST 2.5 MT 225 hp' or 'limited edition'.
   type: attribute
   uuid: 2526c7ba4c8458c78000a9e5f2fe89d5
+
+Vehicle.VehicleIdentification.VehicleExteriorColor:
+  datatype: string
+  description: The main color of the exterior within the basic color palette (eg. red, blue, black, white, ...).
+  type: attribute
+  uuid: 07c48d164c615369b87ccc2920edf802
 
 Vehicle.VehicleIdentification.VehicleInteriorColor:
   datatype: string
@@ -8130,6 +8756,7 @@ Vehicle.VehicleIdentification.VehicleModelDate:
   datatype: string
   description: The release date in ISO 8601 format of a vehicle model (often used to differentiate versions of the same make and model).
   type: attribute
+  unit: iso8601
   uuid: c71b63f83dea536bac58e62bbe537f11
 
 Vehicle.VehicleIdentification.VehicleSeatingCapacity:
@@ -8162,6 +8789,7 @@ Vehicle.VersionVSS:
   uuid: 9a687e56f1305eedb20f6a021ea58f48
 
 Vehicle.VersionVSS.Label:
+  comment: COVESA VSS project typically use dev for latest master, and empty string for released versions.
   datatype: string
   description: Label to further describe the version.
   type: attribute
@@ -8176,7 +8804,7 @@ Vehicle.VersionVSS.Major:
 
 Vehicle.VersionVSS.Minor:
   datatype: uint32
-  default: 0
+  default: 1
   description: Supported Version of VSS - Minor version.
   type: attribute
   uuid: 6e70a598dbc7534c96c58c18e9888cfd
@@ -8191,7 +8819,30 @@ Vehicle.VersionVSS.Patch:
 Vehicle.Width:
   datatype: uint16
   default: 0
+  deprecation: v4.1 replaced with WidthExcludingMirrors and WidthIncludingMirrors
   description: Overall vehicle width.
   type: attribute
   unit: mm
   uuid: b4aabe144e3259adb1459a2e25fec9bd
+
+Vehicle.WidthExcludingMirrors:
+  datatype: uint16
+  default: 0
+  description: Overall vehicle width excluding mirrors, as defined by SAE J1100-2009 W103.
+  type: attribute
+  unit: mm
+  uuid: 3b942451854151a182d8310e795dfb35
+
+Vehicle.WidthFoldedMirrors:
+  datatype: uint16
+  description: Overall vehicle width with mirrors folded, as defined by SAE J1100-2009 W145.
+  type: attribute
+  unit: mm
+  uuid: ee3490808cc35184af9639fb2f345f38
+
+Vehicle.WidthIncludingMirrors:
+  datatype: uint16
+  description: Overall vehicle width including mirrors, as defined by SAE J1100-2009 W144.
+  type: attribute
+  unit: mm
+  uuid: 25bd8bd35fbd59f8b7b6423a90219ca1

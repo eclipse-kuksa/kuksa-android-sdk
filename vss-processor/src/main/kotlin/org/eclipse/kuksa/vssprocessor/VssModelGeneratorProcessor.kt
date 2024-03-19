@@ -95,7 +95,7 @@ class VssModelGeneratorProcessor(
             }
 
             val vssPathToVssNodeElement = simpleNodeElements
-                .distinctBy { it.uuid }
+                .distinctBy { it.vssPath }
                 .associateBy({ VssPath(it.vssPath) }, { it })
 
             generateModelFiles(vssPathToVssNodeElement)

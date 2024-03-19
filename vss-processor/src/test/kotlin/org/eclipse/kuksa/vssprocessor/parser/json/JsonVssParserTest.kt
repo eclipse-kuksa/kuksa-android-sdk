@@ -22,8 +22,12 @@ package org.eclipse.kuksa.vssprocessor.parser.json
 import io.kotest.assertions.fail
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.instanceOf
 import org.eclipse.kuksa.test.TestResourceFile
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MAX
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MIN
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UNIT
 import java.io.IOException
 
 class JsonVssParserTest : BehaviorSpec({
@@ -53,8 +57,17 @@ class JsonVssParserTest : BehaviorSpec({
                     "Vehicle.ADAS.DMS.IsEnabled",
                     "Vehicle.ADAS.DMS.IsError",
                     "Vehicle.ADAS.DMS.IsWarning",
-                    "Vehicle.AverageSpeed",
+                    "Vehicle.ADAS.ESC",
+                    "Vehicle.ADAS.ESC.IsEnabled",
+                    "Vehicle.ADAS.ESC.IsEngaged",
+                    "Vehicle.ADAS.ESC.IsError",
+                    "Vehicle.ADAS.ESC.IsStrongCrossWindDetected",
+                    "Vehicle.ADAS.ESC.RoadFriction",
+                    "Vehicle.ADAS.ESC.RoadFriction.LowerBound",
+                    "Vehicle.ADAS.ESC.RoadFriction.MostProbable",
+                    "Vehicle.ADAS.ESC.RoadFriction.UpperBound",
                     "Vehicle.Speed",
+                    "Vehicle.AverageSpeed",
                 )
 
                 validVssPaths.forEach { vssPath ->
@@ -83,6 +96,38 @@ class JsonVssParserTest : BehaviorSpec({
                 absSpecModel.uuid shouldBe "cad374fbfdc65df9b777508f04d5b073"
                 absSpecModel.comment shouldBe ""
                 absSpecModel.datatype shouldBe "boolean"
+            }
+
+            then("A Leaf (Vehicle.ADAS.ESC.RoadFriction.LowerBound) with min, max and unit is correctly parsed") {
+                val specModel = specModels.find { it.vssPath == "Vehicle.ADAS.ESC.RoadFriction.LowerBound" }
+                    ?: fail("Could not find Vehicle.ADAS.ESC.RoadFriction.LowerBound")
+
+                specModel.description shouldContain "Lower bound road friction,"
+                specModel.type shouldBe "sensor"
+                specModel.uuid shouldBe "634289f58b5d511ea9979f04a9d0f2ab"
+                specModel.comment shouldBe ""
+                specModel.datatype shouldBe "float"
+                specModel.vssNodeProperties
+                    .find {
+                        it.nodePropertyName == KEY_DATA_MIN
+                    }?.nodePropertyValue shouldBe "0"
+                specModel.vssNodeProperties
+                    .find {
+                        it.nodePropertyName == KEY_DATA_MAX
+                    }?.nodePropertyValue shouldBe "100"
+                specModel.vssNodeProperties
+                    .find {
+                        it.nodePropertyName == KEY_DATA_UNIT
+                    }?.nodePropertyValue shouldBe "percent"
+            }
+        }
+
+        `when`("Parsing vss_rel_4.1.json") {
+            val fullSpecFile = TestResourceFile("json/vss_rel_4.1.json")
+            val specModels = classUnderTest.parseNodes(fullSpecFile)
+
+            then("the correct number of models models should be parsed") {
+                specModels.size shouldBe 1271 // counted occurrences of '"uuid":' in specFile
             }
         }
 

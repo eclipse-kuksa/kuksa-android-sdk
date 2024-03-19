@@ -22,29 +22,26 @@ package org.eclipse.kuksa.vssprocessor.parser.json
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_CHILDREN
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_COMMENT
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DATATYPE
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DESCRIPTION
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MAX
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MIN
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_TYPE
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UNIT
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
+import org.eclipse.kuksa.vssprocessor.parser.ROOT_KEY_VEHICLE
+import org.eclipse.kuksa.vssprocessor.parser.VSS_DATA_KEYS
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
+import org.eclipse.kuksa.vssprocessor.spec.VssDataType
+import org.eclipse.kuksa.vssprocessor.spec.VssNodeProperty
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
+import org.eclipse.kuksa.vssprocessor.spec.VssSignalProperty
 import java.io.File
 import java.io.IOException
 
-private const val ROOT_KEY_VEHICLE = "Vehicle"
-
-private const val KEY_DATA_DESCRIPTION = "description"
-private const val KEY_DATA_TYPE = "type"
-private const val KEY_DATA_UUID = "uuid"
-private const val KEY_DATA_COMMENT = "comment"
-private const val KEY_DATA_DATATYPE = "datatype"
-private const val KEY_DATA_CHILDREN = "children"
-
 internal class JsonVssParser : VssParser {
-    private val dataKeys = listOf(
-        KEY_DATA_DESCRIPTION,
-        KEY_DATA_TYPE,
-        KEY_DATA_UUID,
-        KEY_DATA_COMMENT,
-        KEY_DATA_DATATYPE,
-        KEY_DATA_CHILDREN,
-    )
 
     override fun parseNodes(vssFile: File): List<VssNodeSpecModel> {
         val vssNodeSpecModels = mutableListOf<VssNodeSpecModel>()
@@ -81,7 +78,7 @@ internal class JsonVssParser : VssParser {
             val childrenJsonElement = jsonObject.getAsJsonObject(KEY_DATA_CHILDREN)
 
             val filteredKeys = childrenJsonElement.asMap().keys
-                .filter { key -> !dataKeys.contains(key) }
+                .filter { key -> !VSS_DATA_KEYS.contains(key) }
 
             filteredKeys.forEach { key ->
                 val childJsonElement = childrenJsonElement.getAsJsonObject(key)
@@ -98,16 +95,33 @@ internal class JsonVssParser : VssParser {
         vssPath: String,
         jsonObject: JsonObject,
     ): VssNodeSpecModel {
-        val uuid = jsonObject.get(KEY_DATA_UUID).asString
+        val uuid = jsonObject.get(KEY_DATA_UUID)?.asString
             ?: throw JsonParseException("Could not parse '$KEY_DATA_UUID' for '$vssPath'")
 
-        val type = jsonObject.get(KEY_DATA_TYPE).asString
+        val type = jsonObject.get(KEY_DATA_TYPE)?.asString
             ?: throw JsonParseException("Could not parse '$KEY_DATA_TYPE' for '$vssPath'")
 
-        val description = jsonObject.get(KEY_DATA_DESCRIPTION).asString ?: ""
+        val description = jsonObject.get(KEY_DATA_DESCRIPTION)?.asString ?: ""
         val datatype = jsonObject.get(KEY_DATA_DATATYPE)?.asString ?: ""
         val comment = jsonObject.get(KEY_DATA_COMMENT)?.asString ?: ""
+        val unit = jsonObject.get(KEY_DATA_UNIT)?.asString ?: ""
+        val min = jsonObject.get(KEY_DATA_MIN)?.asString ?: ""
+        val max = jsonObject.get(KEY_DATA_MAX)?.asString ?: ""
 
-        return VssNodeSpecModel(uuid, vssPath, description, type, comment, datatype)
+        val vssDataType = VssDataType.find(datatype)
+        val valueDataType = vssDataType.valueDataType
+
+        val vssNodeProperties = mutableSetOf(
+            VssNodeProperty(vssPath, KEY_DATA_UUID, uuid, String::class),
+            VssNodeProperty(vssPath, KEY_DATA_TYPE, type, String::class),
+            VssNodeProperty(vssPath, KEY_DATA_DESCRIPTION, description, String::class),
+            VssNodeProperty(vssPath, KEY_DATA_COMMENT, comment, String::class),
+            VssSignalProperty(vssPath, KEY_DATA_DATATYPE, datatype, valueDataType),
+            VssSignalProperty(vssPath, KEY_DATA_UNIT, unit, String::class),
+            VssSignalProperty(vssPath, KEY_DATA_MIN, min, valueDataType),
+            VssSignalProperty(vssPath, KEY_DATA_MAX, max, valueDataType),
+        )
+
+        return VssNodeSpecModel(vssPath, vssNodeProperties)
     }
 }
