@@ -82,6 +82,7 @@ internal class VssNodeSpecModel(
                 "int64[]" -> LongArray::class.asTypeName()
                 "uint64[]" -> ULongArray::class.asTypeName()
                 "float[]" -> FloatArray::class.asTypeName()
+                "double[]" -> DoubleArray::class.asTypeName()
                 else -> Any::class.asTypeName()
             }
         }
@@ -113,11 +114,13 @@ internal class VssNodeSpecModel(
                 Int::class.asTypeName() -> "0"
                 Long::class.asTypeName() -> "0L"
                 UInt::class.asTypeName() -> "0u"
+                ULong::class.asTypeName() -> "0u"
                 Array::class.parameterizedBy(String::class) -> "emptyArray<String>()"
                 IntArray::class.asTypeName() -> "IntArray(0)"
                 BooleanArray::class.asTypeName() -> "BooleanArray(0)"
                 FloatArray::class.asTypeName() -> "FloatArray(0)"
                 LongArray::class.asTypeName() -> "LongArray(0)"
+                DoubleArray::class.asTypeName() -> "DoubleArray(0)"
                 ULongArray::class.asTypeName() -> "ULongArray(0)"
                 UIntArray::class.asTypeName() -> "UIntArray(0)"
 

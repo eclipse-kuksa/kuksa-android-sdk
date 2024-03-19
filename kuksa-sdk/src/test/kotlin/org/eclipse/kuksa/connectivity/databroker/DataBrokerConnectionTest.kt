@@ -193,7 +193,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     val vssNodeUpdateRequest = VssNodeUpdateRequest(invalidHeartRate)
                     val response = dataBrokerConnection.update(vssNodeUpdateRequest)
 
-                    then("the updated show") {
+                    then("the update response should contain an error") {
                         val errorResponse = response.firstOrNull { it.errorsCount >= 1 }
                         errorResponse shouldNotBe null
                     }
