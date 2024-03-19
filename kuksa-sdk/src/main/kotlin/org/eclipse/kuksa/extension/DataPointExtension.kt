@@ -35,28 +35,38 @@ val Types.Metadata.valueType: ValueCase
     get() = dataType.dataPointValueCase
 
 /**
- * Converts the [VssSignal.value] into a [Datapoint] object.
+ * Converts the [VssSignal.value] into a [Datapoint] object. The [VssSignal.dataType] is used to derive the correct
+ * [ValueCase].
  *
  * @throws IllegalArgumentException if the [VssSignal] could not be converted to a [Datapoint].
  */
+@OptIn(ExperimentalUnsignedTypes::class)
 val <T : Any> VssSignal<T>.datapoint: Datapoint
     get() {
-        val stringValue = value.toString()
-        return when (value::class) {
-            String::class -> ValueCase.STRING.createDatapoint(stringValue)
-            Boolean::class -> ValueCase.BOOL.createDatapoint(stringValue)
-            Float::class -> ValueCase.FLOAT.createDatapoint(stringValue)
-            Double::class -> ValueCase.DOUBLE.createDatapoint(stringValue)
-            Int::class -> ValueCase.INT32.createDatapoint(stringValue)
-            Long::class -> ValueCase.INT64.createDatapoint(stringValue)
-            UInt::class -> ValueCase.UINT32.createDatapoint(stringValue)
-            Array<String>::class -> ValueCase.DOUBLE.createDatapoint(stringValue)
-            IntArray::class -> ValueCase.INT32_ARRAY.createDatapoint(stringValue)
-            BooleanArray::class -> ValueCase.BOOL_ARRAY.createDatapoint(stringValue)
-            LongArray::class -> ValueCase.INT64_ARRAY.createDatapoint(stringValue)
+        val valueCase = when (dataType) {
+            String::class -> ValueCase.STRING
+            Boolean::class -> ValueCase.BOOL
+            Int::class -> ValueCase.INT32
+            Float::class -> ValueCase.FLOAT
+            Double::class -> ValueCase.DOUBLE
+            Long::class -> ValueCase.INT64
+            UInt::class -> ValueCase.UINT32
+            ULong::class -> ValueCase.UINT64
+            Array<String>::class -> ValueCase.DOUBLE
+            BooleanArray::class -> ValueCase.BOOL_ARRAY
+            IntArray::class -> ValueCase.INT32_ARRAY
+            FloatArray::class -> ValueCase.FLOAT_ARRAY
+            DoubleArray::class -> ValueCase.DOUBLE_ARRAY
+            LongArray::class -> ValueCase.INT64_ARRAY
+            UIntArray::class -> ValueCase.UINT32_ARRAY
+            ULongArray::class -> ValueCase.UINT64_ARRAY
 
-            else -> throw IllegalArgumentException("Could not create datapoint for the value class: ${value::class}!")
+            else -> throw IllegalArgumentException("Could not create datapoint for value class: ${dataType::class}!")
         }
+
+        val stringValue = value.toString()
+
+        return valueCase.createDatapoint(stringValue)
     }
 
 /**

@@ -18,7 +18,6 @@
 
 package org.eclipse.kuksa.vssprocessor.spec
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -53,16 +52,22 @@ class VssNodeSpecModelTest : BehaviorSpec({
         }
     }
 
-    given("uint32 spec model") {
+    given("uint32 spec model (inline class)") {
         val specModel = VssNodeSpecModel(datatype = "uint32", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
             val classSpec = specModel.createClassSpec("test")
 
-            then("it should have a value with the correct datatype") {
+            then("it should have a value with the correct data type") {
                 val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
 
                 propertySpec.toString() shouldContain "kotlin.Int = 0"
+            }
+
+            then("it should have the correct inline class data type") {
+                val propertySpec = classSpec.propertySpecs.find { it.name == "dataType" }
+
+                propertySpec?.getter.toString() shouldContain "kotlin.UInt::class"
             }
         }
     }
@@ -91,6 +96,12 @@ class VssNodeSpecModelTest : BehaviorSpec({
                 val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
 
                 propertySpec.toString() shouldContain "kotlin.LongArray = LongArray(0)"
+            }
+
+            then("it should have the correct inline class data type") {
+                val propertySpec = classSpec.propertySpecs.find { it.name == "dataType" }
+
+                propertySpec?.getter.toString() shouldContain "kotlin.ULongArray::class"
             }
         }
     }
@@ -127,12 +138,12 @@ class VssNodeSpecModelTest : BehaviorSpec({
         val specModel = VssNodeSpecModel(datatype = "any", vssPath = "Vehicle.IgnitionType")
 
         `when`("creating a class spec") {
-            val exception = shouldThrow<IllegalArgumentException> {
-                specModel.createClassSpec("test")
-            }
+            val classSpec = specModel.createClassSpec("test")
 
-            then("it should throw an exception") {
-                exception shouldNotBe null
+            then("it should have a value with an UNKNOWN (Any) datatype") {
+                val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
+
+                propertySpec.toString() shouldContain "kotlin.Any = null"
             }
         }
     }
@@ -141,12 +152,12 @@ class VssNodeSpecModelTest : BehaviorSpec({
         val specModel = VssNodeSpecModel(vssPath = "Vehicle")
 
         `when`("creating a class spec without children and nested classes") {
-            val exception = shouldThrow<IllegalArgumentException> {
-                specModel.createClassSpec("test")
-            }
+            val classSpec = specModel.createClassSpec("test")
 
-            then("it should throw an exception because it is missing a value") {
-                exception shouldNotBe null
+            then("it should have a value with an UNKNOWN (Any) datatype") {
+                val propertySpec = classSpec.primaryConstructor?.parameters?.find { it.name == "value" }
+
+                propertySpec.toString() shouldContain "kotlin.Any = null"
             }
         }
         and("related nodes") {

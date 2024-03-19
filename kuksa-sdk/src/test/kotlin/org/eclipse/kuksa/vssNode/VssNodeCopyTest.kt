@@ -77,6 +77,21 @@ class VssNodeCopyTest : BehaviorSpec({
             }
         }
 
+        and("a changed invalid DataPoint") {
+            val datapoint = Types.Datapoint.newBuilder().setBool(false).build()
+
+            `when`("a copy is done") {
+                val exception = shouldThrow<IllegalArgumentException> {
+                    driverHeartRate.copy(datapoint)
+                }
+
+                then("it should throw an IllegalArgumentException") {
+                    val signalName = driverHeartRate::class.simpleName
+                    exception.message shouldStartWith "$signalName copy parameters do not match"
+                }
+            }
+        }
+
         and("a changed DataPoint") {
             val newValue = 50
             val datapoint = Types.Datapoint.newBuilder().setInt32(newValue).build()

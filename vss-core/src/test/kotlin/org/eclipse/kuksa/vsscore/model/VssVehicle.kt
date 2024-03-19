@@ -67,6 +67,9 @@ data class VssDriver(
         override val comment: String = "",
         override val value: Int = 100,
     ) : VssSignal<Int> {
+        override val dataType: KClass<*>
+            get() = UInt::class
+
         override val parentClass: KClass<*>
             get() = VssDriver::class
     }
@@ -93,6 +96,9 @@ data class VssPassenger(
         override val comment: String = "",
         override val value: Int = 80,
     ) : VssSignal<Int> {
+        override val dataType: KClass<*>
+            get() = UInt::class
+
         override val parentClass: KClass<*>
             get() = VssPassenger::class
     }

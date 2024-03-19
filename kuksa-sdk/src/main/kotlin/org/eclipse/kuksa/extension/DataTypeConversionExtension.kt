@@ -41,30 +41,35 @@ val Types.DataType.dataPointValueCase: ValueCase
             -> ValueCase.INT32
 
             Types.DataType.DATA_TYPE_INT64 -> ValueCase.INT64
+
             Types.DataType.DATA_TYPE_UINT8,
             Types.DataType.DATA_TYPE_UINT16,
             Types.DataType.DATA_TYPE_UINT32,
-            Types.DataType.DATA_TYPE_UINT64,
-            -> ValueCase.UINT64
+            -> ValueCase.UINT32
 
-            Types.DataType.DATA_TYPE_BOOLEAN_ARRAY -> ValueCase.BOOL_ARRAY
+            Types.DataType.DATA_TYPE_UINT64 -> ValueCase.UINT64
+
             Types.DataType.DATA_TYPE_INT8_ARRAY,
             Types.DataType.DATA_TYPE_INT16_ARRAY,
             Types.DataType.DATA_TYPE_INT32_ARRAY,
             -> ValueCase.INT32_ARRAY
 
             Types.DataType.DATA_TYPE_INT64_ARRAY -> ValueCase.INT64_ARRAY
+
             Types.DataType.DATA_TYPE_UINT8_ARRAY,
             Types.DataType.DATA_TYPE_UINT16_ARRAY,
             Types.DataType.DATA_TYPE_UINT32_ARRAY,
             -> ValueCase.UINT32_ARRAY
 
             Types.DataType.DATA_TYPE_UINT64_ARRAY -> ValueCase.UINT64_ARRAY
-            Types.DataType.DATA_TYPE_FLOAT_ARRAY -> ValueCase.FLOAT_ARRAY
-            Types.DataType.DATA_TYPE_DOUBLE_ARRAY -> ValueCase.DOUBLE_ARRAY
-            Types.DataType.DATA_TYPE_STRING_ARRAY -> ValueCase.STRING_ARRAY
+
             Types.DataType.DATA_TYPE_STRING -> ValueCase.STRING
             Types.DataType.DATA_TYPE_FLOAT -> ValueCase.FLOAT
             Types.DataType.DATA_TYPE_DOUBLE -> ValueCase.DOUBLE
+
+            Types.DataType.DATA_TYPE_BOOLEAN_ARRAY -> ValueCase.BOOL_ARRAY
+            Types.DataType.DATA_TYPE_FLOAT_ARRAY -> ValueCase.FLOAT_ARRAY
+            Types.DataType.DATA_TYPE_DOUBLE_ARRAY -> ValueCase.DOUBLE_ARRAY
+            Types.DataType.DATA_TYPE_STRING_ARRAY -> ValueCase.STRING_ARRAY
         }
     }

@@ -70,26 +70,6 @@ interface VssNode {
 }
 
 /**
- * Defines a [VssNode] which is not a [VssSignal] and only acts as a branch with one or more children. The [type] is
- * always "branch".
- */
-interface VssBranch : VssNode {
-    override val type: String
-        get() = "branch"
-}
-
-/**
- * Some [VssNode] may have an additional [value] property. These are children [VssSignal] which do not have other
- * children.
- */
-interface VssSignal<T : Any> : VssNode {
-    /**
-     * A primitive type value.
-     */
-    val value: T
-}
-
-/**
  * Splits the [VssNode.vssPath] into its parts.
  */
 val VssNode.vssPathComponents: List<String>
@@ -218,22 +198,4 @@ fun VssNode.findHeritageLine(
     }
 
     return heritageLine
-}
-
-/**
- * Finds the given [signal] inside the current [VssNode].
- */
-inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(signal: T): VssNode {
-    return heritage
-        .first { it.uuid == signal.uuid }
-}
-
-/**
- * Finds all [VssSignal] which matches the given [KClass.simpleName]. This is useful when multiple nested objects
- * with the same Name exists but are pretty much the same besides the [VssNode.vssPath] etc.
- */
-inline fun <reified T : VssSignal<V>, V : Any> VssNode.findSignal(type: KClass<T>): Map<String, VssNode> {
-    return heritage
-        .filter { it::class.simpleName == type.simpleName }
-        .associateBy { it.vssPath }
 }

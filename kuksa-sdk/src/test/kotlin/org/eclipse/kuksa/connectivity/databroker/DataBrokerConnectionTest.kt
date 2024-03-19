@@ -23,6 +23,7 @@ import io.grpc.ManagedChannel
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -34,6 +35,7 @@ import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.mocking.FriendlyVssPathListener
@@ -118,7 +120,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val response = dataBrokerConnection.update(updateRequest)
 
                 then("No error should appear") {
-                    Assertions.assertFalse(response.hasError())
+                    response.hasError() shouldBe false
                 }
 
                 and("When fetching it afterwards") {
@@ -165,22 +167,35 @@ class DataBrokerConnectionTest : BehaviorSpec({
         and("A VssNode") {
             val vssDriver = VssDriver()
 
-            `when`("Fetching the node") {
+            and("A default HeartRate") {
+                val newHeartRateValue = 60
+                val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
+                val defaultUpdateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
 
-                and("The initial value is different from the default for a child") {
-                    val newHeartRateValue = 60
-                    val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
-                    val updateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
+                dataBrokerConnection.update(defaultUpdateRequest)
 
-                    dataBrokerConnection.update(updateRequest)
+                `when`("Fetching the node") {
 
-                    val fetchRequest = VssNodeFetchRequest(vssDriver)
-                    val updatedDriver = dataBrokerConnection.fetch(fetchRequest)
+                    and("The initial value is different from the default for a child") {
+                        val fetchRequest = VssNodeFetchRequest(vssDriver)
+                        val updatedDriver = dataBrokerConnection.fetch(fetchRequest)
 
-                    then("Every child node has been updated with the correct value") {
-                        val heartRate = updatedDriver.heartRate
+                        then("Every child node has been updated with the correct value") {
+                            val heartRate = updatedDriver.heartRate
 
-                        heartRate.value shouldBe newHeartRateValue
+                            heartRate.value shouldBe newHeartRateValue
+                        }
+                    }
+                }
+
+                `when`("Updating the node with an invalid value") {
+                    val invalidHeartRate = VssDriver.VssHeartRate(-5) // UInt on DataBroker side
+                    val vssNodeUpdateRequest = VssNodeUpdateRequest(invalidHeartRate)
+                    val response = dataBrokerConnection.update(vssNodeUpdateRequest)
+
+                    then("the update response should contain an error") {
+                        val errorResponse = response.firstOrNull { it.errorsCount >= 1 }
+                        errorResponse shouldNotBe null
                     }
                 }
             }
@@ -213,10 +228,10 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     }
                 }
 
-                and("Any subscribed node was changed") {
+                and("Any subscribed uInt node was changed") {
                     val newHeartRateValue = 50
-                    val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
-                    val updateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
+                    val newVssHeartRate = VssDriver.VssHeartRate(newHeartRateValue)
+                    val updateRequest = VssNodeUpdateRequest(newVssHeartRate)
 
                     dataBrokerConnection.update(updateRequest)
 

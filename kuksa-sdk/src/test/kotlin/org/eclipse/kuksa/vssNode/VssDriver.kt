@@ -64,6 +64,9 @@ data class VssDriver @JvmOverloads constructor(
     data class VssHeartRate @JvmOverloads constructor(
         override val `value`: Int = 0,
     ) : VssSignal<Int> {
+        override val dataType: KClass<*>
+            get() = UInt::class
+
         override val comment: String
             get() = ""
 
