@@ -33,4 +33,4 @@ jobs:
         with:
           upload-test-reports: true
           upload-code-coverage-reports: true
-          databroker-version: "0.4.2"
+          databroker-version: "latest"
