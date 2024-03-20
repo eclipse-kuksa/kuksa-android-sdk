@@ -21,7 +21,7 @@ jobs:
 
       - name: Upload Detekt Reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: detekt-reports
           path: ${{ github.workspace }}/build/reports/detekt
@@ -33,3 +33,4 @@ jobs:
         with:
           upload-test-reports: true
           upload-code-coverage-reports: true
+          databroker-version: "latest"

@@ -31,7 +31,7 @@ jobs:
           gradle_task: app:assembleRelease
 
       - name: Archive .apk file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kuksa_sdk_testapp.apk
           path: app/build/outputs/apk/release/app-release.apk
@@ -45,7 +45,7 @@ jobs:
           upload-code-coverage-reports: true
 
       - name: Archive changelog
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CHANGELOG.md
           path: CHANGELOG.md
