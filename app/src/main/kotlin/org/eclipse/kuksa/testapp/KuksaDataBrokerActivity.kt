@@ -57,7 +57,7 @@ import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputEntry
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPathsViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VssNodesViewModel
+import org.eclipse.kuksa.testapp.databroker.vssnodes.viewmodel.VssNodesViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme

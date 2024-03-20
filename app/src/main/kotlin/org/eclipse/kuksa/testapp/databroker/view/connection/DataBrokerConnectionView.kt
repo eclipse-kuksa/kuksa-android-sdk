@@ -40,7 +40,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -59,7 +58,6 @@ import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.RememberCountdown
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DataBrokerConnectionView(viewModel: ConnectionViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current

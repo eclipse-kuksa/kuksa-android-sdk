@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.viewmodel
+package org.eclipse.kuksa.testapp.databroker.vssnodes.viewmodel
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -31,6 +30,7 @@ import org.eclipse.kuksa.vsscore.model.heritage
 
 class VssNodesViewModel : ViewModel() {
     var onGetNode: (node: VssNode) -> Unit = { }
+    var onUpdateNode: (node: VssNode) -> Unit = { }
     var onSubscribeNode: (node: VssNode) -> Unit = { }
     var onUnsubscribeNode: (node: VssNode) -> Unit = { }
 

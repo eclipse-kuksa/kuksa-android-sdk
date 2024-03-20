@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.testapp.databroker.connection
+package org.eclipse.kuksa.testapp.databroker.factory
 
 import android.content.Context
 import android.net.Uri

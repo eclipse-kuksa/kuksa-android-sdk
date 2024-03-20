@@ -76,21 +76,20 @@ import kotlinx.coroutines.launch
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.testapp.R
 import org.eclipse.kuksa.testapp.databroker.view.connection.DataBrokerConnectionView
-import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionAdapter
 import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionTextView
 import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
 import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPathsViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VssNodesViewModel
+import org.eclipse.kuksa.testapp.databroker.vssnodes.view.DataBrokerVssNodesView
+import org.eclipse.kuksa.testapp.databroker.vssnodes.viewmodel.VssNodesViewModel
+import org.eclipse.kuksa.testapp.databroker.vsspaths.view.DataBrokerVssPathsView
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
-import org.eclipse.kuksa.vss.VssVehicle
-import org.eclipse.kuksa.vsscore.model.VssNode
 import java.time.format.DateTimeFormatter
 
 val SettingsMenuPadding = 16.dp
@@ -125,8 +124,8 @@ fun DataBrokerView(
                 val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 if (connectionViewModel.isConnected) {
                     when (dataBrokerMode) {
-                        DataBrokerMode.VSS_PATH -> DataBrokerProperties(vssPathsViewModel)
-                        DataBrokerMode.VSS_FILE -> DataBrokerVssNodes(vssNodesViewModel)
+                        DataBrokerMode.VSS_PATH -> DataBrokerVssPathsView(vssPathsViewModel)
+                        DataBrokerMode.VSS_FILE -> DataBrokerVssNodesView(vssNodesViewModel)
                     }
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
@@ -229,209 +228,6 @@ private fun ConnectionStatusIcon(
                 }
             },
         )
-    }
-}
-
-@Composable
-fun DataBrokerVssNodes(viewModel: VssNodesViewModel) {
-    Column {
-        Headline(name = "Generated VSS Nodes")
-
-        val adapter = object : SuggestionAdapter<VssNode> {
-            override fun toString(item: VssNode): String {
-                return item.vssPath
-            }
-        }
-
-        SuggestionTextView(
-            value = "Vehicle",
-            suggestions = viewModel.vssNodes,
-            adapter = adapter,
-            onItemSelected = {
-                val vssNode = it ?: VssVehicle()
-                viewModel.updateNode(vssNode)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-        )
-        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            Button(
-                onClick = {
-                    viewModel.onGetNode(viewModel.node)
-                },
-                modifier = Modifier.requiredWidth(80.dp),
-            ) {
-                Text(text = "Get")
-            }
-            if (viewModel.isSubscribed) {
-                Button(onClick = {
-                    viewModel.subscribedNodes.remove(viewModel.node)
-                    viewModel.onUnsubscribeNode(viewModel.node)
-                }) {
-                    Text(text = "Unsubscribe")
-                }
-            } else {
-                Button(onClick = {
-                    viewModel.subscribedNodes.add(viewModel.node)
-                    viewModel.onSubscribeNode(viewModel.node)
-                }) {
-                    Text(text = "Subscribe")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DataBrokerProperties(viewModel: VSSPathsViewModel) {
-    val dataBrokerProperty = viewModel.dataBrokerProperty
-    var expanded by remember { mutableStateOf(false) }
-
-    Column {
-        Headline(name = "VSS Paths")
-        SuggestionTextView(
-            suggestions = viewModel.suggestions,
-            value = dataBrokerProperty.vssPath,
-            onValueChanged = {
-                val newVssProperties = dataBrokerProperty.copy(
-                    vssPath = it,
-                    valueType = ValueCase.VALUE_NOT_SET,
-                )
-                viewModel.updateDataBrokerProperty(newVssProperties)
-            },
-            label = {
-                Text(text = "VSS Path")
-            },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
-        )
-        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-        Row {
-            TextField(
-                value = "${dataBrokerProperty.valueType}",
-                onValueChange = {},
-                label = {
-                    Text("Value Type")
-                },
-                readOnly = true,
-                enabled = false,
-                trailingIcon = {
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(
-                            modifier = Modifier.size(23.dp),
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "More",
-                        )
-                    }
-                },
-                colors = TextFieldDefaults.colors(
-                    disabledTextColor = Color.Black,
-                    disabledLabelColor = Color.Black,
-                    disabledTrailingIconColor = Color.Black,
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = DefaultEdgePadding, end = DefaultEdgePadding)
-                    .clickable {
-                        expanded = true
-                    },
-            )
-            Box(modifier = Modifier.requiredHeight(23.dp)) {
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.height(400.dp),
-                ) {
-                    viewModel.valueTypes.forEach {
-                        DropdownMenuItem(
-                            text = {
-                                Text(it.toString())
-                            },
-                            onClick = {
-                                expanded = false
-
-                                val newVssProperties = dataBrokerProperty.copy(valueType = it)
-                                viewModel.updateDataBrokerProperty(newVssProperties)
-                            },
-                        )
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-        Row {
-            TextField(
-                value = dataBrokerProperty.value,
-                onValueChange = {
-                    val newVssProperties = dataBrokerProperty.copy(value = it)
-                    viewModel.updateDataBrokerProperty(newVssProperties)
-                },
-                modifier = Modifier
-                    .padding(start = DefaultEdgePadding)
-                    .weight(1f),
-                singleLine = true,
-                label = {
-                    Text(text = "Value")
-                },
-            )
-            Spacer(modifier = Modifier.padding(start = DefaultElementPadding, end = DefaultElementPadding))
-            SimpleExposedDropdownMenuBox(
-                Modifier
-                    .weight(2f)
-                    .padding(end = DefaultEdgePadding),
-                label = "Field Type",
-                list = viewModel.fieldTypes,
-                onValueChange = {
-                    val newVssProperties = dataBrokerProperty.copy(fieldTypes = setOf(it))
-                    viewModel.updateDataBrokerProperty(newVssProperties)
-                },
-            )
-        }
-        Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            Button(
-                onClick = {
-                    viewModel.onGetProperty(dataBrokerProperty)
-                },
-                modifier = Modifier.requiredWidth(80.dp),
-            ) {
-                Text(text = "Get")
-            }
-            Button(
-                enabled = dataBrokerProperty.valueType != ValueCase.VALUE_NOT_SET,
-                onClick = {
-                    viewModel.onSetProperty(dataBrokerProperty, viewModel.datapoint)
-                },
-                modifier = Modifier.requiredWidth(80.dp),
-            ) {
-                Text(text = "Set")
-            }
-            if (viewModel.isSubscribed) {
-                Button(onClick = {
-                    viewModel.subscribedProperties.remove(dataBrokerProperty)
-                    viewModel.onUnsubscribeProperty(dataBrokerProperty)
-                }) {
-                    Text(text = "Unsubscribe")
-                }
-            } else {
-                Button(onClick = {
-                    viewModel.subscribedProperties.add(dataBrokerProperty)
-                    viewModel.onSubscribeProperty(dataBrokerProperty)
-                }) {
-                    Text(text = "Subscribe")
-                }
-            }
-        }
     }
 }
 
