@@ -26,7 +26,7 @@ runs:
 
     - name: Upload Test Reports
       if: ${{ inputs.upload-test-reports == 'true' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-reports
         path: ${{ github.workspace }}/**/reports/tests/*/
@@ -40,7 +40,7 @@ runs:
 
     - name: Upload Code Coverage Report
       if: ${{ inputs.upload-code-coverage-reports == 'true' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: code-coverage
         path: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/html/*
