@@ -19,7 +19,6 @@
 
 package org.eclipse.kuksa.vssprocessor.parser.yaml
 
-import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vssprocessor.parser.FileParseException
 import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_COMMENT
 import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DATATYPE
@@ -36,9 +35,6 @@ import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import org.eclipse.kuksa.vssprocessor.spec.VssSignalProperty
 import java.io.File
 import java.io.IOException
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.memberProperties
 
 internal class YamlVssParser(private val elementDelimiter: String = "") : VssParser {
     override fun parseNodes(vssFile: File): List<VssNodeSpecModel> {
@@ -118,31 +114,6 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
         )
 
         return VssNodeSpecModel(vssPath, vssNodeProperties)
-    }
-}
-
-/**
- * @param fields to set via reflection. Pair<PropertyName, anyValue>.
- * @param remapNames which can be used if the propertyName does not match with the input name
- */
-private fun VssNode.setFields(
-    fields: List<Pair<String, Any?>>,
-    remapNames: Map<String, String> = emptyMap(),
-) {
-    val nameToProperty = this::class.memberProperties.associateBy(KProperty<*>::name)
-
-    val remappedFields = fields.toMutableList()
-    remapNames.forEach { (propertyName, newName) ->
-        val find = fields.find { it.first == propertyName } ?: return@forEach
-        remappedFields.remove(find)
-        remappedFields.add(Pair(find.first, newName))
-    }
-
-    remappedFields.forEach { (propertyName, propertyValue) ->
-        nameToProperty[propertyName]
-            .takeIf { it is KMutableProperty<*> }
-            ?.let { it as KMutableProperty<*> }
-            ?.setter?.call(this, propertyValue)
     }
 }
 
