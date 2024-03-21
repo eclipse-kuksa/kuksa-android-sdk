@@ -14,27 +14,24 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.model
+package org.eclipse.kuksa.testapp.databroker.connection.model
 
+import android.net.Uri
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
-import org.eclipse.kuksa.testapp.serialization.JsonSerializer
 
 @Serializable
 @Immutable
-data class ConnectionInfo(
-    val host: String = "localhost",
-    val port: Int = 55556,
-    val isTlsEnabled: Boolean = false,
-    val certificate: Certificate = Certificate.DEFAULT,
-    val isAuthenticationEnabled: Boolean = false,
-    val jwtUriPath: String? = null,
-)
+data class Certificate(
+    val uriPath: String,
+    val overrideAuthority: String = "",
+) {
+    val uri: Uri
+        get() = Uri.parse(uriPath)
 
-object ConnectionInfoSerializer : JsonSerializer<ConnectionInfo>(ConnectionInfo.serializer()) {
-    override val defaultValue: ConnectionInfo
-        get() = ConnectionInfo()
+    companion object {
+        val DEFAULT = Certificate("") // Uri.EMPTY
+    }
 }

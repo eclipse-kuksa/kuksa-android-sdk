@@ -62,7 +62,7 @@ import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.VssSignal
 
-private const val tag = "DataBrokerVssNodesView"
+private const val Tag = "DataBrokerVssNodesView"
 
 @Composable
 fun DataBrokerVssNodesView(viewModel: VssNodesViewModel) {
@@ -261,7 +261,7 @@ private fun VssSignalInformation(
                 onSignalChanged(updatedVssSignal)
             } catch (e: Exception) {
                 // Do nothing, wrong input
-                Log.v(tag, "Wrong input for VssSignal:value: ", e)
+                Log.v(Tag, "Wrong input for VssSignal:value: ", e)
             }
         },
         modifier = modifier

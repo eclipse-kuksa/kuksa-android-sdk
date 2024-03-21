@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.viewmodel
+package org.eclipse.kuksa.testapp.databroker.vsspaths.viewmodel
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf

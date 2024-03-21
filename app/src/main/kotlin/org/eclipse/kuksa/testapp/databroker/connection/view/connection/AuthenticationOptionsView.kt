@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,43 +14,35 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.view.connection
+package org.eclipse.kuksa.testapp.databroker.connection.view.connection
 
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActionScope
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.view.DefaultEdgePadding
-import org.eclipse.kuksa.testapp.databroker.view.DefaultElementPadding
 import org.eclipse.kuksa.testapp.databroker.view.FileSelectorSettingView
 import org.eclipse.kuksa.testapp.extension.fetchFileName
 
 @Composable
-fun TlsOptionsView(
+fun AuthenticationOptionsView(
     connectionInfo: ConnectionInfo,
     modifier: Modifier = Modifier,
-    onTlsStateChanged: (Boolean) -> Unit = {},
-    onCertificateSelected: (Uri) -> Unit = {},
-    onAuthorityOverrideChanged: (String) -> Unit = {},
-    onKeyboardDone: (KeyboardActionScope) -> Unit = {},
+    onAuthenticationStateChanged: (Boolean) -> Unit = {},
+    onJwtSelected: (Uri) -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -59,20 +51,20 @@ fun TlsOptionsView(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    onTlsStateChanged(!connectionInfo.isTlsEnabled)
+                    onAuthenticationStateChanged(!connectionInfo.isAuthenticationEnabled)
                 },
         ) {
             val (text, checkbox) = createRefs()
             Text(
-                text = "TLS",
+                text = "Authentication",
                 modifier = Modifier.constrainAs(text) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                 },
             )
             Checkbox(
-                checked = connectionInfo.isTlsEnabled,
-                onCheckedChange = onTlsStateChanged,
+                checked = connectionInfo.isAuthenticationEnabled,
+                onCheckedChange = onAuthenticationStateChanged,
                 modifier = Modifier
                     .constrainAs(checkbox) {
                         top.linkTo(parent.top)
@@ -83,31 +75,15 @@ fun TlsOptionsView(
             )
         }
 
-        if (connectionInfo.isTlsEnabled) {
-            val uri = connectionInfo.certificate.uri
-            val fileName = uri.fetchFileName(context) ?: "Select certificate..."
+        if (connectionInfo.isAuthenticationEnabled) {
+            val uri = Uri.parse(connectionInfo.jwtUriPath ?: "")
+            val fileName = uri.fetchFileName(context) ?: "Select JWT..."
 
             FileSelectorSettingView(
-                label = "Certificate",
+                label = "JWT",
                 value = fileName,
-                onResult = onCertificateSelected,
+                onResult = onJwtSelected,
                 modifier = Modifier.padding(end = 10.dp),
-            )
-
-            Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
-
-            TextField(
-                value = connectionInfo.certificate.overrideAuthority,
-                onValueChange = onAuthorityOverrideChanged,
-                keyboardActions = KeyboardActions(
-                    onDone = onKeyboardDone,
-                ),
-                modifier = Modifier
-                    .fillMaxWidth(),
-                singleLine = true,
-                label = {
-                    Text(text = "Authority override")
-                },
             )
         }
     }
@@ -116,19 +92,19 @@ fun TlsOptionsView(
 @Preview
 @Composable
 private fun DisabledTlsOptionsViewPreview() {
-    val connectionInfo = ConnectionInfo(isTlsEnabled = false)
+    val connectionInfo = ConnectionInfo(isAuthenticationEnabled = false)
 
     Surface {
-        TlsOptionsView(connectionInfo)
+        AuthenticationOptionsView(connectionInfo)
     }
 }
 
 @Preview
 @Composable
 private fun EnabledTlsOptionsViewPreview() {
-    val connectionInfo = ConnectionInfo(isTlsEnabled = true)
+    val connectionInfo = ConnectionInfo(isAuthenticationEnabled = true)
 
     Surface {
-        TlsOptionsView(connectionInfo)
+        AuthenticationOptionsView(connectionInfo)
     }
 }

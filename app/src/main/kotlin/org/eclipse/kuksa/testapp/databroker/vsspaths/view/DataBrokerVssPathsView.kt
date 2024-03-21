@@ -53,7 +53,7 @@ import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.testapp.databroker.view.DefaultEdgePadding
 import org.eclipse.kuksa.testapp.databroker.view.DefaultElementPadding
 import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionTextView
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPathsViewModel
+import org.eclipse.kuksa.testapp.databroker.vsspaths.viewmodel.VSSPathsViewModel
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme

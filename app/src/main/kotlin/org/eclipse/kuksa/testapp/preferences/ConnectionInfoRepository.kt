@@ -23,8 +23,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import kotlinx.coroutines.flow.Flow
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfoSerializer
+import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfoSerializer
 
 class ConnectionInfoRepository(context: Context) {
     private val dataStore = context.dataStore
