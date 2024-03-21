@@ -26,11 +26,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssSignal
 import org.eclipse.kuksa.vsscore.model.heritage
 
 class VssNodesViewModel : ViewModel() {
     var onGetNode: (node: VssNode) -> Unit = { }
-    var onUpdateNode: (node: VssNode) -> Unit = { }
+    var onUpdateSignal: (signal: VssSignal<*>) -> Unit = { }
     var onSubscribeNode: (node: VssNode) -> Unit = { }
     var onUnsubscribeNode: (node: VssNode) -> Unit = { }
 
@@ -41,7 +42,7 @@ class VssNodesViewModel : ViewModel() {
     }
 
     private val vssVehicle = VssVehicle()
-    val vssNodes = listOf(vssVehicle) + vssVehicle.heritage
+    val nodes = listOf(vssVehicle) + vssVehicle.heritage
 
     var node: VssNode by mutableStateOf(vssVehicle)
         private set

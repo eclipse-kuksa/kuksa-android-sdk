@@ -33,6 +33,8 @@ import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest;
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest;
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest;
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest;
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest;
+import org.eclipse.kuksa.connectivity.databroker.response.VssNodeUpdateResponse;
 import org.eclipse.kuksa.coroutine.CoroutineCallback;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse;
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse;
@@ -122,6 +124,18 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         }
 
         dataBrokerConnection.update(request, callback);
+    }
+
+    @Override
+    public <T extends VssNode> void update(
+        @NonNull VssNodeUpdateRequest<T> request,
+        @NonNull CoroutineCallback<VssNodeUpdateResponse> callback
+    ) {
+        if (dataBrokerConnection == null) {
+            return;
+        }
+
+        dataBrokerConnection.update(request, callback );
     }
 
     @Override

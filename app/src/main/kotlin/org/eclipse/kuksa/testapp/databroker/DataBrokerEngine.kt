@@ -29,6 +29,8 @@ import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.response.VssNodeUpdateResponse
 import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
@@ -57,14 +59,19 @@ interface DataBrokerEngine {
         callback: CoroutineCallback<SetResponse>,
     )
 
-    fun subscribe(request: SubscribeRequest, listener: VssPathListener)
+    fun <T : VssNode> update(
+        request: VssNodeUpdateRequest<T>,
+        callback: CoroutineCallback<VssNodeUpdateResponse>,
+    )
 
-    fun unsubscribe(request: SubscribeRequest, listener: VssPathListener)
+    fun subscribe(request: SubscribeRequest, listener: VssPathListener)
 
     fun <T : VssNode> subscribe(
         request: VssNodeSubscribeRequest<T>,
         vssNodeListener: VssNodeListener<T>,
     )
+
+    fun unsubscribe(request: SubscribeRequest, listener: VssPathListener)
 
     fun <T : VssNode> unsubscribe(
         request: VssNodeSubscribeRequest<T>,

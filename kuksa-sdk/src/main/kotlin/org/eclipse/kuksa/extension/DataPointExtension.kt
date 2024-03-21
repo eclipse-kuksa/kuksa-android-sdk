@@ -40,10 +40,23 @@ val Types.Metadata.valueType: ValueCase
  *
  * @throws IllegalArgumentException if the [VssSignal] could not be converted to a [Datapoint].
  */
-@OptIn(ExperimentalUnsignedTypes::class)
 val <T : Any> VssSignal<T>.datapoint: Datapoint
     get() {
-        val valueCase = when (dataType) {
+        val stringValue = value.toString()
+
+        return valueCase.createDatapoint(stringValue)
+    }
+
+/**
+ * Converts the [VssSignal.value] into a [ValueCase] enum. The [VssSignal.dataType] is used to derive the correct
+ * [ValueCase].
+ *
+ * @throws IllegalArgumentException if the [VssSignal] could not be converted to a [ValueCase].
+ */
+@OptIn(ExperimentalUnsignedTypes::class)
+val <T : Any> VssSignal<T>.valueCase: ValueCase
+    get() {
+        return when (dataType) {
             String::class -> ValueCase.STRING
             Boolean::class -> ValueCase.BOOL
             Int::class -> ValueCase.INT32
@@ -61,12 +74,8 @@ val <T : Any> VssSignal<T>.datapoint: Datapoint
             UIntArray::class -> ValueCase.UINT32_ARRAY
             ULongArray::class -> ValueCase.UINT64_ARRAY
 
-            else -> throw IllegalArgumentException("Could not create datapoint for value class: ${dataType::class}!")
+            else -> throw IllegalArgumentException("Could not create value case for value class: ${dataType::class}!")
         }
-
-        val stringValue = value.toString()
-
-        return valueCase.createDatapoint(stringValue)
     }
 
 /**
@@ -128,12 +137,41 @@ fun ValueCase.createDatapoint(value: String): Datapoint {
                 datapointBuilder.boolArray = createBoolArray(value)
         }
     } catch (e: NumberFormatException) {
-        Log.w(TAG, "Could not convert value: $value to ValueCase: $this")
+        Log.w(TAG, "Could not convert value: $value to ValueCase: $this", e)
         datapointBuilder.string = value // Fallback to string
     }
 
     return datapointBuilder.build()
 }
+
+/**
+ * Returns the contained value inside the [Datapoint] as a string representation.
+ */
+val Datapoint.stringValue: String
+    get() {
+        val value: Any = when (valueCase) {
+            ValueCase.STRING -> string
+            ValueCase.UINT32 -> uint32
+            ValueCase.INT32 -> int32
+            ValueCase.UINT64 -> uint64
+            ValueCase.INT64 -> int64
+            ValueCase.FLOAT -> float
+            ValueCase.DOUBLE -> double
+            ValueCase.BOOL -> bool
+            ValueCase.STRING_ARRAY -> stringArray
+            ValueCase.UINT32_ARRAY -> uint32Array
+            ValueCase.INT32_ARRAY -> int32Array
+            ValueCase.UINT64_ARRAY -> uint64Array
+            ValueCase.INT64_ARRAY -> int64Array
+            ValueCase.FLOAT_ARRAY -> floatArray
+            ValueCase.DOUBLE_ARRAY -> doubleArray
+            ValueCase.BOOL_ARRAY -> boolArray
+            ValueCase.VALUE_NOT_SET -> ""
+            null -> ""
+        }
+
+        return value.toString()
+    }
 
 private fun createBoolArray(value: String): BoolArray {
     val csvValues = value.split(CSV_DELIMITER).map { it.toBoolean() }
