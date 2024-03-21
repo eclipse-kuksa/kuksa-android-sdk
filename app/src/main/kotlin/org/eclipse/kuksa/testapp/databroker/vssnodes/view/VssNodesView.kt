@@ -65,13 +65,12 @@ import org.eclipse.kuksa.vsscore.model.VssSignal
 private const val Tag = "DataBrokerVssNodesView"
 
 @Composable
-fun DataBrokerVssNodesView(viewModel: VssNodesViewModel) {
+fun VssNodesView(viewModel: VssNodesViewModel) {
     Column {
         Headline(name = "Generated VSS Nodes")
 
-        var currentVssSignal: VssSignal<*>? = null
+        var currentNode = viewModel.node
 
-        val currentNode = viewModel.node
         val isUpdatePossible = currentNode is VssSignal<*>
         val adapter = object : SuggestionAdapter<VssNode> {
             override fun toString(item: VssNode): String {
@@ -93,12 +92,12 @@ fun DataBrokerVssNodesView(viewModel: VssNodesViewModel) {
         )
         Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
         VssNodeInformation(
-            currentNode,
+            viewModel,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = DefaultEdgePadding, end = DefaultEdgePadding),
             onSignalChanged = { updatedSignal ->
-                currentVssSignal = updatedSignal
+                currentNode = updatedSignal
             },
         )
         Spacer(modifier = Modifier.padding(top = DefaultElementPadding))
@@ -116,8 +115,8 @@ fun DataBrokerVssNodesView(viewModel: VssNodesViewModel) {
             }
             Button(
                 onClick = {
-                    currentVssSignal?.let {
-                        viewModel.onUpdateSignal(it)
+                    (currentNode as VssSignal<*>?)?.let { vssSignal ->
+                        viewModel.onUpdateSignal(vssSignal)
                     }
                 },
                 enabled = isUpdatePossible,
@@ -146,11 +145,12 @@ fun DataBrokerVssNodesView(viewModel: VssNodesViewModel) {
 
 @Composable
 private fun VssNodeInformation(
-    vssNode: VssNode,
+    viewModel: VssNodesViewModel,
     modifier: Modifier = Modifier,
     isShowingInformation: Boolean = false,
     onSignalChanged: (VssSignal<*>) -> Unit = {},
 ) {
+    val vssNode = viewModel.node
     val isVssSignal = vssNode is VssSignal<*>
     var isShowingNodeInformation by remember { mutableStateOf(isShowingInformation) }
 
@@ -213,8 +213,7 @@ private fun VssNodeInformation(
                             overflow = TextOverflow.Ellipsis,
                         )
                         if (isVssSignal) {
-                            val vssSignal = vssNode as VssSignal<*>
-                            VssSignalInformation(vssSignal, onSignalChanged = onSignalChanged)
+                            VssSignalInformation(viewModel, onSignalChanged = onSignalChanged)
                         }
                     }
                 }
@@ -230,13 +229,14 @@ private fun VssNodeInformation(
 
 @Composable
 private fun VssSignalInformation(
-    vssSignal: VssSignal<*>,
+    viewModel: VssNodesViewModel,
     modifier: Modifier = Modifier,
     onSignalChanged: (VssSignal<*>) -> Unit = {},
 ) {
     val boldSpanStyle = SpanStyle(fontWeight = FontWeight.Bold)
+    val vssSignal = viewModel.node as VssSignal<*>
 
-    var inputValue: String by remember(vssSignal) {
+    var inputValue: String by remember(vssSignal, viewModel.updateCounter) {
         mutableStateOf(vssSignal.value.toString())
     }
 
@@ -254,6 +254,7 @@ private fun VssSignalInformation(
         onValueChange = { newValue ->
             inputValue = newValue
 
+            // Try and forget approach: Try to brute force the random input string into the VssSignal.
             @Suppress("TooGenericExceptionCaught")
             try {
                 val datapoint = vssSignal.valueCase.createDatapoint(newValue.trim())
@@ -277,7 +278,7 @@ private fun VssSignalInformation(
 @Composable
 private fun Preview() {
     KuksaAppAndroidTheme {
-        DataBrokerVssNodesView(VssNodesViewModel())
+        VssNodesView(VssNodesViewModel())
     }
 }
 
@@ -285,7 +286,7 @@ private fun Preview() {
 @Composable
 private fun NodeInformationPreview() {
     KuksaAppAndroidTheme {
-        VssNodeInformation(VssVehicle(), isShowingInformation = true)
+        VssNodeInformation(VssNodesViewModel(), isShowingInformation = true)
     }
 }
 
@@ -293,6 +294,8 @@ private fun NodeInformationPreview() {
 @Composable
 private fun SignalInformationPreview() {
     KuksaAppAndroidTheme {
-        VssNodeInformation(VssHeartRate(), isShowingInformation = true)
+        val vssNodesViewModel = VssNodesViewModel()
+        vssNodesViewModel.updateNode(VssHeartRate())
+        VssNodeInformation(vssNodesViewModel, isShowingInformation = true)
     }
 }

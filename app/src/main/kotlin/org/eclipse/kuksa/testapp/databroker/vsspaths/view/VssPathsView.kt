@@ -59,7 +59,7 @@ import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
 @Composable
-fun DataBrokerVssPathsView(viewModel: VSSPathsViewModel) {
+fun VssPathsView(viewModel: VSSPathsViewModel) {
     val dataBrokerProperty = viewModel.dataBrokerProperty
     var expanded by remember { mutableStateOf(false) }
 
@@ -210,6 +210,6 @@ fun DataBrokerVssPathsView(viewModel: VSSPathsViewModel) {
 @Composable
 fun Preview() {
     KuksaAppAndroidTheme {
-        DataBrokerVssPathsView(VSSPathsViewModel())
+        VssPathsView(VSSPathsViewModel())
     }
 }

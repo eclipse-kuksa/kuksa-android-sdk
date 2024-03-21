@@ -58,7 +58,7 @@ import org.eclipse.kuksa.testapp.extension.compose.RememberCountdown
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
 @Composable
-fun DataBrokerConnectionView(viewModel: ConnectionViewModel) {
+fun ConnectionView(viewModel: ConnectionViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val repositoryConnectionInfoState =
@@ -221,7 +221,7 @@ private fun ConnectedPreview() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
     val viewModel = ConnectionViewModel(connectionInfoRepository)
     Surface {
-        DataBrokerConnectionView(viewModel = viewModel)
+        ConnectionView(viewModel = viewModel)
     }
 }
 
@@ -232,6 +232,6 @@ private fun DisconnectedPreview() {
     val viewModel = ConnectionViewModel(connectionInfoRepository)
     viewModel.updateConnectionState(ConnectionViewState.CONNECTING)
     Surface {
-        DataBrokerConnectionView(viewModel = viewModel)
+        ConnectionView(viewModel = viewModel)
     }
 }

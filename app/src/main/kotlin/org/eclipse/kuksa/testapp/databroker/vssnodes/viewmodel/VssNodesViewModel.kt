@@ -47,7 +47,11 @@ class VssNodesViewModel : ViewModel() {
     var node: VssNode by mutableStateOf(vssVehicle)
         private set
 
+    var updateCounter: Int by mutableStateOf(0)
+        private set
+
     fun updateNode(node: VssNode) {
         this.node = node
+        updateCounter++
     }
 }

@@ -58,14 +58,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.testapp.R
-import org.eclipse.kuksa.testapp.databroker.connection.view.connection.DataBrokerConnectionView
+import org.eclipse.kuksa.testapp.databroker.connection.view.connection.ConnectionView
 import org.eclipse.kuksa.testapp.databroker.connection.viewmodel.ConnectionViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel.DataBrokerMode
-import org.eclipse.kuksa.testapp.databroker.vssnodes.view.DataBrokerVssNodesView
+import org.eclipse.kuksa.testapp.databroker.vssnodes.view.VssNodesView
 import org.eclipse.kuksa.testapp.databroker.vssnodes.viewmodel.VssNodesViewModel
-import org.eclipse.kuksa.testapp.databroker.vsspaths.view.DataBrokerVssPathsView
+import org.eclipse.kuksa.testapp.databroker.vsspaths.view.VssPathsView
 import org.eclipse.kuksa.testapp.databroker.vsspaths.viewmodel.VSSPathsViewModel
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.OverflowMenu
@@ -100,13 +100,13 @@ fun DataBrokerView(
         ) {
             Column {
                 if (!connectionViewModel.isConnected) {
-                    DataBrokerConnectionView(connectionViewModel)
+                    ConnectionView(connectionViewModel)
                 }
                 val dataBrokerMode = topAppBarViewModel.dataBrokerMode
                 if (connectionViewModel.isConnected) {
                     when (dataBrokerMode) {
-                        DataBrokerMode.VSS_PATH -> DataBrokerVssPathsView(vssPathsViewModel)
-                        DataBrokerMode.VSS_FILE -> DataBrokerVssNodesView(vssNodesViewModel)
+                        DataBrokerMode.VSS_PATH -> VssPathsView(vssPathsViewModel)
+                        DataBrokerMode.VSS_FILE -> VssNodesView(vssNodesViewModel)
                     }
                 }
                 Spacer(modifier = Modifier.padding(top = DefaultElementPadding))

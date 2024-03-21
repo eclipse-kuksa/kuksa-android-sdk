@@ -371,6 +371,7 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                     if (result == null) return
 
                     vssNodesViewModel.updateNode(result)
+
                     outputViewModel.addOutputEntry("Fetched node: $result")
                 }
 
