@@ -81,21 +81,20 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
             .substringAfter(delimiter) // Remove vssPath (already parsed)
             .prependIndent(delimiter.toString()) // So the parsing is consistent for the first element
 
-        // The VSSPath is an exception because it is parsed from the top level name.
+        val uuid = fetchValue(KEY_DATA_UUID, yamlElementJoined, delimiter).ifEmpty {
+            throw FileParseException("Could not parse '$KEY_DATA_UUID' for '$vssPath'")
+        }
 
-        // Parse (example: "description: Antilock Braking System signals.") into name + value for all .yaml lines
-        val uuid = fetchValue(KEY_DATA_UUID, yamlElementJoined, delimiter)
-            ?: throw FileParseException("Could not parse '$KEY_DATA_UUID' for '$vssPath'")
+        val type = fetchValue(KEY_DATA_TYPE, yamlElementJoined, delimiter).ifEmpty {
+            throw FileParseException("Could not parse '$KEY_DATA_TYPE' for '$vssPath'")
+        }
 
-        val type = fetchValue(KEY_DATA_TYPE, yamlElementJoined, delimiter)
-            ?: throw FileParseException("Could not parse '$KEY_DATA_TYPE' for '$vssPath'")
-
-        val description = fetchValue(KEY_DATA_DESCRIPTION, yamlElementJoined, delimiter) ?: ""
-        val datatype = fetchValue(KEY_DATA_DATATYPE, yamlElementJoined, delimiter) ?: ""
-        val comment = fetchValue(KEY_DATA_COMMENT, yamlElementJoined, delimiter) ?: ""
-        val unit = fetchValue(KEY_DATA_UNIT, yamlElementJoined, delimiter) ?: ""
-        val min = fetchValue(KEY_DATA_MIN, yamlElementJoined, delimiter) ?: ""
-        val max = fetchValue(KEY_DATA_MAX, yamlElementJoined, delimiter) ?: ""
+        val description = fetchValue(KEY_DATA_DESCRIPTION, yamlElementJoined, delimiter)
+        val datatype = fetchValue(KEY_DATA_DATATYPE, yamlElementJoined, delimiter)
+        val comment = fetchValue(KEY_DATA_COMMENT, yamlElementJoined, delimiter)
+        val unit = fetchValue(KEY_DATA_UNIT, yamlElementJoined, delimiter)
+        val min = fetchValue(KEY_DATA_MIN, yamlElementJoined, delimiter)
+        val max = fetchValue(KEY_DATA_MAX, yamlElementJoined, delimiter)
 
         val vssNodeProperties = VssNodePropertiesBuilder(uuid, type)
             .withDescription(description)
@@ -114,11 +113,9 @@ private fun fetchValue(
     nodeName: String,
     yamlElementJoined: String,
     delimiter: Char,
-): String? {
+): String {
     // Also parse the delimiter to not confuse type != datatype
-    val value = yamlElementJoined
+    return yamlElementJoined
         .substringAfter("$delimiter$nodeName: ")
         .substringBefore(delimiter)
-
-    return value.ifEmpty { return null }
 }

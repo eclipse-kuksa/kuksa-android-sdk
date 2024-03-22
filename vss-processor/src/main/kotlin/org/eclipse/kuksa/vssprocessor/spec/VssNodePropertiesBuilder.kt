@@ -43,8 +43,8 @@ internal class VssNodePropertiesBuilder(
         nodePropertyMap[KEY_DATA_TYPE] = typeNodeProperty
     }
 
-    fun withDescription(description: String?): VssNodePropertiesBuilder {
-        if (description == null) return this
+    fun withDescription(description: String): VssNodePropertiesBuilder {
+        if (description.isEmpty()) return this
 
         val nodeProperty = VssNodeProperty(KEY_DATA_DESCRIPTION, description, String::class)
         nodePropertyMap[KEY_DATA_DESCRIPTION] = nodeProperty
@@ -52,8 +52,8 @@ internal class VssNodePropertiesBuilder(
         return this
     }
 
-    fun withComment(comment: String?): VssNodePropertiesBuilder {
-        if (comment == null) return this
+    fun withComment(comment: String): VssNodePropertiesBuilder {
+        if (comment.isEmpty()) return this
 
         val nodeProperty = VssNodeProperty(KEY_DATA_COMMENT, comment, String::class)
         nodePropertyMap[KEY_DATA_COMMENT] = nodeProperty
@@ -61,11 +61,10 @@ internal class VssNodePropertiesBuilder(
         return this
     }
 
-    fun withDataType(dataType: String?): VssNodePropertiesBuilder {
-        if (dataType == null) return this
+    fun withDataType(dataType: String): VssNodePropertiesBuilder {
+        if (dataType.isEmpty()) return this
 
-        val vssDataType = VssDataType.find(dataType)
-        val valueDataType = vssDataType.valueDataType
+        val valueDataType = findKClass(dataType)
 
         val signalProperty = VssSignalProperty(KEY_DATA_DATATYPE, dataType, valueDataType)
         nodePropertyMap[KEY_DATA_DATATYPE] = signalProperty
@@ -73,8 +72,8 @@ internal class VssNodePropertiesBuilder(
         return this
     }
 
-    fun withUnit(unit: String?): VssNodePropertiesBuilder {
-        if (unit == null) return this
+    fun withUnit(unit: String): VssNodePropertiesBuilder {
+        if (unit.isEmpty()) return this
 
         val signalProperty = VssSignalProperty(KEY_DATA_UNIT, unit, String::class)
         nodePropertyMap[KEY_DATA_UNIT] = signalProperty
@@ -82,8 +81,8 @@ internal class VssNodePropertiesBuilder(
         return this
     }
 
-    fun withMin(min: String?, clazz: KClass<*>): VssNodePropertiesBuilder {
-        if (min == null) return this
+    fun withMin(min: String, clazz: KClass<*>): VssNodePropertiesBuilder {
+        if (min.isEmpty()) return this
 
         val signalProperty = VssSignalProperty(KEY_DATA_MIN, min, clazz)
         nodePropertyMap[KEY_DATA_MIN] = signalProperty
@@ -91,17 +90,16 @@ internal class VssNodePropertiesBuilder(
         return this
     }
 
-    fun withMin(min: String?, dataType: String): VssNodePropertiesBuilder {
-        if (min == null) return this
+    fun withMin(min: String, dataType: String): VssNodePropertiesBuilder {
+        if (min.isEmpty() || dataType.isEmpty()) return this
 
-        val vssDataType = VssDataType.find(dataType)
-        val valueDataType = vssDataType.valueDataType
+        val valueDataType = findKClass(dataType)
 
         return withMin(min, valueDataType)
     }
 
-    fun withMax(max: String?, clazz: KClass<*>): VssNodePropertiesBuilder {
-        if (max == null) return this
+    fun withMax(max: String, clazz: KClass<*>): VssNodePropertiesBuilder {
+        if (max.isEmpty()) return this
 
         val maxSignalProperty = VssSignalProperty(KEY_DATA_MAX, max, clazz)
         nodePropertyMap[KEY_DATA_MAX] = maxSignalProperty
@@ -109,13 +107,17 @@ internal class VssNodePropertiesBuilder(
         return this
     }
 
-    fun withMax(max: String?, dataType: String): VssNodePropertiesBuilder {
-        if (max == null) return this
+    fun withMax(max: String, dataType: String): VssNodePropertiesBuilder {
+        if (max.isEmpty() || dataType.isEmpty()) return this
 
-        val vssDataType = VssDataType.find(dataType)
-        val valueDataType = vssDataType.valueDataType
+        val valueDataType = findKClass(dataType)
 
         return withMax(max, valueDataType)
+    }
+
+    private fun findKClass(dataType: String): KClass<*> {
+        val vssDataType = VssDataType.find(dataType)
+        return vssDataType.valueDataType
     }
 
     fun build(): Set<VssNodeProperty> {
