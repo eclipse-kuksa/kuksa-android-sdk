@@ -20,14 +20,15 @@
 package org.eclipse.kuksa.vssprocessor.parser.yaml
 
 import org.eclipse.kuksa.vssprocessor.parser.FileParseException
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_COMMENT
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DATATYPE
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DESCRIPTION
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MAX
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MIN
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_TYPE
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UNIT
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.COMMENT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DATATYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DESCRIPTION
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MAX
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MIN
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.TYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UNIT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UUID
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
 import org.eclipse.kuksa.vssprocessor.spec.VssNodePropertiesBuilder
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
@@ -81,20 +82,20 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
             .substringAfter(delimiter) // Remove vssPath (already parsed)
             .prependIndent(delimiter.toString()) // So the parsing is consistent for the first element
 
-        val uuid = fetchValue(KEY_DATA_UUID, yamlElementJoined, delimiter).ifEmpty {
-            throw FileParseException("Could not parse '$KEY_DATA_UUID' for '$vssPath'")
+        val uuid = fetchValue(UUID, yamlElementJoined, delimiter).ifEmpty {
+            throw FileParseException("Could not parse '${UUID.key}' for '$vssPath'")
         }
 
-        val type = fetchValue(KEY_DATA_TYPE, yamlElementJoined, delimiter).ifEmpty {
-            throw FileParseException("Could not parse '$KEY_DATA_TYPE' for '$vssPath'")
+        val type = fetchValue(TYPE, yamlElementJoined, delimiter).ifEmpty {
+            throw FileParseException("Could not parse '${TYPE.key}' for '$vssPath'")
         }
 
-        val description = fetchValue(KEY_DATA_DESCRIPTION, yamlElementJoined, delimiter)
-        val datatype = fetchValue(KEY_DATA_DATATYPE, yamlElementJoined, delimiter)
-        val comment = fetchValue(KEY_DATA_COMMENT, yamlElementJoined, delimiter)
-        val unit = fetchValue(KEY_DATA_UNIT, yamlElementJoined, delimiter)
-        val min = fetchValue(KEY_DATA_MIN, yamlElementJoined, delimiter)
-        val max = fetchValue(KEY_DATA_MAX, yamlElementJoined, delimiter)
+        val description = fetchValue(DESCRIPTION, yamlElementJoined, delimiter)
+        val comment = fetchValue(COMMENT, yamlElementJoined, delimiter)
+        val datatype = fetchValue(DATATYPE, yamlElementJoined, delimiter)
+        val unit = fetchValue(UNIT, yamlElementJoined, delimiter)
+        val min = fetchValue(MIN, yamlElementJoined, delimiter)
+        val max = fetchValue(MAX, yamlElementJoined, delimiter)
 
         val vssNodeProperties = VssNodePropertiesBuilder(uuid, type)
             .withDescription(description)
@@ -110,12 +111,12 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
 }
 
 private fun fetchValue(
-    nodeName: String,
+    dataKey: VssDataKey,
     yamlElementJoined: String,
     delimiter: Char,
 ): String {
     // Also parse the delimiter to not confuse type != datatype
     return yamlElementJoined
-        .substringAfter("$delimiter$nodeName: ")
+        .substringAfter("$delimiter${dataKey.key}: ")
         .substringBefore(delimiter)
 }

@@ -42,11 +42,7 @@ import org.eclipse.kuksa.vsscore.model.name
 import org.eclipse.kuksa.vsscore.model.parentClassName
 import org.eclipse.kuksa.vsscore.model.parentKey
 import org.eclipse.kuksa.vsscore.model.variableName
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_COMMENT
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DATATYPE
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DESCRIPTION
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_TYPE
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.*
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeProperty.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -57,13 +53,13 @@ internal class VssNodeSpecModel(
     val vssNodeProperties: Set<VssNodeProperty>,
 ) : VssNode, SpecModel<VssNodeSpecModel> {
 
-    private val propertyNameToNodePropertyMap = vssNodeProperties.associateBy { it.nodePropertyName }
+    private val propertyNameToNodePropertyMap = vssNodeProperties.associateBy { it.dataKey }
 
-    override var uuid: String = propertyNameToNodePropertyMap[KEY_DATA_UUID]?.nodePropertyValue ?: ""
-    override var type: String = propertyNameToNodePropertyMap[KEY_DATA_TYPE]?.nodePropertyValue ?: ""
-    override var description: String = propertyNameToNodePropertyMap[KEY_DATA_DESCRIPTION]?.nodePropertyValue ?: ""
-    override var comment: String = propertyNameToNodePropertyMap[KEY_DATA_COMMENT]?.nodePropertyValue ?: ""
-    var datatype: String = propertyNameToNodePropertyMap[KEY_DATA_DATATYPE]?.nodePropertyValue ?: ""
+    override val uuid: String = propertyNameToNodePropertyMap[UUID]?.value ?: ""
+    override val type: String = propertyNameToNodePropertyMap[TYPE]?.value ?: ""
+    override val description: String = propertyNameToNodePropertyMap[DESCRIPTION]?.value ?: ""
+    override val comment: String = propertyNameToNodePropertyMap[COMMENT]?.value ?: ""
+    val datatype: String = propertyNameToNodePropertyMap[DATATYPE]?.value ?: ""
 
     var logger: KSPLogger? = null
 
@@ -206,15 +202,16 @@ internal class VssNodeSpecModel(
         )
         propertySpecs.add(genericClassSpec)
         val vssSignalProperties = vssNodeProperties
+            .filterIsInstance<VssSignalProperty>()
             .filter {
-                !it.isCommon && it.nodePropertyName != VssSignal<*>::dataType.name.lowercase()
+                it.dataKey.key != VssSignal<*>::dataType.name.lowercase()
             }
 
         vssSignalProperties.forEach { vssSignalProperty ->
-            val value = vssSignalProperty.nodePropertyValue
+            val value = vssSignalProperty.value
             if (value.isEmpty()) return@forEach
 
-            val propertyName = vssSignalProperty.nodePropertyName.lowercase()
+            val propertyName = vssSignalProperty.dataKey.key
             val propertyType = vssSignalProperty.dataType
             val returnStatement = getReturnStatement(vssSignalProperty.dataType)
             val propertySpec = PropertySpec

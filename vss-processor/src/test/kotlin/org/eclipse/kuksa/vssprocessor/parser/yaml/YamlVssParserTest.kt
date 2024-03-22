@@ -25,9 +25,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.eclipse.kuksa.test.TestResourceFile
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MAX
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MIN
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UNIT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MAX
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MIN
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UNIT
 
 class YamlVssParserTest : BehaviorSpec({
     given("A parser for yaml files") {
@@ -107,16 +107,16 @@ class YamlVssParserTest : BehaviorSpec({
                 specModel.datatype shouldBe "float"
                 specModel.vssNodeProperties
                     .find {
-                        it.nodePropertyName == KEY_DATA_MIN
-                    }?.nodePropertyValue shouldBe "0"
+                        it.dataKey == MIN
+                    }?.value shouldBe "0"
                 specModel.vssNodeProperties
                     .find {
-                        it.nodePropertyName == KEY_DATA_MAX
-                    }?.nodePropertyValue shouldBe "100"
+                        it.dataKey == MAX
+                    }?.value shouldBe "100"
                 specModel.vssNodeProperties
                     .find {
-                        it.nodePropertyName == KEY_DATA_UNIT
-                    }?.nodePropertyValue shouldBe "percent"
+                        it.dataKey == UNIT
+                    }?.value shouldBe "percent"
             }
         }
 

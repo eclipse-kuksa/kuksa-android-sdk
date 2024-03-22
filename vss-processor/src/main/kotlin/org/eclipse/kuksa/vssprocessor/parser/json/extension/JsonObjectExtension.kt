@@ -17,32 +17,20 @@
  *
  */
 
-package org.eclipse.kuksa.vssprocessor.spec
+package org.eclipse.kuksa.vssprocessor.parser.json.extension
 
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import org.eclipse.kuksa.vssprocessor.parser.VssDataKey
-import kotlin.reflect.KClass
 
-internal open class VssNodeProperty(
-    val dataKey: VssDataKey,
-    val value: String,
-    val dataType: KClass<*>,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as VssNodeProperty
-
-        return dataKey == other.dataKey
-    }
-
-    override fun hashCode(): Int {
-        return dataKey.hashCode()
-    }
+internal fun JsonObject.has(vssDataKey: VssDataKey): Boolean {
+    return has(vssDataKey.key)
 }
 
-internal class VssSignalProperty(
-    dataKey: VssDataKey,
-    value: String,
-    dataType: KClass<*>,
-) : VssNodeProperty(dataKey, value, dataType)
+internal fun JsonObject.getAsJsonObject(vssDataKey: VssDataKey): JsonObject {
+    return getAsJsonObject(vssDataKey.key)
+}
+
+internal fun JsonObject.get(vssDataKey: VssDataKey): JsonElement? {
+    return get(vssDataKey.key)
+}

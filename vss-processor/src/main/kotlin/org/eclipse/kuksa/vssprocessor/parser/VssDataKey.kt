@@ -20,25 +20,24 @@
 package org.eclipse.kuksa.vssprocessor.parser
 
 const val ROOT_KEY_VEHICLE = "Vehicle"
+const val KEY_CHILDREN = "children"
 
-const val KEY_DATA_DESCRIPTION = "description"
-const val KEY_DATA_TYPE = "type"
-const val KEY_DATA_UUID = "uuid"
-const val KEY_DATA_COMMENT = "comment"
-const val KEY_DATA_DATATYPE = "datatype"
-const val KEY_DATA_UNIT = "unit"
-const val KEY_DATA_MIN = "min"
-const val KEY_DATA_MAX = "max"
-const val KEY_DATA_CHILDREN = "children"
+enum class VssDataKey {
+    UUID,
+    TYPE,
+    DESCRIPTION,
+    COMMENT,
+    DATATYPE,
+    UNIT,
+    MIN,
+    MAX,
+    ;
 
-val VSS_DATA_KEYS = listOf(
-    KEY_DATA_DESCRIPTION,
-    KEY_DATA_TYPE,
-    KEY_DATA_UUID,
-    KEY_DATA_COMMENT,
-    KEY_DATA_UNIT,
-    KEY_DATA_DATATYPE,
-    KEY_DATA_MIN,
-    KEY_DATA_MAX,
-    KEY_DATA_CHILDREN,
-)
+    val key = name.lowercase()
+
+    companion object {
+        fun findByKey(key: String): VssDataKey? {
+            return entries.find { it.key == key }
+        }
+    }
+}

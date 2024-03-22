@@ -19,35 +19,36 @@
 
 package org.eclipse.kuksa.vssprocessor.spec
 
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_COMMENT
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DATATYPE
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DESCRIPTION
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MAX
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MIN
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_TYPE
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UNIT
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.COMMENT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DATATYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DESCRIPTION
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MAX
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MIN
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.TYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UNIT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UUID
 import kotlin.reflect.KClass
 
 internal class VssNodePropertiesBuilder(
     uuid: String,
     type: String,
 ) {
-    private val nodePropertyMap: MutableMap<String, VssNodeProperty> = mutableMapOf()
+    private val nodePropertyMap: MutableMap<VssDataKey, VssNodeProperty> = mutableMapOf()
 
     init {
-        val uuidNodeProperty = VssNodeProperty(KEY_DATA_UUID, uuid, String::class)
-        nodePropertyMap[KEY_DATA_UUID] = uuidNodeProperty
+        val uuidNodeProperty = VssNodeProperty(UUID, uuid, String::class)
+        nodePropertyMap[UUID] = uuidNodeProperty
 
-        val typeNodeProperty = VssNodeProperty(KEY_DATA_TYPE, type, String::class)
-        nodePropertyMap[KEY_DATA_TYPE] = typeNodeProperty
+        val typeNodeProperty = VssNodeProperty(TYPE, type, String::class)
+        nodePropertyMap[TYPE] = typeNodeProperty
     }
 
     fun withDescription(description: String): VssNodePropertiesBuilder {
         if (description.isEmpty()) return this
 
-        val nodeProperty = VssNodeProperty(KEY_DATA_DESCRIPTION, description, String::class)
-        nodePropertyMap[KEY_DATA_DESCRIPTION] = nodeProperty
+        val nodeProperty = VssNodeProperty(DESCRIPTION, description, String::class)
+        nodePropertyMap[DESCRIPTION] = nodeProperty
 
         return this
     }
@@ -55,8 +56,8 @@ internal class VssNodePropertiesBuilder(
     fun withComment(comment: String): VssNodePropertiesBuilder {
         if (comment.isEmpty()) return this
 
-        val nodeProperty = VssNodeProperty(KEY_DATA_COMMENT, comment, String::class)
-        nodePropertyMap[KEY_DATA_COMMENT] = nodeProperty
+        val nodeProperty = VssNodeProperty(COMMENT, comment, String::class)
+        nodePropertyMap[COMMENT] = nodeProperty
 
         return this
     }
@@ -66,8 +67,8 @@ internal class VssNodePropertiesBuilder(
 
         val valueDataType = findKClass(dataType)
 
-        val signalProperty = VssSignalProperty(KEY_DATA_DATATYPE, dataType, valueDataType)
-        nodePropertyMap[KEY_DATA_DATATYPE] = signalProperty
+        val signalProperty = VssSignalProperty(DATATYPE, dataType, valueDataType)
+        nodePropertyMap[DATATYPE] = signalProperty
 
         return this
     }
@@ -75,8 +76,8 @@ internal class VssNodePropertiesBuilder(
     fun withUnit(unit: String): VssNodePropertiesBuilder {
         if (unit.isEmpty()) return this
 
-        val signalProperty = VssSignalProperty(KEY_DATA_UNIT, unit, String::class)
-        nodePropertyMap[KEY_DATA_UNIT] = signalProperty
+        val signalProperty = VssSignalProperty(UNIT, unit, String::class)
+        nodePropertyMap[UNIT] = signalProperty
 
         return this
     }
@@ -84,8 +85,8 @@ internal class VssNodePropertiesBuilder(
     fun withMin(min: String, clazz: KClass<*>): VssNodePropertiesBuilder {
         if (min.isEmpty()) return this
 
-        val signalProperty = VssSignalProperty(KEY_DATA_MIN, min, clazz)
-        nodePropertyMap[KEY_DATA_MIN] = signalProperty
+        val signalProperty = VssSignalProperty(MIN, min, clazz)
+        nodePropertyMap[MIN] = signalProperty
 
         return this
     }
@@ -101,8 +102,8 @@ internal class VssNodePropertiesBuilder(
     fun withMax(max: String, clazz: KClass<*>): VssNodePropertiesBuilder {
         if (max.isEmpty()) return this
 
-        val maxSignalProperty = VssSignalProperty(KEY_DATA_MAX, max, clazz)
-        nodePropertyMap[KEY_DATA_MAX] = maxSignalProperty
+        val maxSignalProperty = VssSignalProperty(MAX, max, clazz)
+        nodePropertyMap[MAX] = maxSignalProperty
 
         return this
     }
