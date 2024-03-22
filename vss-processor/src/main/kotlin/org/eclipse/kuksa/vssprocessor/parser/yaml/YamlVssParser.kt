@@ -29,7 +29,6 @@ import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_TYPE
 import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UNIT
 import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
-import org.eclipse.kuksa.vssprocessor.spec.VssDataType
 import org.eclipse.kuksa.vssprocessor.spec.VssNodePropertiesBuilder
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
@@ -98,16 +97,13 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
         val min = fetchValue(KEY_DATA_MIN, yamlElementJoined, delimiter) ?: ""
         val max = fetchValue(KEY_DATA_MAX, yamlElementJoined, delimiter) ?: ""
 
-        val vssDataType = VssDataType.find(datatype)
-        val valueDataType = vssDataType.valueDataType
-
         val vssNodeProperties = VssNodePropertiesBuilder(uuid, type)
             .withDescription(description)
             .withComment(comment)
             .withDataType(datatype)
             .withUnit(unit)
-            .withMin(min, valueDataType)
-            .withMax(max, valueDataType)
+            .withMin(min, datatype)
+            .withMax(max, datatype)
             .build()
 
         return VssNodeSpecModel(vssPath, vssNodeProperties)

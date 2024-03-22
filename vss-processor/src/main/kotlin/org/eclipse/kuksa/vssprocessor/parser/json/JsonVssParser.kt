@@ -34,7 +34,6 @@ import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
 import org.eclipse.kuksa.vssprocessor.parser.ROOT_KEY_VEHICLE
 import org.eclipse.kuksa.vssprocessor.parser.VSS_DATA_KEYS
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
-import org.eclipse.kuksa.vssprocessor.spec.VssDataType
 import org.eclipse.kuksa.vssprocessor.spec.VssNodePropertiesBuilder
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
@@ -107,16 +106,13 @@ internal class JsonVssParser : VssParser {
         val min = jsonObject.get(KEY_DATA_MIN)?.asString ?: ""
         val max = jsonObject.get(KEY_DATA_MAX)?.asString ?: ""
 
-        val vssDataType = VssDataType.find(datatype)
-        val valueDataType = vssDataType.valueDataType
-
         val vssNodeProperties = VssNodePropertiesBuilder(uuid, type)
             .withDescription(description)
             .withComment(comment)
             .withDataType(datatype)
             .withUnit(unit)
-            .withMin(min, valueDataType)
-            .withMax(max, valueDataType)
+            .withMin(min, datatype)
+            .withMax(max, datatype)
             .build()
 
         return VssNodeSpecModel(vssPath, vssNodeProperties)
