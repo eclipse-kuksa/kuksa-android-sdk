@@ -30,9 +30,8 @@ import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UNIT
 import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
 import org.eclipse.kuksa.vssprocessor.spec.VssDataType
-import org.eclipse.kuksa.vssprocessor.spec.VssNodeProperty
+import org.eclipse.kuksa.vssprocessor.spec.VssNodePropertiesBuilder
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
-import org.eclipse.kuksa.vssprocessor.spec.VssSignalProperty
 import java.io.File
 import java.io.IOException
 
@@ -102,16 +101,14 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
         val vssDataType = VssDataType.find(datatype)
         val valueDataType = vssDataType.valueDataType
 
-        val vssNodeProperties = mutableSetOf(
-            VssNodeProperty(vssPath, KEY_DATA_UUID, uuid, String::class),
-            VssNodeProperty(vssPath, KEY_DATA_TYPE, type, String::class),
-            VssNodeProperty(vssPath, KEY_DATA_DESCRIPTION, description, String::class),
-            VssNodeProperty(vssPath, KEY_DATA_COMMENT, comment, String::class),
-            VssSignalProperty(vssPath, KEY_DATA_DATATYPE, datatype, valueDataType),
-            VssSignalProperty(vssPath, KEY_DATA_UNIT, unit, String::class),
-            VssSignalProperty(vssPath, KEY_DATA_MIN, min, valueDataType),
-            VssSignalProperty(vssPath, KEY_DATA_MAX, max, valueDataType),
-        )
+        val vssNodeProperties = VssNodePropertiesBuilder(uuid, type)
+            .withDescription(description)
+            .withComment(comment)
+            .withDataType(datatype)
+            .withUnit(unit)
+            .withMin(min, valueDataType)
+            .withMax(max, valueDataType)
+            .build()
 
         return VssNodeSpecModel(vssPath, vssNodeProperties)
     }

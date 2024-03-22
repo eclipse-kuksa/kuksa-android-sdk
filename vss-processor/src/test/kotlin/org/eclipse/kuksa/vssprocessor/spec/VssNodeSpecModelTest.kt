@@ -22,27 +22,25 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DATATYPE
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MAX
-import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_MIN
+import java.util.UUID
 
-private const val TYPE_ANY = "any"
-private const val TYPE_STRING = "string"
-private const val TYPE_STRING_ARRAY = "string[]"
-private const val TYPE_BOOLEAN = "boolean"
-private const val TYPE_BOOLEAN_ARRAY = "boolean[]"
-private const val TYPE_FLOAT = "float"
-private const val TYPE_INT64 = "int64"
-private const val TYPE_UINT32 = "uint32"
-private const val TYPE_INT32 = "int32"
-private const val TYPE_UINT64_ARRAY = "uint64[]"
-private const val TYPE_INVALID = "invalid"
+private const val DATATYPE_ANY = "any"
+private const val DATATYPE_STRING = "string"
+private const val DATATYPE_STRING_ARRAY = "string[]"
+private const val DATATYPE_BOOLEAN = "boolean"
+private const val DATATYPE_BOOLEAN_ARRAY = "boolean[]"
+private const val DATATYPE_FLOAT = "float"
+private const val DATATYPE_INT64 = "int64"
+private const val DATATYPE_UINT32 = "uint32"
+private const val DATATYPE_INT32 = "int32"
+private const val DATATYPE_UINT64_ARRAY = "uint64[]"
+private const val DATATYPE_INVALID = "invalid"
 
 class VssNodeSpecModelTest : BehaviorSpec({
     given("String spec model") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_STRING, TYPE_STRING),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_STRING)
+            .build()
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
         `when`("creating a class spec") {
@@ -57,11 +55,12 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 
     given("int64 spec model with min and max values") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_INT64, TYPE_INT64),
-            createSignalProperty(KEY_DATA_MIN, "0", TYPE_INT64),
-            createSignalProperty(KEY_DATA_MAX, "100", TYPE_INT64),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_INT64)
+            .withMin("0", DATATYPE_INT64)
+            .withMax("100", DATATYPE_INT64)
+            .build()
+
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
         `when`("creating a class spec") {
@@ -90,11 +89,12 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 
     given("uint32 spec model (inline class)") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_UINT32, TYPE_UINT32),
-            createSignalProperty(KEY_DATA_MIN, "0", TYPE_UINT32),
-            createSignalProperty(KEY_DATA_MAX, "100", TYPE_UINT32),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_UINT32)
+            .withMin("0", DATATYPE_UINT32)
+            .withMax("100", DATATYPE_UINT32)
+            .build()
+
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
         `when`("creating a class spec") {
@@ -129,11 +129,11 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 
     given("int32 spec model with min and max values") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_INT32, TYPE_INT32),
-            createSignalProperty(KEY_DATA_MIN, "0", TYPE_INT32),
-            createSignalProperty(KEY_DATA_MAX, "100", TYPE_INT32),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_INT32)
+            .withMin("0", DATATYPE_INT32)
+            .withMax("100", DATATYPE_INT32)
+            .build()
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
         `when`("creating a class spec") {
@@ -162,9 +162,9 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 
     given("uint64[] spec model") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_UINT64_ARRAY, TYPE_UINT64_ARRAY),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_UINT64_ARRAY)
+            .build()
 
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
@@ -186,9 +186,10 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 
     given("String[] spec model") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_STRING_ARRAY, TYPE_STRING_ARRAY),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_STRING_ARRAY)
+            .build()
+
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
         `when`("creating a class spec") {
@@ -203,9 +204,9 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 
     given("Boolean[] spec model") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_BOOLEAN_ARRAY, TYPE_BOOLEAN_ARRAY),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_BOOLEAN_ARRAY)
+            .build()
 
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
@@ -221,9 +222,9 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 
     given("Any spec model") {
-        val vssNodeProperties = setOf(
-            createSignalProperty(KEY_DATA_DATATYPE, TYPE_ANY, TYPE_ANY),
-        )
+        val vssNodeProperties = createNodePropertiesBuilder()
+            .withDataType(DATATYPE_ANY)
+            .build()
 
         val specModel = VssNodeSpecModel(vssPath = "Vehicle.IgnitionType", vssNodeProperties)
 
@@ -254,40 +255,36 @@ class VssNodeSpecModelTest : BehaviorSpec({
             val vehicleSpeedSpecModel =
                 VssNodeSpecModel(
                     vssPath = "Vehicle.Speed",
-                    vssNodeProperties = setOf(createSignalProperty(KEY_DATA_DATATYPE, TYPE_FLOAT, TYPE_FLOAT)),
+                    vssNodeProperties = createNodePropertiesBuilder()
+                        .withDataType(DATATYPE_FLOAT)
+                        .build(),
                 )
             val relatedVssNodes = listOf(
                 VssNodeSpecModel(vssPath = "Vehicle.SmartphoneProjection", setOf()),
                 VssNodeSpecModel(
                     vssPath = "Vehicle.IsBrokenDown",
-                    vssNodeProperties = setOf(
-                        createSignalProperty(
-                            KEY_DATA_DATATYPE,
-                            TYPE_BOOLEAN,
-                            TYPE_BOOLEAN,
-                        ),
-                    ),
+                    vssNodeProperties = createNodePropertiesBuilder()
+                        .withDataType(DATATYPE_BOOLEAN)
+                        .build(),
                 ),
                 vehicleSpeedSpecModel,
                 VssNodeSpecModel(
                     vssPath = "Vehicle.SupportedMode",
-                    vssNodeProperties = setOf(
-                        createSignalProperty(KEY_DATA_DATATYPE, TYPE_STRING_ARRAY, TYPE_STRING_ARRAY),
-                    ),
+                    vssNodeProperties = createNodePropertiesBuilder()
+                        .withDataType(DATATYPE_STRING_ARRAY)
+                        .build(),
                 ),
                 VssNodeSpecModel(
                     vssPath = "Vehicle.AreSeatsHeated",
-                    vssNodeProperties = setOf(
-                        createSignalProperty(
-                            KEY_DATA_DATATYPE,
-                            TYPE_BOOLEAN_ARRAY,
-                            TYPE_BOOLEAN_ARRAY,
-                        ),
-                    ),
+                    vssNodeProperties = createNodePropertiesBuilder()
+                        .withDataType(DATATYPE_BOOLEAN_ARRAY)
+                        .build(),
                 ),
                 VssNodeSpecModel(
                     vssPath = "Vehicle.Invalid",
-                    vssNodeProperties = setOf(createSignalProperty(KEY_DATA_DATATYPE, TYPE_INVALID, TYPE_INVALID)),
+                    vssNodeProperties = createNodePropertiesBuilder()
+                        .withDataType(DATATYPE_INVALID)
+                        .build(),
                 ),
             )
 
@@ -342,16 +339,8 @@ class VssNodeSpecModelTest : BehaviorSpec({
     }
 })
 
-private fun createSignalProperty(
-    propertyName: String,
-    propertyValue: String,
-    propertyType: String,
-): VssNodeProperty {
-    val vssDataType = VssDataType.find(propertyType)
-    return VssSignalProperty(
-        vssPath = "Vehicle.ADAS.ABS.IsEnabled",
-        nodePropertyName = propertyName,
-        nodePropertyValue = propertyValue,
-        dataType = vssDataType.valueDataType,
-    )
+private fun createNodePropertiesBuilder(): VssNodePropertiesBuilder {
+    val randomUuid = UUID.randomUUID()
+    val uuidString = randomUuid.toString()
+    return VssNodePropertiesBuilder(uuidString, "signal")
 }

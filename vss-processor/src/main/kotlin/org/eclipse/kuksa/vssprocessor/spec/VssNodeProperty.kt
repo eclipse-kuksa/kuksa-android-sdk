@@ -21,8 +21,7 @@ package org.eclipse.kuksa.vssprocessor.spec
 
 import kotlin.reflect.KClass
 
-open class VssNodeProperty(
-    val vssPath: String,
+internal open class VssNodeProperty(
     val nodePropertyName: String,
     val nodePropertyValue: String,
     val dataType: KClass<*>,
@@ -43,11 +42,10 @@ open class VssNodeProperty(
     }
 }
 
-class VssSignalProperty(
-    vssPath: String,
+internal class VssSignalProperty(
     nodePropertyName: String,
     nodePropertyValue: String,
     dataType: KClass<*>,
-) : VssNodeProperty(vssPath, nodePropertyName, nodePropertyValue, dataType) {
+) : VssNodeProperty(nodePropertyName, nodePropertyValue, dataType) {
     override val isCommon: Boolean = false
 }

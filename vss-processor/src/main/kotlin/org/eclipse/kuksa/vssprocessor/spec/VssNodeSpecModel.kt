@@ -42,6 +42,11 @@ import org.eclipse.kuksa.vsscore.model.name
 import org.eclipse.kuksa.vsscore.model.parentClassName
 import org.eclipse.kuksa.vsscore.model.parentKey
 import org.eclipse.kuksa.vsscore.model.variableName
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_COMMENT
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DATATYPE
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_DESCRIPTION
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_TYPE
+import org.eclipse.kuksa.vssprocessor.parser.KEY_DATA_UUID
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeProperty.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -54,11 +59,11 @@ internal class VssNodeSpecModel(
 
     private val propertyNameToNodePropertyMap = vssNodeProperties.associateBy { it.nodePropertyName }
 
-    override var uuid: String = propertyNameToNodePropertyMap["uuid"]?.nodePropertyValue ?: ""
-    override var type: String = propertyNameToNodePropertyMap["type"]?.nodePropertyValue ?: ""
-    override var description: String = propertyNameToNodePropertyMap["description"]?.nodePropertyValue ?: ""
-    override var comment: String = propertyNameToNodePropertyMap["comment"]?.nodePropertyValue ?: ""
-    var datatype: String = propertyNameToNodePropertyMap["datatype"]?.nodePropertyValue ?: ""
+    override var uuid: String = propertyNameToNodePropertyMap[KEY_DATA_UUID]?.nodePropertyValue ?: ""
+    override var type: String = propertyNameToNodePropertyMap[KEY_DATA_TYPE]?.nodePropertyValue ?: ""
+    override var description: String = propertyNameToNodePropertyMap[KEY_DATA_DESCRIPTION]?.nodePropertyValue ?: ""
+    override var comment: String = propertyNameToNodePropertyMap[KEY_DATA_COMMENT]?.nodePropertyValue ?: ""
+    var datatype: String = propertyNameToNodePropertyMap[KEY_DATA_DATATYPE]?.nodePropertyValue ?: ""
 
     var logger: KSPLogger? = null
 
