@@ -2,6 +2,69 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.0](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.1.3...release/v0.2.0) (2024-03-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* The API for fetch / subscribe / update did change.
+The input for these methods are now wrapped via "DataBrokerRequest"
+classes e.g. "FetchRequest", "UpdateRequest". For generated VSS models
+the classes "VssNodeFetchRequest" etc. should be used.
+
+- The Property model was removed in favor of DataBrokerRequest
+* - A new Gradle plugin(VssProcessorPlugin) was introduced to improve
+the input (VSS files) handling of the VSS KSP generation. This plugin
+is now mandatory if the VssProcessor KSP module is used in the
+project.
+* - Method PropertyListener#onPropertyChanged(String, Field, DataEntry) was removed
+- Method PropertyListener#onPropertyChanged(List<EntryUpdate>) was added
+- Previous DataEntry can be retrieved via EntryUpdate#entry
+- Subscribing to a branch will initially send out an update containing a list of all leafs
+
+* Fix buildDir for javadocJar task ([49729c4](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/49729c40790ce324cb6756e43e10d6a2a9d4fa53))
+* Improve PropertyListener for Wildcard Subscribes ([bb92476](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/bb9247692ee021c439f076cb80fd955f66ce9a8e))
+* Replace Property with DataBrokerRequests ([ea1054d](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/ea1054d406e83af45abad28bcc4539e8abe060a6))
+
+
+### Features
+
+* **Build:** Add a fixed Databroker version for PR builds ([7d307d5](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/7d307d5d5dcb94c71467fb26a102a8d939412bf8))
+* **Build:** Add Code Coverage Report ([1a3e8fe](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/1a3e8fe2d1fefcf0cc845252b1d041ae62e5e38f))
+* **Build:** Add Automation for Github Releases Pages ([1add64b](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/1add64b669b2b562b0a5c0ac6280c455f52a1ad9)), closes [#42](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/42)
+* **Build:** Add Github Action to test SDK:main -> Databroker:master ([b5ea73b](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/b5ea73b1c6bb7342e315de3d047d8cb3e66145ed))
+* **Build:** Make "run-tests" able to run Custom Sets of Tests ([31ff2cf](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/31ff2cfc5fd5974c3bdcce28bbb29060f809dcce))
+* **SDK:** Remove "Custom Wildcard Subscription"-Logic for Specs ([2632b4d](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/2632b4d8a13e2a9ab8a009e1f033164dede0a9ff)), closes [#60](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/60)
+* **SDK:** Add Support for Authentication ([1d4ff54](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/1d4ff54278e6d4ede864480b389cec1c17db1766)), closes [#76](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/76)
+* **TestApp:** Add Suggestions for VSS Path ([9221f0b](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/9221f0b5def9ff67eb92a87a54eb0bd23e380e91)), closes [#16](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/16)
+* **TestApp:** Add TestApp Support for Authentication ([7a40e92](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/7a40e924a9d66b0621e4e312418ac4233c7e538a))
+* **TestApp:** Remove Field.METADATA from "casual" queries ([fac8d85](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/fac8d85a8e935e41063abcd0bd98787586d99929)), closes [#24](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/24)
+* **TestApp:** Slimline ConnectedView ([77fbd4a](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/77fbd4a4af7f7fe213b4900e4513100993f3923f))
+* **TestApp:** Add possibility to test the update of generated VSS Models ([44bb3a5](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/44bb3a5cad9dd7e6fabeb96b424acb0d739f29a9)), closes [#105](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/105)
+* **VssProcessor** Add VSS Processor Plugin ([aa3d2d2](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/aa3d2d2b73759461ef4118454264fe4c95946e07)), closes [#45](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/45)
+* **VssProcessor:** Add dataType to VssSignal ([461eda0](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/461eda0f7d4ee066e4bcf52be9551e522d25aff3))
+* **VssProcessor:** Add Support for unit, min and max attributes of Specification ([49e1b8f](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/49e1b8fdb042d24ec19cf1a00b1a89188e8dd7d9))
+* **VssProcessor:** Add JSON Parser to VSS Processor module ([f4a72a2](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/f4a72a2101c265534f6fc0312ab877579108ebe7))
+
+
+### Bug Fixes
+
+* **SDK:** Fix parent class of generated VSS specifications ([f481f64](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/f481f6459ef3655e3541096b22228680bd726767))
+* **SDK:** Fix UInt not supported for VssNodes ([07e9f04](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/07e9f0482e15b402936482116a8d71a25ee536bf)), closes [#93](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/93)
+* **TestApp:** Fix ConnectionInfo DataStore initialised again ([30927ef](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/30927ef0dd29d1fd8b4dd20b82faefd902ba667f)), closes [#81](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/81)
+
+
+### Documentation
+
+* Add Documentation about Fail-Early-Builds ([8eeebab](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/8eeebab0eb3a770825631d19577fc42a48118479))
+* Add Documentation for Authentication ([ddcd0b6](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/ddcd0b67ec0e90c48a64168a8863a473f7cc27f8))
+* Add VSS Processor Plugin docs ([aad0a0c](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/aad0a0cf29b0854c90577939eda51fd95adea3a7))
+
+
+### Refactoring
+
+* **SDK:** Align Terminology of VSS model classes / public API ([5748884](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/57488844ddfbd33ea93d58521252598716cde511)), closes [#70](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues/70)
+
 ## [0.1.3](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.1.2...release/v0.1.3) (2024-01-22)
 
 
