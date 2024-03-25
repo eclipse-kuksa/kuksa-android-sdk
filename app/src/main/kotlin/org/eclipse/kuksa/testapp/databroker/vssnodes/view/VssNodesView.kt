@@ -18,7 +18,6 @@
 
 package org.eclipse.kuksa.testapp.databroker.vssnodes.view
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -62,10 +62,10 @@ import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.VssSignal
 
-private const val Tag = "DataBrokerVssNodesView"
-
 @Composable
 fun VssNodesView(viewModel: VssNodesViewModel) {
+    val focusManager = LocalFocusManager.current
+
     Column {
         Headline(name = "Generated VSS Nodes")
 
@@ -85,6 +85,11 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
             onItemSelected = {
                 val vssNode = it ?: VssVehicle()
                 viewModel.updateNode(vssNode)
+
+                // Do an initial fetch of a VssSignal so the value reflects the actual one
+                if (vssNode is VssSignal<*>) {
+                    viewModel.onGetNode(vssNode)
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,6 +112,7 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
         ) {
             Button(
                 onClick = {
+                    focusManager.clearFocus()
                     viewModel.onGetNode(currentNode)
                 },
                 modifier = Modifier.requiredWidth(80.dp),
@@ -115,6 +121,7 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
             }
             Button(
                 onClick = {
+                    focusManager.clearFocus()
                     (currentNode as VssSignal<*>?)?.let { vssSignal ->
                         viewModel.onUpdateSignal(vssSignal)
                     }
@@ -126,6 +133,7 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
             }
             if (viewModel.isSubscribed) {
                 Button(onClick = {
+                    focusManager.clearFocus()
                     viewModel.subscribedNodes.remove(currentNode)
                     viewModel.onUnsubscribeNode(currentNode)
                 }) {
@@ -255,14 +263,16 @@ private fun VssSignalInformation(
             inputValue = newValue
 
             // Try and forget approach: Try to brute force the random input string into the VssSignal.
-            @Suppress("TooGenericExceptionCaught")
+            @Suppress("TooGenericExceptionCaught", "SwallowedException")
             try {
-                val datapoint = vssSignal.valueCase.createDatapoint(newValue.trim())
+                val trimmedValue = newValue.trim()
+                if (trimmedValue.isEmpty()) return@TextField
+
+                val datapoint = vssSignal.valueCase.createDatapoint(trimmedValue)
                 val updatedVssSignal = vssSignal.copy(datapoint)
                 onSignalChanged(updatedVssSignal)
             } catch (e: Exception) {
                 // Do nothing, wrong input
-                Log.v(Tag, "Wrong input for VssSignal:value: ", e)
             }
         },
         modifier = modifier

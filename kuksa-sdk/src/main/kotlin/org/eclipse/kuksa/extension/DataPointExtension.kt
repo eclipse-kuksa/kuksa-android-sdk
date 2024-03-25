@@ -21,7 +21,6 @@ package org.eclipse.kuksa.extension
 
 import android.util.Log
 import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.proto.v1.Types.BoolArray
 import org.eclipse.kuksa.proto.v1.Types.Datapoint
 import org.eclipse.kuksa.proto.v1.Types.Datapoint.ValueCase
 import org.eclipse.kuksa.vsscore.model.VssSignal
@@ -42,7 +41,13 @@ val Types.Metadata.valueType: ValueCase
  */
 val <T : Any> VssSignal<T>.datapoint: Datapoint
     get() {
-        val stringValue = value.toString()
+        // TODO: Only supports string arrays for now, IntArray, DoubleArray etc. are not supported yet
+        val stringValue = if (value::class.java.isArray) {
+            val valueArray = value as Array<*>
+            valueArray.joinToString()
+        } else {
+            value.toString()
+        }
 
         return valueCase.createDatapoint(stringValue)
     }
@@ -65,7 +70,7 @@ val <T : Any> VssSignal<T>.valueCase: ValueCase
             Long::class -> ValueCase.INT64
             UInt::class -> ValueCase.UINT32
             ULong::class -> ValueCase.UINT64
-            Array<String>::class -> ValueCase.DOUBLE
+            Array<String>::class -> ValueCase.STRING_ARRAY
             BooleanArray::class -> ValueCase.BOOL_ARRAY
             IntArray::class -> ValueCase.INT32_ARRAY
             FloatArray::class -> ValueCase.FLOAT_ARRAY
@@ -173,74 +178,66 @@ val Datapoint.stringValue: String
         return value.toString()
     }
 
-private fun createBoolArray(value: String): BoolArray {
+private fun createBoolArray(value: String): Types.BoolArray {
     val csvValues = value.split(CSV_DELIMITER).map { it.toBoolean() }
 
-    val array = BoolArray.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.BoolArray.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }
 
 private fun createDoubleArray(value: String): Types.DoubleArray {
     val csvValues = value.split(CSV_DELIMITER).map { it.toDouble() }
 
-    val array = Types.DoubleArray.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.DoubleArray.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }
 
 private fun createInt64Array(value: String): Types.Int64Array {
     val csvValues = value.split(CSV_DELIMITER).map { it.toLong() }
 
-    val array = Types.Int64Array.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.Int64Array.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }
 
 private fun createUInt64Array(value: String): Types.Uint64Array {
     val csvValues = value.split(CSV_DELIMITER).map { it.toLong() }
 
-    val array = Types.Uint64Array.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.Uint64Array.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }
 
 private fun createInt32Array(value: String): Types.Int32Array {
     val csvValues = value.split(CSV_DELIMITER).map { it.toInt() }
 
-    val array = Types.Int32Array.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.Int32Array.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }
 
 private fun createUInt32Array(value: String): Types.Uint32Array {
     val csvValues = value.split(CSV_DELIMITER).map { it.toInt() }
 
-    val array = Types.Uint32Array.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.Uint32Array.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }
 
 private fun createStringArray(value: String): Types.StringArray {
     val csvValues = value.split(CSV_DELIMITER)
 
-    val array = Types.StringArray.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.StringArray.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }
 
 private fun createFloatArray(value: String): Types.FloatArray {
     val csvValues = value.split(CSV_DELIMITER).map { it.toFloat() }
 
-    val array = Types.FloatArray.getDefaultInstance()
-    array.valuesList.addAll(csvValues)
-
-    return array
+    return Types.FloatArray.newBuilder()
+        .addAllValues(csvValues)
+        .build()
 }

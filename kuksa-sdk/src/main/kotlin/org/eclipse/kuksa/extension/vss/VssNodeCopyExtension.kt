@@ -96,7 +96,7 @@ fun <T : Any> VssSignal<T>.copy(datapoint: Datapoint): VssSignal<T> {
             UINT64 -> uint64
             FLOAT -> float
             DOUBLE -> double
-            STRING_ARRAY -> stringArray.valuesList
+            STRING_ARRAY -> stringArray.valuesList.toTypedArray()
             BOOL_ARRAY -> boolArray.valuesList.toBooleanArray()
             INT32_ARRAY -> int32Array.valuesList.toIntArray()
             INT64_ARRAY -> int64Array.valuesList.toLongArray()

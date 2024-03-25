@@ -41,7 +41,7 @@ enum class VssDataType(
     INT16(Int::class, "int16", "0"),
     INT32(Int::class, "int32", "0"),
     INT64(Long::class, "int64", "0L"),
-    UINT8(Int::class, "uint8", "0", Int::class),
+    UINT8(UInt::class, "uint8", "0", Int::class),
     UINT16(UInt::class, "uint16", "0", Int::class),
     UINT32(UInt::class, "uint32", "0", Int::class),
     UINT64(ULong::class, "uint64", "0L", Long::class),
