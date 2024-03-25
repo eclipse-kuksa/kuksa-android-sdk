@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.1](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.2.0...release/v0.2.1) (2024-03-25)
+
+
+### Bug Fixes
+
+* **vss-processor-plugin:** Add missing pom information ([05ec8f9](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/05ec8f952d1ae8c812083ddcc2a65ab66cdbb75f))
+
 ## [0.2.0](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.1.3...release/v0.2.0) (2024-03-25)
 
 
