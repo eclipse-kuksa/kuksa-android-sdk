@@ -42,25 +42,29 @@ import org.eclipse.kuksa.vsscore.model.name
 import org.eclipse.kuksa.vsscore.model.parentClassName
 import org.eclipse.kuksa.vsscore.model.parentKey
 import org.eclipse.kuksa.vsscore.model.variableName
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.*
+import org.eclipse.kuksa.vssprocessor.spec.VssNodeProperty.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
-// Reflects the VSS file as a model and is filled via reflection. That is why the variable names
-// should exactly match the names inside the VSS file and be of a string type.
 internal class VssNodeSpecModel(
-    override var uuid: String = "",
     override var vssPath: String = "",
-    override var description: String = "",
-    override var type: String = "",
-    override var comment: String = "",
-    @Suppress("MemberVisibilityCanBePrivate") var datatype: String = "",
+    val vssNodeProperties: Set<VssNodeProperty>,
 ) : VssNode, SpecModel<VssNodeSpecModel> {
+
+    private val propertyNameToNodePropertyMap = vssNodeProperties.associateBy { it.dataKey }
+
+    override val uuid: String = propertyNameToNodePropertyMap[UUID]?.value ?: ""
+    override val type: String = propertyNameToNodePropertyMap[TYPE]?.value ?: ""
+    override val description: String = propertyNameToNodePropertyMap[DESCRIPTION]?.value ?: ""
+    override val comment: String = propertyNameToNodePropertyMap[COMMENT]?.value ?: ""
+    val datatype: String = propertyNameToNodePropertyMap[DATATYPE]?.value ?: ""
+
     var logger: KSPLogger? = null
 
     private val stringTypeName = String::class.asTypeName()
     private val vssNodeSetTypeName = Set::class.parameterizedBy(VssNode::class)
-    private val genericClassTypeName = KClass::class.asClassName().parameterizedBy(STAR)
     private val genericClassTypeNameNullable = KClass::class.asClassName().parameterizedBy(STAR).copy(nullable = true)
 
     private val vssDataType by lazy { VssDataType.find(datatype) }
@@ -102,14 +106,16 @@ internal class VssNodeSpecModel(
         // The last element in the chain should have a value like "isLocked".
         val isVssSignal = childNodes.isEmpty()
         if (isVssSignal) {
-            val (vssSignalTypeName, vssSignalPropertySpecs, vssSignalParameterSpec) = createVssSignalSpec()
+            val (vssSignalTypeName, vssSignalPropertySpecs, vssSignalParameterSpecs) = createVssSignalSpec()
 
             // Final leafs should ONLY implement the VssSignal interface
             superInterfaces.clear()
             superInterfaces.add(vssSignalTypeName)
 
             propertySpecs.addAll(vssSignalPropertySpecs)
-            vssSignalParameterSpec?.let { constructorBuilder.addParameter(it) }
+            vssSignalParameterSpecs.forEach {
+                constructorBuilder.addParameter(it)
+            }
         }
 
         val propertySpec = createVssNodeSpecs(className, packageName = packageName)
@@ -166,40 +172,64 @@ internal class VssNodeSpecModel(
             .build()
     }
 
-    private fun createVssSignalSpec(): Triple<ParameterizedTypeName, MutableList<PropertySpec>, ParameterSpec?> {
-        val propertySpecs = mutableListOf<PropertySpec>()
-        var parameterSpec: ParameterSpec? = null
-
-        val vssSignalMembers = VssSignal::class.declaredMemberProperties
-        vssSignalMembers.forEach { member ->
-            val memberName = member.name
-            when (val memberType = member.returnType.asTypeName()) {
-                genericClassTypeName -> {
-                    val genericClassSpec = createGenericClassSpec(
-                        memberName,
-                        memberType,
-                        datatypeTypeName.toString(),
-                    )
-                    propertySpecs.add(genericClassSpec)
-                }
-
-                else -> {
-                    val (classPropertySpec, classParameterSpec) = createClassParamSpec(
-                        memberName,
-                        valueTypeName,
-                        defaultValue,
-                    )
-                    parameterSpec = classParameterSpec
-                    propertySpecs.add(classPropertySpec)
-                }
+    private fun createVssSignalSpec(): Triple<ParameterizedTypeName, List<PropertySpec>, List<ParameterSpec>> {
+        fun getReturnStatement(propertyClass: KClass<*>): String {
+            val placeholder = when (propertyClass) {
+                String::class -> "%S"
+                Float::class -> "%L.toFloat()"
+                Double::class -> "%L.toDouble()"
+                else -> "%L"
             }
+
+            return "return $placeholder"
+        }
+
+        val propertySpecs = mutableListOf<PropertySpec>()
+        val parameterSpecs = mutableListOf<ParameterSpec>()
+
+        val (classPropertySpec, classParameterSpec) = createClassParamSpec(
+            VssSignal<*>::value.name,
+            valueTypeName,
+            defaultValue,
+        )
+        parameterSpecs.add(classParameterSpec)
+        propertySpecs.add(classPropertySpec)
+
+        val genericClassSpec = createGenericClassSpec(
+            VssSignal<*>::dataType.name,
+            VssSignal<*>::dataType.returnType.asTypeName(),
+            datatypeTypeName.toString(),
+        )
+        propertySpecs.add(genericClassSpec)
+        val vssSignalProperties = vssNodeProperties
+            .filterIsInstance<VssSignalProperty>()
+            .filter {
+                it.dataKey.key != VssSignal<*>::dataType.name.lowercase()
+            }
+
+        vssSignalProperties.forEach { vssSignalProperty ->
+            val value = vssSignalProperty.value
+            if (value.isEmpty()) return@forEach
+
+            val propertyName = vssSignalProperty.dataKey.key
+            val propertyType = vssSignalProperty.dataType
+            val returnStatement = getReturnStatement(vssSignalProperty.dataType)
+            val propertySpec = PropertySpec
+                .builder(propertyName, propertyType)
+                .getter(
+                    FunSpec.getterBuilder()
+                        .addStatement(returnStatement, value)
+                        .build(),
+                )
+                .build()
+            propertySpecs.add(propertySpec)
         }
 
         val typeName = VssSignal::class
             .asTypeName()
             .plusParameter(valueTypeName)
 
-        return Triple(typeName, propertySpecs, parameterSpec)
+        return Triple(typeName, propertySpecs, parameterSpecs)
     }
 
     private fun createClassParamSpec(
@@ -215,8 +245,8 @@ internal class VssNodeSpecModel(
 
         // Adds a default value (mainly 0 or an empty string)
         val parameterSpec = ParameterSpec.builder(
-            propertySpec.name,
-            propertySpec.type,
+            memberName,
+            typeName,
         ).defaultValue("%L", defaultValue).build()
 
         return Pair(propertySpec, parameterSpec)

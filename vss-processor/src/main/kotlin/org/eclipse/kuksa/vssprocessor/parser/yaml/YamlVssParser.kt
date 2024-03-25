@@ -19,38 +19,50 @@
 
 package org.eclipse.kuksa.vssprocessor.parser.yaml
 
-import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vssprocessor.parser.FileParseException
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.COMMENT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DATATYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DESCRIPTION
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MAX
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MIN
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.TYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UNIT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UUID
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
+import org.eclipse.kuksa.vssprocessor.spec.VssNodePropertiesBuilder
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.memberProperties
+import java.io.IOException
 
 internal class YamlVssParser(private val elementDelimiter: String = "") : VssParser {
     override fun parseNodes(vssFile: File): List<VssNodeSpecModel> {
         val vssNodeElements = mutableListOf<VssNodeSpecModel>()
-        vssFile.useLines { lines ->
-            val yamlAttributes = mutableListOf<String>()
-            for (line in lines.toList()) {
-                val trimmedLine = line.trim()
-                if (trimmedLine == elementDelimiter) { // A new element will follow after the delimiter
-                    parseYamlElement(yamlAttributes)?.let { element ->
-                        vssNodeElements.add(element)
+        try {
+            vssFile.useLines { lines ->
+                val yamlAttributes = mutableListOf<String>()
+                for (line in lines.toList()) {
+                    val trimmedLine = line.trim()
+                    if (trimmedLine == elementDelimiter) { // A new element will follow after the delimiter
+                        parseYamlElement(yamlAttributes).let { element ->
+                            vssNodeElements.add(element)
+                        }
+
+                        yamlAttributes.clear()
+
+                        continue
                     }
 
-                    yamlAttributes.clear()
-
-                    continue
+                    yamlAttributes.add(trimmedLine)
                 }
 
-                yamlAttributes.add(trimmedLine)
+                // Add the last element because no empty line will follow
+                parseYamlElement(yamlAttributes).let { element ->
+                    vssNodeElements.add(element)
+                }
             }
-
-            // Add the last element because no empty line will follow
-            parseYamlElement(yamlAttributes)?.let { element ->
-                vssNodeElements.add(element)
-            }
+        } catch (e: FileParseException) {
+            throw IOException("Invalid VSS File: '${vssFile.path}'", e)
         }
 
         return vssNodeElements
@@ -62,64 +74,49 @@ internal class YamlVssParser(private val elementDelimiter: String = "") : VssPar
     //  description: Antilock Braking System signals.
     //  type: branch
     //  uuid: 219270ef27c4531f874bbda63743b330
-    private fun parseYamlElement(yamlElement: List<String>, delimiter: Char = ';'): VssNodeSpecModel? {
-        val elementVssPath = yamlElement.first().substringBefore(":")
+    private fun parseYamlElement(yamlElement: List<String>, delimiter: Char = ';'): VssNodeSpecModel {
+        val vssPath = yamlElement.first().substringBefore(":")
 
         val yamlElementJoined = yamlElement
             .joinToString(separator = delimiter.toString())
             .substringAfter(delimiter) // Remove vssPath (already parsed)
             .prependIndent(delimiter.toString()) // So the parsing is consistent for the first element
-        val members = VssNodeSpecModel::class.memberProperties
-        val fieldsToSet = mutableListOf<Pair<String, Any?>>()
 
-        // The VSSPath is an exception because it is parsed from the top level name.
-        val vssPathFieldInfo = Pair("vssPath", elementVssPath)
-        fieldsToSet.add(vssPathFieldInfo)
-
-        // Parse (example: "description: Antilock Braking System signals.") into name + value for all .yaml lines
-        for (member in members) {
-            val memberName = member.name
-            if (!yamlElementJoined.contains(memberName)) continue
-
-            // Also parse the delimiter to not confuse type != datatype
-            val memberValue = yamlElementJoined
-                .substringAfter("$delimiter$memberName: ")
-                .substringBefore(delimiter)
-
-            val fieldInfo = Pair(memberName, memberValue)
-            fieldsToSet.add(fieldInfo)
+        val uuid = fetchValue(UUID, yamlElementJoined, delimiter).ifEmpty {
+            throw FileParseException("Could not parse '${UUID.key}' for '$vssPath'")
         }
 
-        val vssNodeSpec = VssNodeSpecModel()
-        vssNodeSpec.setFields(fieldsToSet)
+        val type = fetchValue(TYPE, yamlElementJoined, delimiter).ifEmpty {
+            throw FileParseException("Could not parse '${TYPE.key}' for '$vssPath'")
+        }
 
-        if (vssNodeSpec.uuid.isEmpty()) return null
+        val description = fetchValue(DESCRIPTION, yamlElementJoined, delimiter)
+        val comment = fetchValue(COMMENT, yamlElementJoined, delimiter)
+        val datatype = fetchValue(DATATYPE, yamlElementJoined, delimiter)
+        val unit = fetchValue(UNIT, yamlElementJoined, delimiter)
+        val min = fetchValue(MIN, yamlElementJoined, delimiter)
+        val max = fetchValue(MAX, yamlElementJoined, delimiter)
 
-        return vssNodeSpec
+        val vssNodeProperties = VssNodePropertiesBuilder(uuid, type)
+            .withDescription(description)
+            .withComment(comment)
+            .withDataType(datatype)
+            .withUnit(unit)
+            .withMin(min, datatype)
+            .withMax(max, datatype)
+            .build()
+
+        return VssNodeSpecModel(vssPath, vssNodeProperties)
     }
 }
 
-/**
- * @param fields to set via reflection. Pair<PropertyName, anyValue>.
- * @param remapNames which can be used if the propertyName does not match with the input name
- */
-private fun VssNode.setFields(
-    fields: List<Pair<String, Any?>>,
-    remapNames: Map<String, String> = emptyMap(),
-) {
-    val nameToProperty = this::class.memberProperties.associateBy(KProperty<*>::name)
-
-    val remappedFields = fields.toMutableList()
-    remapNames.forEach { (propertyName, newName) ->
-        val find = fields.find { it.first == propertyName } ?: return@forEach
-        remappedFields.remove(find)
-        remappedFields.add(Pair(find.first, newName))
-    }
-
-    remappedFields.forEach { (propertyName, propertyValue) ->
-        nameToProperty[propertyName]
-            .takeIf { it is KMutableProperty<*> }
-            ?.let { it as KMutableProperty<*> }
-            ?.setter?.call(this, propertyValue)
-    }
+private fun fetchValue(
+    dataKey: VssDataKey,
+    yamlElementJoined: String,
+    delimiter: Char,
+): String {
+    // Also parse the delimiter to not confuse type != datatype
+    return yamlElementJoined
+        .substringAfter("$delimiter${dataKey.key}: ")
+        .substringBefore(delimiter)
 }
