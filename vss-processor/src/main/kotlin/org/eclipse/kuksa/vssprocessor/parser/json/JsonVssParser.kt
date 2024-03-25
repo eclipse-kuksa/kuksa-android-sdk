@@ -22,29 +22,25 @@ package org.eclipse.kuksa.vssprocessor.parser.json
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
+import org.eclipse.kuksa.vssprocessor.parser.KEY_CHILDREN
+import org.eclipse.kuksa.vssprocessor.parser.ROOT_KEY_VEHICLE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.COMMENT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DATATYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.DESCRIPTION
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MAX
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.MIN
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.TYPE
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UNIT
+import org.eclipse.kuksa.vssprocessor.parser.VssDataKey.UUID
 import org.eclipse.kuksa.vssprocessor.parser.VssParser
+import org.eclipse.kuksa.vssprocessor.parser.json.extension.get
+import org.eclipse.kuksa.vssprocessor.spec.VssNodePropertiesBuilder
 import org.eclipse.kuksa.vssprocessor.spec.VssNodeSpecModel
 import java.io.File
 import java.io.IOException
 
-private const val ROOT_KEY_VEHICLE = "Vehicle"
-
-private const val KEY_DATA_DESCRIPTION = "description"
-private const val KEY_DATA_TYPE = "type"
-private const val KEY_DATA_UUID = "uuid"
-private const val KEY_DATA_COMMENT = "comment"
-private const val KEY_DATA_DATATYPE = "datatype"
-private const val KEY_DATA_CHILDREN = "children"
-
 internal class JsonVssParser : VssParser {
-    private val dataKeys = listOf(
-        KEY_DATA_DESCRIPTION,
-        KEY_DATA_TYPE,
-        KEY_DATA_UUID,
-        KEY_DATA_COMMENT,
-        KEY_DATA_DATATYPE,
-        KEY_DATA_CHILDREN,
-    )
 
     override fun parseNodes(vssFile: File): List<VssNodeSpecModel> {
         val vssNodeSpecModels = mutableListOf<VssNodeSpecModel>()
@@ -77,11 +73,12 @@ internal class JsonVssParser : VssParser {
         val parsedSpecModel = parseSpecModel(vssPath, jsonObject)
         parsedSpecModels += parsedSpecModel
 
-        if (jsonObject.has(KEY_DATA_CHILDREN)) {
-            val childrenJsonElement = jsonObject.getAsJsonObject(KEY_DATA_CHILDREN)
+        if (jsonObject.has(KEY_CHILDREN)) {
+            val childrenJsonElement = jsonObject.getAsJsonObject(KEY_CHILDREN)
 
             val filteredKeys = childrenJsonElement.asMap().keys
-                .filter { key -> !dataKeys.contains(key) }
+                .filter { key -> key != KEY_CHILDREN }
+                .filter { key -> VssDataKey.findByKey(key) == null }
 
             filteredKeys.forEach { key ->
                 val childJsonElement = childrenJsonElement.getAsJsonObject(key)
@@ -98,16 +95,28 @@ internal class JsonVssParser : VssParser {
         vssPath: String,
         jsonObject: JsonObject,
     ): VssNodeSpecModel {
-        val uuid = jsonObject.get(KEY_DATA_UUID).asString
-            ?: throw JsonParseException("Could not parse '$KEY_DATA_UUID' for '$vssPath'")
+        val uuid = jsonObject.get(UUID)?.asString
+            ?: throw JsonParseException("Could not parse '${UUID.key}' for '$vssPath'")
 
-        val type = jsonObject.get(KEY_DATA_TYPE).asString
-            ?: throw JsonParseException("Could not parse '$KEY_DATA_TYPE' for '$vssPath'")
+        val type = jsonObject.get(TYPE)?.asString
+            ?: throw JsonParseException("Could not parse '${TYPE.key}' for '$vssPath'")
 
-        val description = jsonObject.get(KEY_DATA_DESCRIPTION).asString ?: ""
-        val datatype = jsonObject.get(KEY_DATA_DATATYPE)?.asString ?: ""
-        val comment = jsonObject.get(KEY_DATA_COMMENT)?.asString ?: ""
+        val description = jsonObject.get(DESCRIPTION)?.asString ?: ""
+        val datatype = jsonObject.get(DATATYPE)?.asString ?: ""
+        val comment = jsonObject.get(COMMENT)?.asString ?: ""
+        val unit = jsonObject.get(UNIT)?.asString ?: ""
+        val min = jsonObject.get(MIN)?.asString ?: ""
+        val max = jsonObject.get(MAX)?.asString ?: ""
 
-        return VssNodeSpecModel(uuid, vssPath, description, type, comment, datatype)
+        val vssNodeProperties = VssNodePropertiesBuilder(uuid, type)
+            .withDescription(description)
+            .withComment(comment)
+            .withDataType(datatype)
+            .withUnit(unit)
+            .withMin(min, datatype)
+            .withMax(max, datatype)
+            .build()
+
+        return VssNodeSpecModel(vssPath, vssNodeProperties)
     }
 }

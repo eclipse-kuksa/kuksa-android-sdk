@@ -102,6 +102,71 @@
             "description": "Driver Monitoring System signals.",
             "type": "branch",
             "uuid": "1cd72c7fc7fe5269a93c9954f46a4f60"
+          },
+          "ESC": {
+            "children": {
+              "IsEnabled": {
+                "datatype": "boolean",
+                "description": "Indicates if ESC is enabled. True = Enabled. False = Disabled.",
+                "type": "actuator",
+                "uuid": "3f4f39b8d8c05c97a6de685282ba74b7"
+              },
+              "IsEngaged": {
+                "datatype": "boolean",
+                "description": "Indicates if ESC is currently regulating vehicle stability. True = Engaged. False = Not Engaged.",
+                "type": "sensor",
+                "uuid": "2088953a28385353a9d46b3a3dc11cac"
+              },
+              "IsError": {
+                "datatype": "boolean",
+                "description": "Indicates if ESC incurred an error condition. True = Error. False = No Error.",
+                "type": "sensor",
+                "uuid": "6c237535654b5bc7a70f6a70c760b9d4"
+              },
+              "IsStrongCrossWindDetected": {
+                "datatype": "boolean",
+                "description": "Indicates if the ESC system is detecting strong cross winds. True = Strong cross winds detected. False = No strong cross winds detected.",
+                "type": "sensor",
+                "uuid": "ebfd609531345c37914b89e553df80cb"
+              },
+              "RoadFriction": {
+                "children": {
+                  "LowerBound": {
+                    "datatype": "float",
+                    "description": "Lower bound road friction, as calculated by the ESC system. 5% possibility that road friction is below this value. 0 = no friction, 100 = maximum friction.",
+                    "max": 100,
+                    "min": 0,
+                    "type": "sensor",
+                    "unit": "percent",
+                    "uuid": "634289f58b5d511ea9979f04a9d0f2ab"
+                  },
+                  "MostProbable": {
+                    "datatype": "float",
+                    "description": "Most probable road friction, as calculated by the ESC system. Exact meaning of most probable is implementation specific. 0 = no friction, 100 = maximum friction.",
+                    "max": 100,
+                    "min": 0,
+                    "type": "sensor",
+                    "unit": "percent",
+                    "uuid": "b0eb72430cd95bfbba0d187fcb6e2a62"
+                  },
+                  "UpperBound": {
+                    "datatype": "float",
+                    "description": "Upper bound road friction, as calculated by the ESC system. 95% possibility that road friction is below this value. 0 = no friction, 100 = maximum friction.",
+                    "max": 100,
+                    "min": 0,
+                    "type": "sensor",
+                    "unit": "percent",
+                    "uuid": "ad0415a799575fcd8d1f49bed9a2baeb"
+                  }
+                },
+                "description": "Road friction values reported by the ESC system.",
+                "type": "branch",
+                "uuid": "71a32e4eb131532c82195508d93807ed"
+              }
+            },
+            "description": "Electronic Stability Control System signals.",
+            "type": "branch",
+            "uuid": "636b4586ce7854b4b270a2f3b6c0af4f"
           }
         },
         "description": "All Advanced Driver Assist Systems data.",
