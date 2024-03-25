@@ -34,6 +34,7 @@ import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.response.VssNodeUpdateResponse
 import org.eclipse.kuksa.connectivity.databroker.subscription.DataBrokerSubscriber
 import org.eclipse.kuksa.extension.TAG
 import org.eclipse.kuksa.extension.datapoint
@@ -217,14 +218,14 @@ class DataBrokerConnection internal constructor(
      * Only a [VssSignal] can be updated because they have an actual value. When provided with any parent
      * [VssNode] then this [update] method will find all [VssSignal] children and updates their corresponding
      * [Types.Field] instead.
-     * Compared to [update] with only one [UpdateRequest], here multiple [SetResponse] will be returned
-     * because a [VssNode] may consists of multiple values which may need to be updated.
+     * Compared to [update] with only one [UpdateRequest], here multiple [SetResponse] via [VssNodeUpdateResponse] will
+     * be returned because a [VssNode] may consists of multiple values which may need to be updated.
      *
      * @throws DataBrokerException in case the connection to the DataBroker is no longer active
      * @throws IllegalArgumentException if the [VssSignal] could not be converted to a [Datapoint].
      */
     @Suppress("performance:SpreadOperator") // Neglectable: Field types are 1-2 elements mostly
-    suspend fun <T : VssNode> update(request: VssNodeUpdateRequest<T>): Collection<SetResponse> {
+    suspend fun <T : VssNode> update(request: VssNodeUpdateRequest<T>): VssNodeUpdateResponse {
         val responses = mutableListOf<SetResponse>()
         val vssNode = request.vssNode
 
@@ -235,7 +236,7 @@ class DataBrokerConnection internal constructor(
             responses.add(response)
         }
 
-        return responses
+        return VssNodeUpdateResponse(responses)
     }
 
     /**

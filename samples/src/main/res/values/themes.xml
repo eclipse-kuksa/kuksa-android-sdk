@@ -19,6 +19,5 @@
   -->
 
 <resources>
-
     <style name="Theme.Kuksasdkandroid" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

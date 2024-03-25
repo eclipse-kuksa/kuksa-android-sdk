@@ -33,11 +33,13 @@ import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.response.VssNodeUpdateResponse
 import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
-import org.eclipse.kuksa.testapp.databroker.connection.DataBrokerConnectorFactory
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.factory.DataBrokerConnectorFactory
+import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
 import org.eclipse.kuksa.vsscore.model.VssNode
 
 @Suppress("complexity:TooManyFunctions")
@@ -100,6 +102,20 @@ class KotlinDataBrokerEngine(
     }
 
     override fun update(request: UpdateRequest, callback: CoroutineCallback<SetResponse>) {
+        lifecycleScope.launch {
+            try {
+                val response = dataBrokerConnection?.update(request) ?: return@launch
+                callback.onSuccess(response)
+            } catch (e: DataBrokerException) {
+                callback.onError(e)
+            }
+        }
+    }
+
+    override fun <T : VssNode> update(
+        request: VssNodeUpdateRequest<T>,
+        callback: CoroutineCallback<VssNodeUpdateResponse>,
+    ) {
         lifecycleScope.launch {
             try {
                 val response = dataBrokerConnection?.update(request) ?: return@launch

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.connection
+package org.eclipse.kuksa.testapp.databroker.connection.factory
 
 import android.content.Context
 import android.net.Uri
@@ -29,7 +28,7 @@ import io.grpc.TlsChannelCredentials
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.model.TimeoutConfig
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.extension.readAsText
 import java.io.IOException
 import java.util.concurrent.TimeUnit

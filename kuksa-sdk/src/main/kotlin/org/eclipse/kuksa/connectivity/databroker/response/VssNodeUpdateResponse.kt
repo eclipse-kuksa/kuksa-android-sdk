@@ -14,25 +14,18 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.model
+package org.eclipse.kuksa.connectivity.databroker.response
 
-import android.net.Uri
-import androidx.compose.runtime.Immutable
-import kotlinx.serialization.Serializable
+import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
 
-@Serializable
-@Immutable
-data class Certificate(
-    val uriPath: String,
-    val overrideAuthority: String = "",
-) {
-    val uri: Uri
-        get() = Uri.parse(uriPath)
-
-    companion object {
-        val DEFAULT = Certificate("") // Uri.EMPTY
-    }
+/**
+ *  Represents a collection of [SetResponse]s.
+ */
+// Necessary to ensure Java compatibility with generics + suspend functions.
+class VssNodeUpdateResponse internal constructor(
+    responses: Collection<SetResponse>,
+) : ArrayList<SetResponse>(responses) {
+    internal constructor(vararg setResponse: SetResponse) : this(setResponse.toList())
 }

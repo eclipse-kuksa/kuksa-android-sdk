@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.viewmodel
+package org.eclipse.kuksa.testapp.databroker.vssnodes.viewmodel
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -27,10 +26,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
+import org.eclipse.kuksa.vsscore.model.VssSignal
 import org.eclipse.kuksa.vsscore.model.heritage
 
 class VssNodesViewModel : ViewModel() {
     var onGetNode: (node: VssNode) -> Unit = { }
+    var onUpdateSignal: (signal: VssSignal<*>) -> Unit = { }
     var onSubscribeNode: (node: VssNode) -> Unit = { }
     var onUnsubscribeNode: (node: VssNode) -> Unit = { }
 
@@ -41,12 +42,16 @@ class VssNodesViewModel : ViewModel() {
     }
 
     private val vssVehicle = VssVehicle()
-    val vssNodes = listOf(vssVehicle) + vssVehicle.heritage
+    val nodes = listOf(vssVehicle) + vssVehicle.heritage
 
     var node: VssNode by mutableStateOf(vssVehicle)
         private set
 
+    var updateCounter: Int by mutableStateOf(0)
+        private set
+
     fun updateNode(node: VssNode) {
         this.node = node
+        updateCounter++
     }
 }

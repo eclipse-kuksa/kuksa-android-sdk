@@ -38,8 +38,12 @@ import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
 import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.response.VssNodeUpdateResponse
 import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.extension.entriesMetadata
+import org.eclipse.kuksa.extension.firstValue
+import org.eclipse.kuksa.extension.stringValue
 import org.eclipse.kuksa.extension.valueType
 import org.eclipse.kuksa.proto.v1.KuksaValV1
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
@@ -48,16 +52,16 @@ import org.eclipse.kuksa.proto.v1.Types.Field
 import org.eclipse.kuksa.testapp.databroker.DataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.JavaDataBrokerEngine
 import org.eclipse.kuksa.testapp.databroker.KotlinDataBrokerEngine
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.viewmodel.ConnectionViewModel
+import org.eclipse.kuksa.testapp.databroker.connection.viewmodel.ConnectionViewModel.ConnectionViewState
 import org.eclipse.kuksa.testapp.databroker.view.DataBrokerView
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
-import org.eclipse.kuksa.testapp.databroker.viewmodel.DataBrokerProperty
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputEntry
 import org.eclipse.kuksa.testapp.databroker.viewmodel.OutputViewModel
 import org.eclipse.kuksa.testapp.databroker.viewmodel.TopAppBarViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VSSPathsViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.VssNodesViewModel
+import org.eclipse.kuksa.testapp.databroker.vssnodes.viewmodel.VssNodesViewModel
+import org.eclipse.kuksa.testapp.databroker.vsspaths.viewmodel.DataBrokerProperty
+import org.eclipse.kuksa.testapp.databroker.vsspaths.viewmodel.VSSPathsViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
@@ -165,6 +169,28 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             vssNodesViewModel.onUnsubscribeNode = { vssNode ->
                 val request = VssNodeSubscribeRequest(vssNode)
                 dataBrokerEngine.unsubscribe(request, vssNodeListener)
+            }
+
+            vssNodesViewModel.onUpdateSignal = { signal ->
+                val request = VssNodeUpdateRequest(signal)
+                dataBrokerEngine.update(
+                    request,
+                    object : CoroutineCallback<VssNodeUpdateResponse>() {
+                        override fun onSuccess(result: VssNodeUpdateResponse?) {
+                            val errorsList = result?.flatMap { it.errorsList }
+                            errorsList?.forEach {
+                                outputViewModel.addOutputEntry(it.toString())
+                                return
+                            }
+
+                            outputViewModel.addOutputEntry(result.toString())
+                        }
+
+                        override fun onError(error: Throwable) {
+                            outputViewModel.addOutputEntry("Connection to data broker failed: ${error.message}")
+                        }
+                    },
+                )
             }
 
             vssNodesViewModel.onGetNode = { vssNode ->
@@ -277,7 +303,9 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             request,
             object : CoroutineCallback<GetResponse>() {
                 override fun onSuccess(result: GetResponse?) {
-                    val errorsList = result?.errorsList
+                    if (result == null) return
+
+                    val errorsList = result.errorsList
                     errorsList?.forEach {
                         outputViewModel.addOutputEntry(it.toString())
 
@@ -285,13 +313,19 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                     }
 
                     val outputEntry = OutputEntry()
-                    result?.entriesList?.withIndex()?.forEach {
+                    result.entriesList?.withIndex()?.forEach {
                         val dataEntry = it.value
                         val text = dataEntry.toString().substringAfter("\n")
 
                         outputEntry.addMessage(text)
                     }
+
                     outputViewModel.addOutputEntry(outputEntry)
+
+                    val updatedValue = result.firstValue?.stringValue ?: ""
+                    val dataBrokerProperty = vssPathsViewModel.dataBrokerProperty
+                        .copy(value = updatedValue)
+                    vssPathsViewModel.updateDataBrokerProperty(dataBrokerProperty)
                 }
 
                 override fun onError(error: Throwable) {
@@ -333,6 +367,11 @@ class KuksaDataBrokerActivity : ComponentActivity() {
             object : CoroutineCallback<VssNode>() {
                 override fun onSuccess(result: VssNode?) {
                     Log.d(TAG, "Fetched node: $result")
+
+                    if (result == null) return
+
+                    vssNodesViewModel.updateNode(result)
+
                     outputViewModel.addOutputEntry("Fetched node: $result")
                 }
 

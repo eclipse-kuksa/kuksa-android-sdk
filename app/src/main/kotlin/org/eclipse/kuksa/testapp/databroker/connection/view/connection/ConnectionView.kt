@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
  */
 
-package org.eclipse.kuksa.testapp.databroker.view.connection
+package org.eclipse.kuksa.testapp.databroker.connection.view.connection
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -40,7 +39,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -49,19 +47,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.eclipse.kuksa.testapp.databroker.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
+import org.eclipse.kuksa.testapp.databroker.connection.viewmodel.ConnectionViewModel
+import org.eclipse.kuksa.testapp.databroker.connection.viewmodel.ConnectionViewModel.ConnectionViewState
 import org.eclipse.kuksa.testapp.databroker.view.DefaultEdgePadding
 import org.eclipse.kuksa.testapp.databroker.view.DefaultElementPadding
 import org.eclipse.kuksa.testapp.databroker.view.MinimumButtonWidth
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel
-import org.eclipse.kuksa.testapp.databroker.viewmodel.ConnectionViewModel.ConnectionViewState
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.RememberCountdown
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun DataBrokerConnectionView(viewModel: ConnectionViewModel) {
+fun ConnectionView(viewModel: ConnectionViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val repositoryConnectionInfoState =
@@ -224,7 +221,7 @@ private fun ConnectedPreview() {
     val connectionInfoRepository = ConnectionInfoRepository(LocalContext.current)
     val viewModel = ConnectionViewModel(connectionInfoRepository)
     Surface {
-        DataBrokerConnectionView(viewModel = viewModel)
+        ConnectionView(viewModel = viewModel)
     }
 }
 
@@ -235,6 +232,6 @@ private fun DisconnectedPreview() {
     val viewModel = ConnectionViewModel(connectionInfoRepository)
     viewModel.updateConnectionState(ConnectionViewState.CONNECTING)
     Surface {
-        DataBrokerConnectionView(viewModel = viewModel)
+        ConnectionView(viewModel = viewModel)
     }
 }
