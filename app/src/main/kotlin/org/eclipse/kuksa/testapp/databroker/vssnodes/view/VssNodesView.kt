@@ -62,6 +62,15 @@ import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.VssSignal
 
+private class VssNodeSuggestionAdapter(
+    override val items: Collection<VssNode>,
+    override val startingItem: VssNode,
+) : SuggestionAdapter<VssNode> {
+    override fun toString(item: VssNode): String {
+        return item.vssPath
+    }
+}
+
 @Composable
 fun VssNodesView(viewModel: VssNodesViewModel) {
     val focusManager = LocalFocusManager.current
@@ -72,15 +81,9 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
         var currentNode = viewModel.node
 
         val isUpdatePossible = currentNode is VssSignal<*>
-        val adapter = object : SuggestionAdapter<VssNode> {
-            override fun toString(item: VssNode): String {
-                return item.vssPath
-            }
-        }
+        val adapter = VssNodeSuggestionAdapter(viewModel.nodes, currentNode)
 
         SuggestionTextView(
-            value = "Vehicle",
-            suggestions = viewModel.nodes,
             adapter = adapter,
             onItemSelected = {
                 val vssNode = it ?: VssVehicle()
@@ -245,7 +248,14 @@ private fun VssSignalInformation(
     val vssSignal = viewModel.node as VssSignal<*>
 
     var inputValue: String by remember(vssSignal, viewModel.updateCounter) {
-        mutableStateOf(vssSignal.value.toString())
+        val value = if (vssSignal.value is Array<*>) {
+            val valueArray = vssSignal.value as Array<*>
+            valueArray.joinToString()
+        } else {
+            vssSignal.value.toString()
+        }
+
+        mutableStateOf(value)
     }
 
     Text(

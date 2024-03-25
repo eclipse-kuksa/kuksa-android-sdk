@@ -20,10 +20,17 @@
 package org.eclipse.kuksa.testapp.databroker.view.suggestions
 
 interface SuggestionAdapter<T : Any> {
-    fun toString(item: T): String
+    val items: Collection<T>
+
+    val startingItem: T
+
+    fun toString(item: T): String = item.toString()
 }
 
-class DefaultSuggestionAdapter<T : Any> : SuggestionAdapter<T> {
+class DefaultSuggestionAdapter<T : Any>(override val items: Collection<T> = emptyList()) : SuggestionAdapter<T> {
+    override val startingItem: T
+        get() = items.first()
+
     override fun toString(item: T): String {
         return item.toString()
     }

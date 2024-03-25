@@ -52,22 +52,30 @@ import androidx.compose.ui.unit.dp
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.testapp.databroker.view.DefaultEdgePadding
 import org.eclipse.kuksa.testapp.databroker.view.DefaultElementPadding
+import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionAdapter
 import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionTextView
 import org.eclipse.kuksa.testapp.databroker.vsspaths.viewmodel.VSSPathsViewModel
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.extension.compose.SimpleExposedDropdownMenuBox
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
 
+private class VssPathSuggestionAdapter(
+    override val items: Collection<String>,
+    override val startingItem: String,
+) : SuggestionAdapter<String>
+
 @Composable
 fun VssPathsView(viewModel: VSSPathsViewModel) {
     val dataBrokerProperty = viewModel.dataBrokerProperty
+    val suggestionAdapter = VssPathSuggestionAdapter(viewModel.suggestions, dataBrokerProperty.vssPath)
+
     var expanded by remember { mutableStateOf(false) }
 
     Column {
         Headline(name = "VSS Paths")
+
         SuggestionTextView(
-            suggestions = viewModel.suggestions,
-            value = dataBrokerProperty.vssPath,
+            adapter = suggestionAdapter,
             onValueChanged = {
                 val newVssProperties = dataBrokerProperty.copy(
                     vssPath = it,

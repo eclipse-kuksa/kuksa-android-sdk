@@ -41,7 +41,8 @@ val Types.Metadata.valueType: ValueCase
  */
 val <T : Any> VssSignal<T>.datapoint: Datapoint
     get() {
-        // TODO: Only supports string arrays for now, IntArray, DoubleArray etc. are not supported yet
+        // TODO: Only supports string arrays for now, IntArray, DoubleArray etc. are not supported yet because
+        // TODO: IntArrays are custom types which to not implement the Array interface and can't be cast to it.
         val stringValue = if (value::class.java.isArray) {
             val valueArray = value as Array<*>
             valueArray.joinToString()

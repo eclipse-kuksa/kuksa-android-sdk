@@ -65,17 +65,17 @@ import org.eclipse.kuksa.testapp.R
 
 @Composable
 fun <T : Any> SuggestionTextView(
-    suggestions: Collection<T>,
     adapter: SuggestionAdapter<T> = DefaultSuggestionAdapter(),
-    value: String = "",
     onItemSelected: ((T?) -> Unit)? = null,
     onValueChanged: ((String) -> Unit)? = null,
     label: @Composable (() -> Unit)? = null,
     singleLine: Boolean = false,
     modifier: Modifier,
 ) {
+    val suggestions = adapter.items
+
     var text by remember {
-        mutableStateOf(value)
+        mutableStateOf(adapter.toString(adapter.startingItem))
     }
 
     val heightTextFields by remember {
@@ -190,19 +190,19 @@ fun <T : Any> SuggestionTextView(
                         modifier = Modifier.heightIn(max = 150.dp),
                     ) {
                         items(
-                            suggestions.filter {
-                                adapter.toString(it).lowercase().contains(text.lowercase())
+                            suggestions.filter { item ->
+                                adapter.toString(item).lowercase().contains(text.lowercase())
                             },
-                        ) {
+                        ) { item ->
                             SuggestionItem(
-                                item = it,
-                                itemText = adapter.toString(it),
-                            ) { item ->
-                                text = adapter.toString(item)
+                                item = item,
+                                itemText = adapter.toString(item),
+                            ) { suggestionItem ->
+                                text = adapter.toString(suggestionItem)
                                 expanded = false
                                 focusManager.clearFocus()
                                 onValueChanged?.invoke(text)
-                                onItemSelected?.invoke(it)
+                                onItemSelected?.invoke(suggestionItem)
                             }
                         }
                     }
