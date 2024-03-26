@@ -34,6 +34,10 @@ plugins {
 // caching so the cache does not know about this. The issue will be ignored as a warning for now.
 //
 // Similar issue: https://github.com/gradle/gradle/issues/27940
+val pluginDescription = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK. This is used in combination " +
+    "with the KSP processor component 'KUKSA VSS Processor'. The plugin is configured to provide " +
+    "VSS Files to KSP processor. This is mandatory to use the 'KUKSA VSS Processor' component."
+
 val versionPath = "$rootDir/../$VERSION_FILE_DEFAULT_NAME"
 val semanticVersion = SemanticVersion(versionPath)
 version = semanticVersion.versionName
@@ -42,15 +46,14 @@ group = "org.eclipse.kuksa"
 gradlePlugin {
     website.set("https://github.com/eclipse-kuksa/kuksa-android-sdk")
     vcsUrl.set("https://github.com/eclipse-kuksa/kuksa-android-sdk")
+
     plugins {
         create("VssProcessorPlugin") {
             id = "org.eclipse.kuksa.vss-processor-plugin"
             implementationClass = "org.eclipse.kuksa.vssprocessor.plugin.VssProcessorPlugin"
             displayName = "VSS Processor Plugin"
             tags.set(listOf("KUKSA", "Vehicle Signal Specification", "VSS", "Android", "Kotlin"))
-            description = "Vehicle Signal Specification (VSS) Plugin of the KUKSA SDK. This is used in combination " +
-                "with the KSP processor component 'KUKSA VSS Processor'. The plugin is configured to provide " +
-                "VSS Files to KSP processor. This is mandatory to use the 'KUKSA VSS Processor' component."
+            description = pluginDescription
         }
     }
 }
@@ -73,38 +76,43 @@ afterEvaluate {
             // automatic timestamps / build number being added as a postfix to the files.
         }
         publications {
-            getByName<MavenPublication>("pluginMaven") {
-                pom {
-                    licenses {
-                        license {
-                            name.set("The Apache Software License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            all {
+                with((this as MavenPublication)) {
+                    pom {
+                        name = "${project.group}:${project.name}"
+                        description = pluginDescription
+                        url = "https://github.com/eclipse-kuksa/kuksa-android-sdk"
+                        licenses {
+                            license {
+                                name.set("The Apache Software License, Version 2.0")
+                                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                            }
                         }
-                    }
-                    developers {
-                        developer {
-                            name.set("Mark Hüsers")
-                            email.set("mark.huesers@etas.com")
-                            organization.set("ETAS GmbH")
-                            organizationUrl.set("https://www.etas.com")
+                        developers {
+                            developer {
+                                name.set("Mark Hüsers")
+                                email.set("mark.huesers@etas.com")
+                                organization.set("ETAS GmbH")
+                                organizationUrl.set("https://www.etas.com")
+                            }
+                            developer {
+                                name.set("Sebastian Schildt")
+                                email.set("sebastian.schildt@etas.com")
+                                organization.set("ETAS GmbH")
+                                organizationUrl.set("https://www.etas.com")
+                            }
+                            developer {
+                                name.set("Andre Weber")
+                                email.set("andre.weber3@etas.com")
+                                organization.set("ETAS GmbH")
+                                organizationUrl.set("https://www.etas.com")
+                            }
                         }
-                        developer {
-                            name.set("Sebastian Schildt")
-                            email.set("sebastian.schildt@etas.com")
-                            organization.set("ETAS GmbH")
-                            organizationUrl.set("https://www.etas.com")
+                        scm {
+                            connection.set("scm:git:github.com/eclipse-kuksa/kuksa-android-sdk.git")
+                            developerConnection.set("scm:git:ssh://github.com/eclipse-kuksa/kuksa-android-sdk.git")
+                            url.set("https://github.com/eclipse-kuksa/kuksa-android-sdk/tree/main")
                         }
-                        developer {
-                            name.set("Andre Weber")
-                            email.set("andre.weber3@etas.com")
-                            organization.set("ETAS GmbH")
-                            organizationUrl.set("https://www.etas.com")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:github.com/eclipse-kuksa/kuksa-android-sdk.git")
-                        developerConnection.set("scm:git:ssh://github.com/eclipse-kuksa/kuksa-android-sdk.git")
-                        url.set("https://github.com/eclipse-kuksa/kuksa-android-sdk/tree/main")
                     }
                 }
             }
