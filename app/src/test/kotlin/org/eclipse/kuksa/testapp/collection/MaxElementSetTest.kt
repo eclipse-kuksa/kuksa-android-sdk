@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
 
 package org.eclipse.kuksa.testapp.collection
 
+import io.kotest.core.NamedTag
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import org.eclipse.kuksa.test.kotest.Unit
 
 class MaxElementSetTest : BehaviorSpec({
-    tags(Unit)
+    tags(NamedTag("Unit"))
 
     given("An Instance of MaxElementSet with Type TestElement and maxNumberEntries of 100") {
         val classUnderTest = MaxElementSet<TestElement>(100)

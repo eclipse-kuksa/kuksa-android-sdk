@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
 
 package org.eclipse.kuksa.testapp.extension
 
+import io.kotest.core.NamedTag
 import io.kotest.core.spec.style.BehaviorSpec
-import org.eclipse.kuksa.test.kotest.Unit
 import org.junit.jupiter.api.Assertions
 
 class LogExtensionTest : BehaviorSpec({
-    tags(Unit)
+    tags(NamedTag("Unit"))
 
     val expectedLogTag = AnyClass::class.simpleName
 

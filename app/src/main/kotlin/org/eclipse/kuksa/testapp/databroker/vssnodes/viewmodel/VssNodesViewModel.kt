@@ -24,10 +24,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.VssSignal
 import org.eclipse.kuksa.vsscore.model.heritage
+import org.eclipse.velocitas.vss.VssVehicle
 
 class VssNodesViewModel : ViewModel() {
     var onGetNode: (node: VssNode) -> Unit = { }

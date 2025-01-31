@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@
 
 package org.eclipse.kuksa.testapp.model
 
+import io.kotest.core.NamedTag
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.eclipse.kuksa.test.kotest.Unit
 import org.eclipse.kuksa.testapp.databroker.connection.model.Certificate
 import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfoSerializer
@@ -31,7 +31,7 @@ import java.io.File
 import java.io.FileWriter
 
 class ConnectionInfoTest : BehaviorSpec({
-    tags(Unit)
+    tags(NamedTag("Unit"))
 
     given("A custom ConnectionInfo with a custom Certificate") {
         // Uri is an android specific class, which does not exist in plain JUnit. Methods like Uri.parse will simply
