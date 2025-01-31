@@ -19,7 +19,6 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import com.google.protobuf.gradle.id
 import org.eclipse.kuksa.version.SemanticVersion
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
@@ -86,7 +85,7 @@ android {
 
 dependencies {
     api(libs.kuksa.java.sdk) {
-        // exclude("org.apache.tomcat")
+        exclude("org.apache.tomcat", "annotations-api")
     }
 
     testImplementation(libs.kotlinx.coroutines.test)

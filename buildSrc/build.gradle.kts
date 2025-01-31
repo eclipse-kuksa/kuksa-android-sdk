@@ -36,7 +36,6 @@ java {
 
 dependencies {
     implementation(libs.android.gradlePlugin)
-    implementation(libs.protobuf.gradlePlugin)
     implementation(libs.kotlin.gradlePlugin)
     implementation(libs.detekt.gradlePlugin)
 }
