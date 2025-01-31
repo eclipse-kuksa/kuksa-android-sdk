@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@
 package org.eclipse.kuksa.extensions
 
 import io.kotest.assertions.fail
-import org.eclipse.kuksa.connectivity.databroker.DataBrokerTransporter
+import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.UpdateRequest
 import org.eclipse.kuksa.proto.v1.Types
 import kotlin.random.Random
 
-internal suspend fun DataBrokerTransporter.updateRandomFloatValue(
+internal suspend fun DataBrokerConnection.updateRandomFloatValue(
     vssPath: String,
     maxValue: Int = 300,
 ): Float {
@@ -34,7 +36,8 @@ internal suspend fun DataBrokerTransporter.updateRandomFloatValue(
     val updatedDatapoint = Types.Datapoint.newBuilder().setFloat(randomFloat).build()
 
     try {
-        update(vssPath, updatedDatapoint, setOf(Types.Field.FIELD_VALUE))
+        val updateRequest = UpdateRequest(vssPath, updatedDatapoint)
+        update(updateRequest)
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomFloat failed: $e")
     }
@@ -42,7 +45,7 @@ internal suspend fun DataBrokerTransporter.updateRandomFloatValue(
     return randomFloat
 }
 
-internal suspend fun DataBrokerTransporter.updateRandomUint32Value(
+internal suspend fun DataBrokerConnection.updateRandomUint32Value(
     vssPath: String,
     maxValue: Int = 300,
 ): Int {
@@ -51,7 +54,8 @@ internal suspend fun DataBrokerTransporter.updateRandomUint32Value(
     val updatedDatapoint = Types.Datapoint.newBuilder().setUint32(randomValue).build()
 
     try {
-        update(vssPath, updatedDatapoint, setOf(Types.Field.FIELD_VALUE))
+        val updateRequest = UpdateRequest(vssPath, updatedDatapoint)
+        update(updateRequest)
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomValue failed: $e")
     }
@@ -59,18 +63,18 @@ internal suspend fun DataBrokerTransporter.updateRandomUint32Value(
     return randomValue
 }
 
-internal suspend fun DataBrokerTransporter.toggleBoolean(vssPath: String): Boolean {
-    val fields = setOf(Types.Field.FIELD_VALUE)
-
+internal suspend fun DataBrokerConnection.toggleBoolean(vssPath: String): Boolean {
     var newBoolean: Boolean? = null
     try {
-        val response = fetch(vssPath, fields)
+        val fetchRequest = FetchRequest(vssPath)
+        val response = fetch(fetchRequest)
         val currentBool = response.entriesList[0].value.bool
 
         newBoolean = !currentBool
         val newDatapoint = Types.Datapoint.newBuilder().setBool(newBoolean).build()
 
-        update(vssPath, newDatapoint, fields)
+        val updateRequest = UpdateRequest(vssPath, newDatapoint)
+        update(updateRequest)
     } catch (e: Exception) {
         fail("Updating $vssPath to $newBoolean failed: $e")
     }

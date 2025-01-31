@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,15 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
-package org.eclipse.kuksa.connectivity.databroker.listener
+package org.eclipse.kuksa.test
 
-import org.eclipse.kuksa.pattern.listener.Listener
+import java.io.File
 
-/**
- * The [DisconnectListener] can be registered to
- * [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.disconnectListeners]
- * When registered it will notify about manual or unexpected connection disconnects from the DataBroker.
- */
-fun interface DisconnectListener : Listener {
-    /**
-     * Will be triggered, when the connection to the DataBroker was closed manually or unexpectedly.
-     */
-    fun onDisconnect()
-}
+private val classLoader: ClassLoader? = TestResourceFile::class.java.classLoader
+
+class TestResourceFile(path: String) : File(
+    classLoader!!.getResource(path)?.file ?: error("File does not exist: '$path'"),
+)

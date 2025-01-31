@@ -14,21 +14,21 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
-package org.eclipse.kuksa.connectivity.databroker.request
+package org.eclipse.kuksa.test.kotest
 
-import org.eclipse.kuksa.proto.v1.Types
-import org.eclipse.kuksa.vsscore.model.VssNode
+import io.kotest.core.NamedTag
 
-/**
- * Used for fetch requests with a generated [VssNode] model and
- * [org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection.fetch].
- */
-class VssNodeFetchRequest<T : VssNode> @JvmOverloads constructor(
-    override val vssNode: T,
-    override vararg val fields: Types.Field = arrayOf(Types.Field.FIELD_VALUE),
-) : VssNodeDataBrokerRequest<T> {
-    override val vssPath: String
-        get() = vssNode.vssPath
-}
+val Integration = NamedTag("Integration")
+
+val InsecureDataBroker = NamedTag("InsecureDataBroker") // no tls, no authentication
+val Insecure = NamedTag("Insecure")
+
+val SecureDataBroker = NamedTag("SecureDataBroker")
+val Secure = NamedTag("Secure") // tls enabled, authentication enabled
+val Authentication = NamedTag("Authentication")
+val Tls = NamedTag("Tls")
+
+val Unit = NamedTag("Unit")

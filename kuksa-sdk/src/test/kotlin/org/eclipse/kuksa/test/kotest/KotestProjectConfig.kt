@@ -14,18 +14,25 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
-package org.eclipse.kuksa.connectivity.databroker.response
+package org.eclipse.kuksa.test.kotest
 
-import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse
+import io.kotest.assertions.nondeterministic.continuallyConfig
+import io.kotest.assertions.nondeterministic.eventuallyConfig
+import io.kotest.core.config.AbstractProjectConfig
+import kotlin.time.Duration.Companion.seconds
 
-/**
- *  Represents a collection of [SetResponse]s.
- */
-// Necessary to ensure Java compatibility with generics + suspend functions.
-class VssNodeUpdateResponse internal constructor(
-    responses: Collection<SetResponse>,
-) : ArrayList<SetResponse>(responses) {
-    internal constructor(vararg setResponse: SetResponse) : this(setResponse.toList())
+val eventuallyConfiguration = eventuallyConfig {
+    duration = 1.seconds
+}
+
+val continuallyConfiguration = continuallyConfig<Any> {
+    duration = 1.seconds
+}
+
+// https://kotest.io/docs/framework/project-config.html
+object KotestProjectConfig : AbstractProjectConfig() {
+    override var displayFullTestPath: Boolean? = true
 }

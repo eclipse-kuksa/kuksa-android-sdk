@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("com.google.protobuf")
     publish
 }
 
@@ -35,9 +34,18 @@ val semanticVersion = SemanticVersion(versionPath)
 version = semanticVersion.versionName
 group = "org.eclipse.kuksa"
 
+publish {
+    artifactName = "kuksa-android-sdk"
+    artifactGroup = "org.eclipse.kuksa"
+    artifactVersion = semanticVersion.versionName
+    mavenPublicationName = "release"
+    componentName = "release"
+    description = "Android Connectivity Library for the KUKSA Databroker"
+}
+
 android {
     namespace = "org.eclipse.kuksa"
-    compileSdk = 33
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 27
@@ -47,11 +55,11 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = libs.versions.jvmTarget.get()
+        jvmTarget = "11"
     }
     testOptions {
         unitTests {
@@ -77,19 +85,9 @@ android {
 }
 
 dependencies {
-    api(project(":vss-core")) // Models are exposed
-
-    testImplementation(project(":test"))
-
-    // needs to be api as long as we expose ProtoBuf specific objects
-    api(libs.grpc.protobuf)
-
-    implementation(kotlin("reflect"))
-
-    implementation(libs.grpc.okhttp)
-    implementation(libs.grpc.stub)
-    implementation(libs.tomcat.annotations)
-    implementation(libs.kotlinx.coroutines.android)
+    api(libs.kuksa.java.sdk) {
+        // exclude("org.apache.tomcat")
+    }
 
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotest)
@@ -97,35 +95,4 @@ dependencies {
 
     testImplementation(libs.docker.java.core)
     testImplementation(libs.docker.java.transport.httpclient5)
-}
-
-publish {
-    mavenPublicationName = "release"
-    componentName = "release"
-    description = "Android Connectivity Library for the KUKSA Databroker"
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protobuf.protoc.get().toString()
-    }
-    plugins {
-        id("grpc") {
-            artifact = libs.grpc.protoc.java.gen.get().toString()
-        }
-        generateProtoTasks {
-            all().forEach {
-                it.builtins {
-                    create("java") {
-                        option("lite")
-                    }
-                }
-                it.plugins {
-                    create("grpc") {
-                        option("lite")
-                    }
-                }
-            }
-        }
-    }
 }

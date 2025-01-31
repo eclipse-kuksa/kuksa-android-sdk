@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit
 
 private const val KEY_PROPERTY_DATABROKER_TAG = "databroker.tag"
 private const val KEY_ENV_DATABROKER_TAG = "DATABROKER_TAG"
-private const val DEFAULT_DATABROKER_TAG = "master"
+private const val DEFAULT_DATABROKER_TAG = "main"
 
 /**
  * Starts and stops the Databroker Docker Container. Per default the image with the master tag is pulled and started.
@@ -74,7 +74,7 @@ abstract class DataBrokerDockerContainer(
             ),
         )
 
-    protected val repository = "ghcr.io/eclipse/kuksa.val/databroker"
+    protected val repository = "ghcr.io/eclipse-kuksa/kuksa-databroker"
 
     private val databrokerTag = System.getProperty(KEY_PROPERTY_DATABROKER_TAG)
         ?: System.getenv(KEY_ENV_DATABROKER_TAG)
