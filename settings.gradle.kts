@@ -18,8 +18,6 @@
  */
 
 pluginManagement {
-    includeBuild("vss-processor-plugin")
-
     repositories {
         gradlePluginPortal()
         google()
