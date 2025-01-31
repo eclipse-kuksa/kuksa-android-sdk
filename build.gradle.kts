@@ -63,9 +63,7 @@ subprojects {
         from("$rootDir/dash.gradle.kts")
     }
     afterEvaluate {
-        tasks.check {
-            finalizedBy("ktlintCheck")
-        }
+        tasks.findByName("check")?.finalizedBy("ktlintCheck")
     }
 
     // see: https://kotest.io/docs/framework/tags.html#gradle
