@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,25 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.connectivity.databroker
 
-import io.grpc.ConnectivityState
-import io.grpc.ManagedChannel
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.eclipse.kuksa.connectivity.databroker.docker.DataBrokerDockerContainer
 import org.eclipse.kuksa.connectivity.databroker.docker.InsecureDataBrokerDockerContainer
-import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
-import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
-import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
-import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
-import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
-import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.SubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.UpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.VssNodeFetchRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.VssNodeUpdateRequest
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
 import org.eclipse.kuksa.mocking.FriendlyVssNodeListener
 import org.eclipse.kuksa.mocking.FriendlyVssPathListener
@@ -69,13 +66,11 @@ class DataBrokerConnectionTest : BehaviorSpec({
         val connector = dataBrokerConnectorProvider.createInsecure()
         val dataBrokerConnection = connector.connect()
 
-        val dataBrokerTransporter = DataBrokerTransporter(dataBrokerConnectorProvider.managedChannel)
-
         and("A request with a valid VSS Path") {
             val vssPath = "Vehicle.Acceleration.Lateral"
             val field = Types.Field.FIELD_VALUE
 
-            val initialValue = dataBrokerTransporter.updateRandomFloatValue(vssPath)
+            val initialValue = dataBrokerConnection.updateRandomFloatValue(vssPath)
 
             val subscribeRequest = SubscribeRequest(vssPath, field)
             `when`("Subscribing to the VSS path") {
@@ -314,19 +309,6 @@ class DataBrokerConnectionTest : BehaviorSpec({
             }
         }
         // connection is closed at this point
-    }
-    given("A DataBrokerConnection with a mocked ManagedChannel") {
-        val managedChannel = mockk<ManagedChannel>(relaxed = true)
-        every { managedChannel.getState(any()) }.returns(ConnectivityState.READY)
-        val dataBrokerConnection = DataBrokerConnection(managedChannel)
-
-        `when`("Disconnect is called") {
-            dataBrokerConnection.disconnect()
-
-            then("The Channel is shutDown") {
-                verify { managedChannel.shutdownNow() }
-            }
-        }
     }
 })
 

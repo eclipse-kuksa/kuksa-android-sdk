@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.connectivity.databroker
@@ -58,8 +59,8 @@ class DataBrokerConnectorTest : BehaviorSpec({
         }
 
         and("a DataBrokerConnector with INVALID Host and Port") {
-            val invalidHost = "0.0.0.0"
-            val invalidPort = 12345
+            val invalidHost = "192.168.5.10"
+            val invalidPort = 11111
             val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(invalidHost, invalidPort)
 
             `when`("Trying to establish a connection") {

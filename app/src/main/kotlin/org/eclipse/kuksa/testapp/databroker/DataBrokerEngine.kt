@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,17 @@
 package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
-import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
-import org.eclipse.kuksa.connectivity.databroker.listener.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.listener.VssNodeListener
-import org.eclipse.kuksa.connectivity.databroker.listener.VssPathListener
-import org.eclipse.kuksa.connectivity.databroker.request.FetchRequest
-import org.eclipse.kuksa.connectivity.databroker.request.SubscribeRequest
-import org.eclipse.kuksa.connectivity.databroker.request.UpdateRequest
-import org.eclipse.kuksa.connectivity.databroker.request.VssNodeFetchRequest
-import org.eclipse.kuksa.connectivity.databroker.request.VssNodeSubscribeRequest
-import org.eclipse.kuksa.connectivity.databroker.request.VssNodeUpdateRequest
-import org.eclipse.kuksa.connectivity.databroker.response.VssNodeUpdateResponse
+import org.eclipse.kuksa.connectivity.databroker.DisconnectListener
+import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssNodeListener
+import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssPathListener
+import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.SubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.UpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.VssNodeFetchRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.VssNodeSubscribeRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.request.VssNodeUpdateRequest
+import org.eclipse.kuksa.connectivity.databroker.v1.response.VssNodeUpdateResponse
 import org.eclipse.kuksa.coroutine.CoroutineCallback
 import org.eclipse.kuksa.proto.v1.KuksaValV1.GetResponse
 import org.eclipse.kuksa.proto.v1.KuksaValV1.SetResponse

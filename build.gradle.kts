@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import org.eclipse.kuksa.version.SemanticVersion
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 import java.nio.file.FileVisitResult
@@ -34,6 +35,9 @@ import kotlin.io.path.visitFileTree
 
 val versionDefaultPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
 rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
+val semanticVersion = SemanticVersion(versionDefaultPath)
+version = semanticVersion.versionName
+group = "org.eclipse.velocitas"
 
 plugins {
     base
@@ -41,6 +45,16 @@ plugins {
     version
     kotlin("jvm")
     jacoco
+    alias(libs.plugins.gradle.nexus.publish.plugin)
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = System.getenv("ORG_OSSRH_USERNAME")
+            password = System.getenv("ORG_OSSRH_PASSWORD")
+        }
+    }
 }
 
 subprojects {
@@ -49,9 +63,7 @@ subprojects {
         from("$rootDir/dash.gradle.kts")
     }
     afterEvaluate {
-        tasks.check {
-            finalizedBy("ktlintCheck")
-        }
+        tasks.findByName("check")?.finalizedBy("ktlintCheck")
     }
 
     // see: https://kotest.io/docs/framework/tags.html#gradle

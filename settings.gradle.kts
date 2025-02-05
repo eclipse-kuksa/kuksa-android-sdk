@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@
  */
 
 pluginManagement {
-    includeBuild("vss-processor-plugin")
-
     repositories {
         gradlePluginPortal()
         google()
@@ -48,6 +46,3 @@ rootProject.name = "kuksa-android-sdk"
 include(":app")
 include(":kuksa-sdk")
 include(":samples")
-include(":test")
-include(":vss-processor")
-include(":vss-core")

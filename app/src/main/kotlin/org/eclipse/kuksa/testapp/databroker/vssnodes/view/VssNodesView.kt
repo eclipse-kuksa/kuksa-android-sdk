@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.testapp.databroker.vssnodes.view
@@ -57,10 +58,10 @@ import org.eclipse.kuksa.testapp.databroker.view.suggestions.SuggestionTextView
 import org.eclipse.kuksa.testapp.databroker.vssnodes.viewmodel.VssNodesViewModel
 import org.eclipse.kuksa.testapp.extension.compose.Headline
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
-import org.eclipse.kuksa.vss.VssHeartRate
-import org.eclipse.kuksa.vss.VssVehicle
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.kuksa.vsscore.model.VssSignal
+import org.eclipse.velocitas.vss.VssHeartRate
+import org.eclipse.velocitas.vss.VssVehicle
 
 private class VssNodeSuggestionAdapter(
     override val items: Collection<VssNode>,

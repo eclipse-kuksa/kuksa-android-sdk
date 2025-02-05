@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.testapp.databroker.connection.factory
@@ -26,7 +27,7 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
-import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
+import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnector
 import org.eclipse.kuksa.model.TimeoutConfig
 import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.extension.readAsText

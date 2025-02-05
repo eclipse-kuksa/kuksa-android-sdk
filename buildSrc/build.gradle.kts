@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,16 @@ plugins {
 
 // Do not use Java Toolchains (yet).
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = libs.versions.jvmTarget.get()
+    kotlinOptions.jvmTarget = "11"
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
     implementation(libs.android.gradlePlugin)
-    implementation(libs.protobuf.gradlePlugin)
     implementation(libs.kotlin.gradlePlugin)
     implementation(libs.detekt.gradlePlugin)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,18 @@ import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 plugins {
     id("com.android.application")
-    id("com.google.devtools.ksp")
-    id("org.eclipse.kuksa.vss-processor-plugin") // Always take the newest version since it's locally included
+    id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.1"
     kotlin("plugin.serialization")
     kotlin("android")
 }
 
 android {
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = libs.versions.jvmTarget.get()
+        jvmTarget = "11"
     }
 
     buildFeatures {
@@ -54,12 +53,12 @@ android {
         }
     }
 
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.eclipse.kuksa.testapp"
         minSdk = 27
-        targetSdk = 34
+        targetSdk = 35
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -143,8 +142,6 @@ tasks.withType<Test>().configureEach {
 
 dependencies {
     implementation(project(":kuksa-sdk"))
-    ksp(project(":vss-processor"))
-    testImplementation(project(":test"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -173,4 +170,8 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.constraintlayout.compose)
+}
+
+afterEvaluate {
+    tasks.getByName("generateVssModels").notCompatibleWithConfigurationCache("")
 }
