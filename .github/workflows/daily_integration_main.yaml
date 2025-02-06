@@ -1,4 +1,4 @@
-name: SDK:main <-> Databroker:master
+name: SDK:main <-> Databroker:main
 
 on:
   schedule:
@@ -20,5 +20,5 @@ jobs:
         uses: ./.github/actions/run-tests
         with:
           upload-test-reports: true
-          databroker-version: master
+          databroker-version: main
           kotest-tag: "Integration"
