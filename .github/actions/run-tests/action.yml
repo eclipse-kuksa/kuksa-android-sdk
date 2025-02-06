@@ -10,7 +10,7 @@ inputs:
     default: 'false'
   databroker-version:
     description: "Databroker Version"
-    default: 'master'
+    default: 'main'
   kotest-tag:
     description: >
       The Kotest Tag to use when executing the tests. Check Tag.kt for valid options. Different Tags might require the

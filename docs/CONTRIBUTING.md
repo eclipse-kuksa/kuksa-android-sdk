@@ -95,15 +95,15 @@ This means that issues exist between the latest released version of the SDK and 
 If this build fails it should be considered as a potential bigger issue  
 => A hotfix or new release needs to be done
 
-**SDK:latestRelease -> Databroker:master**
+**SDK:latestRelease -> Databroker:main**
 This means, that the latest released version of the SDK is not compatible with the currently developed version of the Databroker.
 
 If this build fails it should be considered as a warning
 => Required fixes should be part of the next SDK release
 
-**SDK:main -> Databroker:master**
+**SDK:main -> Databroker:main**
 
-[![SDK:main <-> Databroker:master](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main-master.yaml/badge.svg)](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main-master.yaml?query=branch%3Amain)
+[![SDK:main <-> Databroker:master](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main.yaml/badge.svg)](https://github.com/eclipse-kuksa/kuksa-android-sdk/actions/workflows/daily_integration_main-master.yaml?query=branch%3Amain)
 
 This means both the SDK and Databroker are running in a kind of "bleeding edge" state in their currently developed version.
 
