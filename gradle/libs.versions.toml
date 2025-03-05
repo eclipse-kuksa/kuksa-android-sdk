@@ -17,7 +17,7 @@ androidxLifecycle = "2.8.7"
 kotlinxCoroutines = "1.8.1"
 kotlinCompilerExtension = "1.5.10"
 composeBom = "2025.01.01"
-kuksaVersion = "0.3.1"
+kuksaVersion = "0.3.2"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityKtx" }
