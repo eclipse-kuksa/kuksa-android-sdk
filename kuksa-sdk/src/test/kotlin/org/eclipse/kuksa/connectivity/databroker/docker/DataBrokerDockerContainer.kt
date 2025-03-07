@@ -35,6 +35,7 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient
 import org.eclipse.kuksa.connectivity.databroker.DATABROKER_TIMEOUT_SECONDS
 import java.time.Duration
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 private const val KEY_PROPERTY_DATABROKER_TAG = "databroker.tag"
 private const val KEY_ENV_DATABROKER_TAG = "DATABROKER_TAG"
@@ -62,8 +63,9 @@ private const val DEFAULT_DATABROKER_TAG = "main"
  */
 abstract class DataBrokerDockerContainer(
     protected val containerName: String,
-    protected val port: Int,
 ) {
+    val port: Int = atomicPortNumber.getAndIncrement()
+
     protected open val hostConfig: HostConfig = HostConfig.newHostConfig()
         .withNetworkMode("host")
         .withAutoRemove(true)
@@ -134,9 +136,13 @@ abstract class DataBrokerDockerContainer(
 
             dockerClient.waitContainerCmd(containerId)
                 .exec(WaitContainerResultCallback())
-                .awaitCompletion(5, TimeUnit.SECONDS)
+                .awaitCompletion(10, TimeUnit.SECONDS)
         } catch (_: NotModifiedException) {
             // thrown when a container is already started
         }
+    }
+
+    companion object {
+        private val atomicPortNumber = AtomicInteger(55560)
     }
 }

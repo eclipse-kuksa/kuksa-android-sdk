@@ -36,7 +36,7 @@ class DataBrokerConnectorProvider {
     lateinit var managedChannel: ManagedChannel
     fun createInsecure(
         host: String = DATABROKER_HOST,
-        port: Int = DATABROKER_PORT,
+        port: Int,
         jwtFileStream: InputStream? = null,
     ): DataBrokerConnector {
         managedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
@@ -56,7 +56,7 @@ class DataBrokerConnectorProvider {
 
     fun createSecure(
         host: String = DATABROKER_HOST,
-        port: Int = DATABROKER_PORT,
+        port: Int,
         overrideAuthority: String = "",
         rootCertFileStream: InputStream = TestResourceFile("tls/CA.pem").inputStream(),
         jwtFileStream: InputStream? = JwtType.READ_WRITE_ALL.asInputStream(),
