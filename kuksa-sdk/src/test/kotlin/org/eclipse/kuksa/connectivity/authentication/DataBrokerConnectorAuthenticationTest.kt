@@ -72,6 +72,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
             val jwtFile = JwtType.READ_WRITE_ALL
 
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                port = databrokerContainer!!.port,
                 jwtFileStream = jwtFile.asInputStream(),
             )
 
@@ -104,6 +105,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
         and("a secure DataBrokerConnector with a READ_ALL JWT") {
             val jwtFile = JwtType.READ_ALL
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                port = databrokerContainer!!.port,
                 jwtFileStream = jwtFile.asInputStream(),
             )
 
@@ -135,6 +137,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
         and("a secure DataBrokerConnector with a READ_WRITE_ALL_VALUES_ONLY JWT") {
             val jwtFile = JwtType.READ_WRITE_ALL_VALUES_ONLY
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                port = databrokerContainer!!.port,
                 jwtFileStream = jwtFile.asInputStream(),
             )
 
@@ -189,6 +192,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
         and("a secure DataBrokerConnector with no JWT") {
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                port = databrokerContainer!!.port,
                 jwtFileStream = null,
             )
 

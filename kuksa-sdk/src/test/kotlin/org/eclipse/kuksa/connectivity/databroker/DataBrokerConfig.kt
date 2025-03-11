@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,5 +23,5 @@ import java.util.concurrent.TimeUnit
 
 const val DATABROKER_HOST = "127.0.0.1"
 
-const val DATABROKER_TIMEOUT_SECONDS = 5L
+const val DATABROKER_TIMEOUT_SECONDS = 10L
 val DATABROKER_TIMEOUT_UNIT = TimeUnit.SECONDS

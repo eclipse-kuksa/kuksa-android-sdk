@@ -18,5 +18,4 @@
 
 package org.eclipse.kuksa.connectivity.databroker
 
-const val DATABROKER_PORT = 55558
-const val DATABROKER_CONTAINER_NAME = "databroker_testRelease"
+const val DATABROKER_CONTAINER_NAME = "databroker_test_release"

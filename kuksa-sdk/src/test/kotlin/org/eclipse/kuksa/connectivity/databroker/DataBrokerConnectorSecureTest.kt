@@ -52,6 +52,7 @@ class DataBrokerConnectorSecureTest : BehaviorSpec({
             val tlsCertificate = TestResourceFile("tls/CA.pem")
 
             val dataBrokerConnector = dataBrokerConnectorProvider.createSecure(
+                port = databrokerContainer!!.port,
                 rootCertFileStream = tlsCertificate.inputStream(),
             )
 

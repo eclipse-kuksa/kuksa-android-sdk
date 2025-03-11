@@ -65,11 +65,9 @@ import org.eclipse.kuksa.testapp.databroker.vsspaths.viewmodel.VSSPathsViewModel
 import org.eclipse.kuksa.testapp.extension.TAG
 import org.eclipse.kuksa.testapp.preferences.ConnectionInfoRepository
 import org.eclipse.kuksa.testapp.ui.theme.KuksaAppAndroidTheme
-import org.eclipse.kuksa.vsscore.annotation.VssModelGenerator
 import org.eclipse.kuksa.vsscore.model.VssNode
 import org.eclipse.velocitas.vss.VssVehicle
 
-@VssModelGenerator
 class KuksaDataBrokerActivity : ComponentActivity() {
     private lateinit var connectionInfoRepository: ConnectionInfoRepository
 

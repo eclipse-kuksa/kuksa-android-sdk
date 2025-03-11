@@ -41,7 +41,7 @@ import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 plugins {
     id("com.android.application")
-    id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.1"
+    id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.2"
     kotlin("android")
 }
 
@@ -91,8 +91,4 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.ktx)
-}
-
-afterEvaluate {
-    tasks.getByName("generateVssModels").notCompatibleWithConfigurationCache("")
 }

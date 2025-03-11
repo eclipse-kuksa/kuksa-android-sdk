@@ -47,7 +47,9 @@ class DataBrokerConnectorTest : BehaviorSpec({
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
 
         and("an insecure DataBrokerConnector with valid Host and Port") {
-            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure()
+            val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(
+                port = databrokerContainer!!.port,
+            )
 
             `when`("Trying to establish an insecure connection") {
                 val connection = dataBrokerConnector.connect()

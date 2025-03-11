@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,5 +19,4 @@
 
 package org.eclipse.kuksa.connectivity.databroker
 
-const val DATABROKER_PORT = 55557
-const val DATABROKER_CONTAINER_NAME = "databroker_testDebug"
+const val DATABROKER_CONTAINER_NAME = "databroker_test_debug"

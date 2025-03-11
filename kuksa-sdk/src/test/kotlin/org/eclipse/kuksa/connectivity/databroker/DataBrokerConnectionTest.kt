@@ -63,7 +63,9 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
     given("A successfully established connection to the DataBroker") {
         val dataBrokerConnectorProvider = DataBrokerConnectorProvider()
-        val connector = dataBrokerConnectorProvider.createInsecure()
+        val connector = dataBrokerConnectorProvider.createInsecure(
+            port = databrokerContainer!!.port,
+        )
         val dataBrokerConnection = connector.connect()
 
         and("A request with a valid VSS Path") {

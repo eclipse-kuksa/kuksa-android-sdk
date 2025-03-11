@@ -84,9 +84,7 @@ android {
 }
 
 dependencies {
-    api(libs.kuksa.java.sdk) {
-        exclude("org.apache.tomcat", "annotations-api")
-    }
+    api(libs.kuksa.java.sdk)
 
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotest)
