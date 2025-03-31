@@ -17,7 +17,7 @@
  *
  */
 
-package org.eclipse.kuksa.connectivity.authentication
+package org.eclipse.kuksa.mocking
 
 import org.eclipse.kuksa.test.TestResourceFile
 import java.io.InputStream

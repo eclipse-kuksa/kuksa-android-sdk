@@ -34,6 +34,7 @@ import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.v1.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.v1.request.UpdateRequest
 import org.eclipse.kuksa.mocking.FriendlyVssPathListener
+import org.eclipse.kuksa.mocking.JwtType
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Authentication
 import org.eclipse.kuksa.test.kotest.Integration
@@ -81,7 +82,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
                 `when`("Reading Vehicle.Speed") {
                     val fetchRequest = FetchRequest(speedVssPath)
-                    val response = connection.fetch(fetchRequest)
+                    val response = connection.kuksaValV1.fetch(fetchRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -93,7 +94,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                     val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
                     val updateRequest = UpdateRequest(speedVssPath, datapoint)
 
-                    val response = connection.update(updateRequest)
+                    val response = connection.kuksaValV1.update(updateRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -114,7 +115,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
                 `when`("Reading Vehicle.Speed") {
                     val fetchRequest = FetchRequest(speedVssPath)
-                    val response = connection.fetch(fetchRequest)
+                    val response = connection.kuksaValV1.fetch(fetchRequest)
 
                     then("No error should appear") {
                         response.errorsList.size shouldBe 0
@@ -125,7 +126,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                     val nextFloat = random.nextFloat() * 100F
                     val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
                     val updateRequest = UpdateRequest(speedVssPath, datapoint)
-                    val response = connection.update(updateRequest)
+                    val response = connection.kuksaValV1.update(updateRequest)
 
                     then("An error should occur") {
                         response.errorsList.size shouldBe 1
@@ -148,7 +149,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
                 `when`("Reading the ACTUATOR_TARGET of Vehicle.Body.Mirrors.DriverSide.Pan") {
                     val fetchRequest = FetchRequest(panVssPath, actuatorTargetField)
-                    val response = connection.fetch(fetchRequest)
+                    val response = connection.kuksaValV1.fetch(fetchRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -160,7 +161,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                     val datapoint = Types.Datapoint.newBuilder().setInt32(nextInt).build()
                     val updateRequest = UpdateRequest(panVssPath, datapoint, actuatorTargetField)
 
-                    val response = connection.update(updateRequest)
+                    val response = connection.kuksaValV1.update(updateRequest)
 
                     then("An error should occur") {
                         response.errorsList.size shouldBe 1
@@ -169,7 +170,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
 
                 `when`("Reading the VALUE of Vehicle.Speed") {
                     val fetchRequest = FetchRequest(speedVssPath)
-                    val response = connection.fetch(fetchRequest)
+                    val response = connection.kuksaValV1.fetch(fetchRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -181,7 +182,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                     val datapoint = Types.Datapoint.newBuilder().setFloat(nextFloat).build()
                     val updateRequest = UpdateRequest(speedVssPath, datapoint)
 
-                    val response = connection.update(updateRequest)
+                    val response = connection.kuksaValV1.update(updateRequest)
 
                     then("No error should occur") {
                         response.errorsList.size shouldBe 0
@@ -210,7 +211,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 `when`("Reading the VALUE of Vehicle.Speed") {
                     val fetchRequest = FetchRequest(speedVssPath)
                     val fetchResult = runCatching {
-                        connection.fetch(fetchRequest)
+                        connection.kuksaValV1.fetch(fetchRequest)
                     }
 
                     then("An error should occur") {
@@ -227,7 +228,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                     val updateRequest = UpdateRequest(speedVssPath, datapoint)
 
                     val updateResult = runCatching {
-                        connection.update(updateRequest)
+                        connection.kuksaValV1.update(updateRequest)
                     }
 
                     then("An error should occur") {
@@ -242,7 +243,7 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                     val subscribeRequest = SubscribeRequest(speedVssPath)
                     val vssPathListener = FriendlyVssPathListener()
 
-                    connection.subscribe(subscribeRequest, vssPathListener)
+                    connection.kuksaValV1.subscribe(subscribeRequest, vssPathListener)
 
                     then("An error should occur") {
                         eventually(eventuallyConfiguration) {
