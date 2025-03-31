@@ -23,5 +23,5 @@ import java.util.concurrent.TimeUnit
 
 const val DATABROKER_HOST = "127.0.0.1"
 
-const val DATABROKER_TIMEOUT_SECONDS = 10L
+const val DATABROKER_TIMEOUT_SECONDS = 30L
 val DATABROKER_TIMEOUT_UNIT = TimeUnit.SECONDS

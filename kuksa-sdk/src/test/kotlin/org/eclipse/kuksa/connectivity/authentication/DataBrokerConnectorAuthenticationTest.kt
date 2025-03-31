@@ -34,6 +34,7 @@ import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.v1.request.SubscribeRequest
 import org.eclipse.kuksa.connectivity.databroker.v1.request.UpdateRequest
 import org.eclipse.kuksa.mocking.FriendlyVssPathListener
+import org.eclipse.kuksa.mocking.JwtType
 import org.eclipse.kuksa.proto.v1.Types
 import org.eclipse.kuksa.test.kotest.Authentication
 import org.eclipse.kuksa.test.kotest.Integration

@@ -25,14 +25,23 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
-import org.eclipse.kuksa.connectivity.authentication.JwtType
+import org.eclipse.kuksa.connectivity.databroker.docker.KEY_ENV_DATABROKER_TIMEOUT
+import org.eclipse.kuksa.connectivity.databroker.docker.KEY_PROPERTY_DATABROKER_TIMEOUT
+import org.eclipse.kuksa.mocking.JwtType
 import org.eclipse.kuksa.model.TimeoutConfig
 import org.eclipse.kuksa.test.TestResourceFile
 import java.io.IOException
 import java.io.InputStream
 
+private const val DEFAULT_DATABROKER_TIMEOUT = "10"
+
 class DataBrokerConnectorProvider {
     lateinit var managedChannel: ManagedChannel
+
+    private val timeout = System.getProperty(KEY_PROPERTY_DATABROKER_TIMEOUT)
+        ?: System.getenv(KEY_ENV_DATABROKER_TIMEOUT)
+        ?: DEFAULT_DATABROKER_TIMEOUT
+
     fun createInsecure(
         host: String = DATABROKER_HOST,
         port: Int,
@@ -49,7 +58,7 @@ class DataBrokerConnectorProvider {
             managedChannel,
             jsonWebToken,
         ).apply {
-            timeoutConfig = TimeoutConfig(DATABROKER_TIMEOUT_SECONDS, DATABROKER_TIMEOUT_UNIT)
+            timeoutConfig = TimeoutConfig(timeout.toLong(), DATABROKER_TIMEOUT_UNIT)
         }
     }
 
