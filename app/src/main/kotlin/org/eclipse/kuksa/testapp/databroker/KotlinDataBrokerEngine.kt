@@ -22,10 +22,10 @@ package org.eclipse.kuksa.testapp.databroker
 import android.content.Context
 import androidx.lifecycle.LifecycleCoroutineScope
 import kotlinx.coroutines.launch
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
@@ -82,7 +82,7 @@ class KotlinDataBrokerEngine(
     override fun fetch(request: FetchRequest, callback: CoroutineCallback<GetResponse>) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.fetch(request) ?: return@launch
+                val response = dataBrokerConnection?.kuksaValV1?.fetch(request) ?: return@launch
                 callback.onSuccess(response)
             } catch (e: DataBrokerException) {
                 callback.onError(e)
@@ -93,7 +93,7 @@ class KotlinDataBrokerEngine(
     override fun <T : VssNode> fetch(request: VssNodeFetchRequest<T>, callback: CoroutineCallback<T>) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.fetch(request) ?: return@launch
+                val response = dataBrokerConnection?.kuksaValV1?.fetch(request) ?: return@launch
                 callback.onSuccess(response)
             } catch (e: DataBrokerException) {
                 callback.onError(e)
@@ -104,7 +104,7 @@ class KotlinDataBrokerEngine(
     override fun update(request: UpdateRequest, callback: CoroutineCallback<SetResponse>) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.update(request) ?: return@launch
+                val response = dataBrokerConnection?.kuksaValV1?.update(request) ?: return@launch
                 callback.onSuccess(response)
             } catch (e: DataBrokerException) {
                 callback.onError(e)
@@ -118,7 +118,7 @@ class KotlinDataBrokerEngine(
     ) {
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.update(request) ?: return@launch
+                val response = dataBrokerConnection?.kuksaValV1?.update(request) ?: return@launch
                 callback.onSuccess(response)
             } catch (e: DataBrokerException) {
                 callback.onError(e)
@@ -127,11 +127,7 @@ class KotlinDataBrokerEngine(
     }
 
     override fun subscribe(request: SubscribeRequest, listener: VssPathListener) {
-        dataBrokerConnection?.subscribe(request, listener)
-    }
-
-    override fun unsubscribe(request: SubscribeRequest, listener: VssPathListener) {
-        dataBrokerConnection?.unsubscribe(request, listener)
+        dataBrokerConnection?.kuksaValV1?.subscribe(request, listener)
     }
 
     override fun <T : VssNode> subscribe(
@@ -139,15 +135,8 @@ class KotlinDataBrokerEngine(
         vssNodeListener: VssNodeListener<T>,
     ) {
         lifecycleScope.launch {
-            dataBrokerConnection?.subscribe(request, listener = vssNodeListener)
+            dataBrokerConnection?.kuksaValV1?.subscribe(request, listener = vssNodeListener)
         }
-    }
-
-    override fun <T : VssNode> unsubscribe(
-        request: VssNodeSubscribeRequest<T>,
-        vssNodeListener: VssNodeListener<T>,
-    ) {
-        dataBrokerConnection?.unsubscribe(request, listener = vssNodeListener)
     }
 
     override fun disconnect() {

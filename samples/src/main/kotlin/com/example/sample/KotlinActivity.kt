@@ -27,10 +27,10 @@ import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import kotlinx.coroutines.launch
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.DataBrokerException
 import org.eclipse.kuksa.connectivity.databroker.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnector
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
@@ -121,7 +121,7 @@ class KotlinActivity : AppCompatActivity() {
         val request = FetchRequest("Vehicle.Speed", Types.Field.FIELD_VALUE)
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.fetch(request) ?: return@launch
+                val response = dataBrokerConnection?.kuksaValV1?.fetch(request) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle error
@@ -138,7 +138,7 @@ class KotlinActivity : AppCompatActivity() {
         val request = UpdateRequest("Vehicle.Speed", datapoint, Types.Field.FIELD_VALUE)
         lifecycleScope.launch {
             try {
-                val response = dataBrokerConnection?.update(request) ?: return@launch
+                val response = dataBrokerConnection?.kuksaValV1?.update(request) ?: return@launch
                 // handle response
             } catch (e: DataBrokerException) {
                 // handle error
@@ -167,7 +167,7 @@ class KotlinActivity : AppCompatActivity() {
             }
         }
 
-        dataBrokerConnection?.subscribe(request, vssPathListener)
+        dataBrokerConnection?.kuksaValV1?.subscribe(request, vssPathListener)
     }
 
     // region: VSS generated models
@@ -176,7 +176,7 @@ class KotlinActivity : AppCompatActivity() {
             try {
                 val vssSpeed = VssVehicle.VssSpeed()
                 val request = VssNodeFetchRequest(vssSpeed, Types.Field.FIELD_VALUE)
-                val updatedSpeed = dataBrokerConnection?.fetch(request)
+                val updatedSpeed = dataBrokerConnection?.kuksaValV1?.fetch(request)
                 val speed = updatedSpeed?.value
             } catch (e: DataBrokerException) {
                 // handle error
@@ -188,14 +188,14 @@ class KotlinActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val vssSpeed = VssVehicle.VssSpeed(value = 100f)
             val request = VssNodeUpdateRequest(vssSpeed, Types.Field.FIELD_VALUE)
-            dataBrokerConnection?.update(request)
+            dataBrokerConnection?.kuksaValV1?.update(request)
         }
     }
 
     fun subscribeNode() {
         val vssSpeed = VssVehicle.VssSpeed(value = 100f)
         val request = VssNodeSubscribeRequest(vssSpeed, Types.Field.FIELD_VALUE)
-        dataBrokerConnection?.subscribe(
+        dataBrokerConnection?.kuksaValV1?.subscribe(
             request,
             object : VssNodeListener<VssVehicle.VssSpeed> {
                 override fun onNodeChanged(vssNode: VssVehicle.VssSpeed) {
