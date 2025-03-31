@@ -20,7 +20,7 @@
 package org.eclipse.kuksa.extensions
 
 import io.kotest.assertions.fail
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
 import org.eclipse.kuksa.connectivity.databroker.v1.request.UpdateRequest
 import org.eclipse.kuksa.proto.v1.Types
@@ -37,7 +37,7 @@ internal suspend fun DataBrokerConnection.updateRandomFloatValue(
 
     try {
         val updateRequest = UpdateRequest(vssPath, updatedDatapoint)
-        update(updateRequest)
+        kuksaValV1.update(updateRequest)
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomFloat failed: $e")
     }
@@ -55,7 +55,7 @@ internal suspend fun DataBrokerConnection.updateRandomUint32Value(
 
     try {
         val updateRequest = UpdateRequest(vssPath, updatedDatapoint)
-        update(updateRequest)
+        kuksaValV1.update(updateRequest)
     } catch (e: Exception) {
         fail("Updating $vssPath to $randomValue failed: $e")
     }
@@ -67,14 +67,14 @@ internal suspend fun DataBrokerConnection.toggleBoolean(vssPath: String): Boolea
     var newBoolean: Boolean? = null
     try {
         val fetchRequest = FetchRequest(vssPath)
-        val response = fetch(fetchRequest)
+        val response = kuksaValV1.fetch(fetchRequest)
         val currentBool = response.entriesList[0].value.bool
 
         newBoolean = !currentBool
         val newDatapoint = Types.Datapoint.newBuilder().setBool(newBoolean).build()
 
         val updateRequest = UpdateRequest(vssPath, newDatapoint)
-        update(updateRequest)
+        kuksaValV1.update(updateRequest)
     } catch (e: Exception) {
         fail("Updating $vssPath to $newBoolean failed: $e")
     }

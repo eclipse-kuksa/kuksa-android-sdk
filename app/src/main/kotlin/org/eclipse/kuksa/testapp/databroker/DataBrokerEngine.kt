@@ -20,8 +20,8 @@
 package org.eclipse.kuksa.testapp.databroker
 
 import android.content.Context
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
@@ -67,13 +67,6 @@ interface DataBrokerEngine {
     fun subscribe(request: SubscribeRequest, listener: VssPathListener)
 
     fun <T : VssNode> subscribe(
-        request: VssNodeSubscribeRequest<T>,
-        vssNodeListener: VssNodeListener<T>,
-    )
-
-    fun unsubscribe(request: SubscribeRequest, listener: VssPathListener)
-
-    fun <T : VssNode> unsubscribe(
         request: VssNodeSubscribeRequest<T>,
         vssNodeListener: VssNodeListener<T>,
     )

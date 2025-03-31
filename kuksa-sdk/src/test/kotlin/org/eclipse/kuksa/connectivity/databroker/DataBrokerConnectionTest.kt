@@ -77,7 +77,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             val subscribeRequest = SubscribeRequest(vssPath, field)
             `when`("Subscribing to the VSS path") {
                 val vssPathListener = FriendlyVssPathListener()
-                dataBrokerConnection.subscribe(subscribeRequest, vssPathListener)
+                dataBrokerConnection.kuksaValV1.subscribe(subscribeRequest, vssPathListener)
 
                 then("The #onEntryChanged method is triggered") {
                     eventually(eventuallyConfiguration) {
@@ -96,7 +96,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     val updatedValue = random.nextFloat()
                     val datapoint = Types.Datapoint.newBuilder().setFloat(updatedValue).build()
                     val updateRequest = UpdateRequest(vssPath, datapoint, field)
-                    dataBrokerConnection.update(updateRequest)
+                    dataBrokerConnection.kuksaValV1.update(updateRequest)
 
                     then("The #onEntryChanged callback is triggered with the new value") {
                         eventually(eventuallyConfiguration) {
@@ -114,7 +114,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             `when`("Updating the DataBroker property (VSS path) with a valid Datapoint") {
                 // make sure that the value is set and known to us
                 val updateRequest = UpdateRequest(vssPath, validDatapoint, field)
-                val response = dataBrokerConnection.update(updateRequest)
+                val response = dataBrokerConnection.kuksaValV1.update(updateRequest)
 
                 then("No error should appear") {
                     response.hasError() shouldBe false
@@ -122,7 +122,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                 and("When fetching it afterwards") {
                     val fetchRequest = FetchRequest(vssPath)
-                    val response1 = dataBrokerConnection.fetch(fetchRequest)
+                    val response1 = dataBrokerConnection.kuksaValV1.fetch(fetchRequest)
 
                     then("The response contains the correctly set value") {
                         val entriesList = response1.entriesList
@@ -136,7 +136,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             `when`("Updating the DataBroker property (VSS path) with a Datapoint of a wrong/different type") {
                 val datapoint = createRandomIntDatapoint()
                 val updateRequest = UpdateRequest(vssPath, datapoint)
-                val response = dataBrokerConnection.update(updateRequest)
+                val response = dataBrokerConnection.kuksaValV1.update(updateRequest)
 
                 then("It should fail with an errorCode 400 (type mismatch)") {
                     val errorsList = response.errorsList
@@ -149,7 +149,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
                 and("Fetching it afterwards") {
                     val fetchRequest = FetchRequest(vssPath)
-                    val getResponse = dataBrokerConnection.fetch(fetchRequest)
+                    val getResponse = dataBrokerConnection.kuksaValV1.fetch(fetchRequest)
 
                     then("The response contains the correctly set value") {
                         val entriesList = getResponse.entriesList
@@ -169,13 +169,13 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
                 val defaultUpdateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
 
-                dataBrokerConnection.update(defaultUpdateRequest)
+                dataBrokerConnection.kuksaValV1.update(defaultUpdateRequest)
 
                 `when`("Fetching the node") {
 
                     and("The initial value is different from the default for a child") {
                         val fetchRequest = VssNodeFetchRequest(vssDriver)
-                        val updatedDriver = dataBrokerConnection.fetch(fetchRequest)
+                        val updatedDriver = dataBrokerConnection.kuksaValV1.fetch(fetchRequest)
 
                         then("Every child node has been updated with the correct value") {
                             val heartRate = updatedDriver.heartRate
@@ -188,7 +188,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 `when`("Updating the node with an invalid value") {
                     val invalidHeartRate = VssDriver.VssHeartRate(-5) // UInt on DataBroker side
                     val vssNodeUpdateRequest = VssNodeUpdateRequest(invalidHeartRate)
-                    val response = dataBrokerConnection.update(vssNodeUpdateRequest)
+                    val response = dataBrokerConnection.kuksaValV1.update(vssNodeUpdateRequest)
 
                     then("the update response should contain an error") {
                         val errorResponse = response.firstOrNull { it.errorsCount >= 1 }
@@ -200,7 +200,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             `when`("Subscribing to the node") {
                 val vssNodeListener = FriendlyVssNodeListener<VssDriver>()
                 val subscribeRequest = VssNodeSubscribeRequest(vssDriver)
-                dataBrokerConnection.subscribe(subscribeRequest, listener = vssNodeListener)
+                dataBrokerConnection.kuksaValV1.subscribe(subscribeRequest, listener = vssNodeListener)
 
                 then("The #onNodeChanged method is triggered") {
                     eventually(eventuallyConfiguration) {
@@ -213,7 +213,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     val datapoint = Types.Datapoint.newBuilder().setUint32(newHeartRateValue).build()
                     val updateRequest = UpdateRequest(vssDriver.heartRate.vssPath, datapoint)
 
-                    dataBrokerConnection.update(updateRequest)
+                    dataBrokerConnection.kuksaValV1.update(updateRequest)
 
                     then("Every child node has been updated with the correct value") {
                         eventually(eventuallyConfiguration) {
@@ -230,7 +230,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                     val newVssHeartRate = VssDriver.VssHeartRate(newHeartRateValue)
                     val updateRequest = VssNodeUpdateRequest(newVssHeartRate)
 
-                    dataBrokerConnection.update(updateRequest)
+                    dataBrokerConnection.kuksaValV1.update(updateRequest)
 
                     then("The subscribed vssNode should be updated") {
                         eventually(eventuallyConfiguration) {
@@ -250,7 +250,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
             `when`("Trying to subscribe to the INVALID VSS path") {
                 val vssPathListener = FriendlyVssPathListener()
                 val subscribeRequest = SubscribeRequest(invalidVssPath)
-                dataBrokerConnection.subscribe(subscribeRequest, vssPathListener)
+                dataBrokerConnection.kuksaValV1.subscribe(subscribeRequest, vssPathListener)
 
                 then("The VssPathListener#onError method should be triggered with 'NOT_FOUND' (Path not found)") {
                     eventually(eventuallyConfiguration) {
@@ -265,7 +265,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
                 // make sure that the value is set and known to us
                 val datapoint = createRandomFloatDatapoint()
                 val updateRequest = UpdateRequest(invalidVssPath, datapoint)
-                val response = dataBrokerConnection.update(updateRequest)
+                val response = dataBrokerConnection.kuksaValV1.update(updateRequest)
 
                 then("It should fail with an errorCode 404 (path not found)") {
                     val errorsList = response.errorsList
@@ -279,7 +279,7 @@ class DataBrokerConnectionTest : BehaviorSpec({
 
             `when`("Trying to fetch the INVALID VSS path") {
                 val fetchRequest = FetchRequest(invalidVssPath)
-                val response = dataBrokerConnection.fetch(fetchRequest)
+                val response = dataBrokerConnection.kuksaValV1.fetch(fetchRequest)
 
                 then("The response should not contain any entries") {
                     Assertions.assertEquals(0, response.entriesList.size)

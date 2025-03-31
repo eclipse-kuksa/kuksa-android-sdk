@@ -24,8 +24,8 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import org.eclipse.kuksa.connectivity.databroker.DisconnectListener;
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection;
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnector;
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection;
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector;
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssNodeListener;
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssPathListener;
 import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest;
@@ -99,7 +99,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             return;
         }
 
-        dataBrokerConnection.fetch(request, callback);
+        dataBrokerConnection.getKuksaValV1().fetch(request, callback);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             return;
         }
 
-        dataBrokerConnection.fetch(request, callback);
+        dataBrokerConnection.getKuksaValV1().fetch(request, callback);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             return;
         }
 
-        dataBrokerConnection.update(request, callback);
+        dataBrokerConnection.getKuksaValV1().update(request, callback);
     }
 
     @Override
@@ -135,16 +135,16 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             return;
         }
 
-        dataBrokerConnection.update(request, callback );
+        dataBrokerConnection.getKuksaValV1().update(request, callback );
     }
 
     @Override
     public void subscribe(@NonNull SubscribeRequest request, @NonNull VssPathListener listener) {
         if (dataBrokerConnection == null) {
-            return;
+            throw new IllegalStateException("Subscribing not possible. no active DatabrokerConnection");
         }
 
-        dataBrokerConnection.subscribe(request, listener);
+        dataBrokerConnection.getKuksaValV1().subscribe(request, listener);
     }
 
     @Override
@@ -156,19 +156,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
             return;
         }
 
-        dataBrokerConnection.subscribe(request, vssNodeListener);
-    }
-
-    @Override
-    public <T extends VssNode> void unsubscribe(
-        @NonNull VssNodeSubscribeRequest<T> request,
-        @NonNull VssNodeListener<T> vssNodeListener
-    ) {
-        if (dataBrokerConnection == null) {
-            return;
-        }
-
-        dataBrokerConnection.unsubscribe(request, vssNodeListener);
+        dataBrokerConnection.getKuksaValV1().subscribe(request, vssNodeListener);
     }
 
     public void disconnect() {
@@ -204,13 +192,6 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         disconnectListeners.remove(listener);
         if (dataBrokerConnection != null) {
             dataBrokerConnection.getDisconnectListeners().unregister(listener);
-        }
-    }
-
-    @Override
-    public void unsubscribe(@NonNull SubscribeRequest request, @NonNull VssPathListener listener) {
-        if (dataBrokerConnection != null) {
-            dataBrokerConnection.unsubscribe(request, listener);
         }
     }
 }

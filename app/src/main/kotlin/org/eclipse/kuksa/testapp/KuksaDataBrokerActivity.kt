@@ -29,8 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.DisconnectListener
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnection
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssNodeListener
 import org.eclipse.kuksa.connectivity.databroker.v1.listener.VssPathListener
 import org.eclipse.kuksa.connectivity.databroker.v1.request.FetchRequest
@@ -152,9 +152,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 dataBrokerEngine.subscribe(request, vssPathListener)
             }
 
-            vssPathsViewModel.onUnsubscribeProperty = { property: DataBrokerProperty ->
-                val request = SubscribeRequest(property.vssPath, *property.fieldTypes.toTypedArray())
-                dataBrokerEngine.unsubscribe(request, vssPathListener)
+            vssPathsViewModel.onUnsubscribeProperty = { _: DataBrokerProperty ->
+                Log.w(TAG, "Unsubscribing not possible")
             }
         }
 
@@ -164,9 +163,8 @@ class KuksaDataBrokerActivity : ComponentActivity() {
                 dataBrokerEngine.subscribe(request, vssNodeListener)
             }
 
-            vssNodesViewModel.onUnsubscribeNode = { vssNode ->
-                val request = VssNodeSubscribeRequest(vssNode)
-                dataBrokerEngine.unsubscribe(request, vssNodeListener)
+            vssNodesViewModel.onUnsubscribeNode = { _ ->
+                Log.w(TAG, "Unsubscribing not possible")
             }
 
             vssNodesViewModel.onUpdateSignal = { signal ->
