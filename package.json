@@ -5,13 +5,13 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@commitlint/cli": "^17.6.6",
-    "@commitlint/config-conventional": "^17.6.6",
-    "commit-and-tag-version": "^11.3.0",
-    "husky": "^8.0.3"
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "commit-and-tag-version": "^13.1.2",
+    "husky": "^9.1.7"
   },
   "scripts": {
-    "postinstall": "husky install",
+    "postinstall": "husky",
     "tag-release": "npx commit-and-tag-version --packageFiles version.txt -t release/v --skip.commit=true --skip.changelog=true --skip.bump=true",
     "commit-release": "npx commit-and-tag-version --packageFiles version.txt -t release/v --bumpFiles version.txt --skip.tag=true", 
     "bump-release": "npx commit-and-tag-version --packageFiles version.txt -t release/v --bumpFiles version.txt --skip.tag=true --skip.commit=true",
