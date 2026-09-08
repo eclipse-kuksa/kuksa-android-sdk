@@ -78,6 +78,10 @@ further insight into the KUKSA SDK API. You can also checkout the [sample](https
   See [this chapter](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker#reading-and-writing-vss-data-using-the-cli) on how to read and write data via the CLI.
 - Optional: The [Mock Service](https://github.com/eclipse/kuksa.val.services/tree/main/mock_service) can be used to simulate a "real" environment. 
 
+## Troubleshooting
+
+If you are running the Databroker locally on your PC and cannot reach it from your Android device or emulator, see the [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for step-by-step instructions on setting up port forwarding using `adb reverse` or configuring the emulator alias.
+
 ## Contribution
 
 Please feel free to create [GitHub issues](https://github.com/eclipse-kuksa/kuksa-android-sdk/issues) and [contribute](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/docs/CONTRIBUTING.md).

@@ -15,6 +15,10 @@ You can use the following snippet for a simple (unsecure) connection to the Data
 setup so see the [samples package](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/samples/src/main/kotlin/com/example/sample/KotlinActivity.kt)
 for a detailed implementation or how to connect in a secure way with a certificate.
 
+> [!TIP]
+> **Connecting to a Databroker running locally on your PC?**
+> If your Databroker is running on your host machine and your Android device cannot reach it, see the [Troubleshooting Guide](TROUBLESHOOTING.md) for steps on using `adb reverse` or emulator loopback aliases.
+
 *Kotlin*
 ```kotlin
 private var dataBrokerConnection: DataBrokerConnection? = null
@@ -327,3 +331,23 @@ void subscribe() {
     );
 }
 ```
+
+## Troubleshooting
+
+If you are running the KUKSA Databroker on your local development machine (PC) and your Android device cannot connect:
+
+- **Physical Android Device (via USB):**
+  Forward the Databroker port using ADB reverse:
+  ```bash
+  adb reverse tcp:55555 tcp:55555
+  ```
+  Then connect to `localhost:55555` (or `127.0.0.1:55555`) in your app.
+
+- **Android Emulator:**
+  Use `10.0.2.2:55555` to access `localhost` on the host PC from the emulator.
+
+> [!NOTE]
+> **macOS limitation:** On macOS, the Databroker cannot run on port `55556`. Use port `55555` instead (and make sure to update the port in your app if using the sample test app).
+
+For a full step-by-step walkthrough, firewall settings, and additional tips, see the [Troubleshooting Guide](TROUBLESHOOTING.md).
+
