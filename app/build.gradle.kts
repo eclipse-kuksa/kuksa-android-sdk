@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 import org.eclipse.kuksa.property.PropertiesLoader
 import org.eclipse.kuksa.version.SemanticVersion
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -64,21 +65,18 @@ android {
         versionName = semanticVersion.versionName
     }
     signingConfigs {
-        create("release") {
-            val propertiesLoader = PropertiesLoader()
-            val localProperties = propertiesLoader.load("$rootDir/local.properties")
+        val propertiesLoader = PropertiesLoader()
+        val localProperties = propertiesLoader.load("$rootDir/local.properties")
 
-            val keystorePath = System.getenv("KEYSTORE_PATH") ?: localProperties?.getProperty("release.keystore.path")
-            println("Defined keystore path: $keystorePath")
-            if (keystorePath == null) return@create
-
-            storeFile = File(keystorePath)
-            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-                ?: localProperties?.getProperty("release.keystore.key.alias")
-            keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
-                ?: localProperties?.getProperty("release.keystore.key.password")
-            storePassword = System.getenv("SIGNING_STORE_PASSWORD")
-                ?: localProperties?.getProperty("release.keystore.store.password")
+        val keystoreFile = resolveKeystoreFile(localProperties)
+        if (keystoreFile != null) {
+            val credentials = validateSigningCredentials(keystoreFile, localProperties)
+            create("release") {
+                storeFile = credentials.storeFile
+                keyAlias = credentials.keyAlias
+                keyPassword = credentials.keyPassword
+                storePassword = credentials.storePassword
+            }
         }
     }
     buildTypes {
@@ -110,8 +108,6 @@ android {
             "InvalidPackage",
             "AutoboxingStateCreation",
         )
-        textOutput = file("stdout")
-        textReport = true
     }
     testOptions {
         unitTests {
@@ -171,4 +167,64 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.constraintlayout.compose)
+}
+
+data class SigningCredentials(
+    val storeFile: File,
+    val keyAlias: String,
+    val keyPassword: String,
+    val storePassword: String,
+)
+
+fun resolveKeystoreFile(localProperties: Properties?): File? {
+    val rawKeystorePath = System.getenv("KEYSTORE_PATH")
+        ?: localProperties?.getProperty("release.keystore.path")
+    val keystorePath = rawKeystorePath?.replaceFirst(
+        "^~".toRegex(),
+        System.getProperty("user.home"),
+    ) ?: return null
+
+    val keystoreFile = File(keystorePath)
+    if (!keystoreFile.exists()) {
+        throw GradleException("Release keystore file does not exist at: $keystorePath")
+    }
+    return keystoreFile
+}
+
+fun validateSigningCredentials(
+    keystoreFile: File,
+    localProperties: Properties?,
+): SigningCredentials {
+    val keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+        ?: localProperties?.getProperty("release.keystore.key.alias")
+    val keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+        ?: localProperties?.getProperty("release.keystore.key.password")
+    val storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+        ?: localProperties?.getProperty("release.keystore.store.password")
+
+    val missingProps = mutableListOf<String>()
+    if (keyAlias.isNullOrBlank()) {
+        missingProps.add("SIGNING_KEY_ALIAS / release.keystore.key.alias")
+    }
+    if (keyPassword.isNullOrBlank()) {
+        missingProps.add("SIGNING_KEY_PASSWORD / release.keystore.key.password")
+    }
+    if (storePassword.isNullOrBlank()) {
+        missingProps.add("SIGNING_STORE_PASSWORD / release.keystore.store.password")
+    }
+
+    if (missingProps.isNotEmpty()) {
+        val missingDetails = missingProps.joinToString(", ")
+        throw GradleException(
+            "Release keystore path is set to '${keystoreFile.path}', but signing properties are missing: " +
+                "$missingDetails. Please set them via environment variables or in local.properties.",
+        )
+    }
+
+    return SigningCredentials(
+        storeFile = keystoreFile,
+        keyAlias = keyAlias!!,
+        keyPassword = keyPassword!!,
+        storePassword = storePassword!!,
+    )
 }

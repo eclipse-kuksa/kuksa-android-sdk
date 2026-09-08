@@ -1,5 +1,55 @@
 ## Getting started
 
+### Developer Setup & Building the Project
+
+When cloning the repository on a fresh setup and running `./gradlew clean build`, Gradle builds both debug and release variants (including `:app:packageRelease` and `:app:validateSigningRelease`). This requires configuring your Android SDK path and signing credentials.
+
+#### 1. Android SDK Location
+Set your Android SDK path either via environment variable or in `local.properties`:
+
+- **Environment variable:**
+  ```bash
+  # macOS / Linux
+  export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk" # or export ANDROID_HOME="$HOME/Library/Android/sdk"
+  ```
+- **Or in `local.properties` (project root):**
+  ```properties
+  sdk.dir=/Users/<username>/Library/Android/sdk
+  ```
+
+#### 2. Signing Configuration for Local Development
+The release build requires signing credentials. For local development, you can use Android's default `debug.keystore` (generated automatically by Android Studio in `~/.android/debug.keystore`).
+
+You can configure this using either **`local.properties`** (recommended for local dev) or **environment variables** (used in CI):
+
+**Option A: Using `local.properties` (Recommended for local dev)**
+Add the following to `local.properties` in your repository root:
+```properties
+release.keystore.path=/Users/<username>/.android/debug.keystore
+release.keystore.key.alias=androiddebugkey
+release.keystore.key.password=<key-password>    # for debug.keystore: android
+release.keystore.store.password=<store-password>  # for debug.keystore: android
+```
+
+> [!NOTE]
+> If no release keystore is configured, `./gradlew build` automatically falls back to debug signing so the project builds out of the box.
+
+**Option B: Using Environment Variables**
+Alternatively, export the following variables in your terminal session or shell profile (`~/.zshrc`, `~/.bashrc`):
+```bash
+export KEYSTORE_PATH="$HOME/.android/debug.keystore"
+export SIGNING_KEY_ALIAS="androiddebugkey"
+export SIGNING_KEY_PASSWORD="android"
+export SIGNING_STORE_PASSWORD="android"
+```
+
+Once configured, verify by running:
+```bash
+./gradlew :app:validateSigningRelease
+```
+
+---
+
 ### Make Changes
 
 ### Commit Messages
