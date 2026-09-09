@@ -24,9 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.eclipse.kuksa.testapp.collection.MaxElementSet
 import java.time.LocalDateTime
 
@@ -47,21 +45,17 @@ class OutputViewModel : ViewModel() {
 
     fun addOutputEntry(outputEntry: OutputEntry) {
         viewModelScope.launch {
-            withContext(Dispatchers.Main) {
-                outputEntries.add(outputEntry)
+            outputEntries.add(outputEntry)
 
-                output = outputEntries.toList()
-            }
+            output = outputEntries.toList()
         }
     }
 
     fun clear() {
         viewModelScope.launch {
-            withContext(Dispatchers.Main) {
-                outputEntries.clear()
+            outputEntries.clear()
 
-                output = outputEntries.toList()
-            }
+            output = outputEntries.toList()
         }
     }
 }
