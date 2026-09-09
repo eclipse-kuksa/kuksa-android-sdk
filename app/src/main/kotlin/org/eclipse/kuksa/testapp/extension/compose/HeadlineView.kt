@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Headline(name: String, modifier: Modifier = Modifier, color: Color = Color.Black) {
+fun Headline(name: String, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.onSurface) {
     Text(
         text = name,
         modifier = modifier
