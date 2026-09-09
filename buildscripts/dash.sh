@@ -1,5 +1,6 @@
+#!/usr/bin/env bash
 #
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +18,17 @@
 #
 #
 
-projectName=$1
-folder=build/oss/"$projectName"
-fileName=dependencies.txt
+set -euo pipefail
+
+projectPath=$1
+# Normalize project path for gradle (ensure it starts with :)
+gradleProjectPath=":${projectPath#:}"
+
+# Normalize folder path (strip leading colon and replace colons with slashes)
+folderPath="${projectPath#:}"
+folderPath="${folderPath//://}"
+folder="build/oss/$folderPath"
+fileName="dependencies.txt"
 
 mkdir -p "$folder"
 
@@ -42,16 +51,24 @@ mkdir -p "$folder"
 unameOut="$(uname -s)"
 case "${unameOut}" in
     Linux*)     GREP="grep";; # Linux
-    Darwin*)    GREP="ggrep";; # Mac
+    Darwin*)
+        if command -v ggrep > /dev/null 2>&1; then
+            GREP="ggrep"
+        else
+            GREP="grep"
+        fi
+        ;;
     *)          GREP="UNKNOWN:${unameOut}"
 esac
 echo "${GREP}"
 
-./gradlew "$projectName":dependencies \
-| ${GREP} -Poh "(?<=\-\-\- ).*" \
-| ${GREP} -Pv "\([nc\*]\)" \
-| ${GREP} -Pv "FAILED" \
-| ${GREP} -Pv "project :[a-zA-Z0-9]+" \
+deps_output=$(./gradlew "${gradleProjectPath}:dependencies")
+
+echo "$deps_output" \
+| ( ${GREP} -Poh "(?<=\-\-\- ).*" || true ) \
+| ( ${GREP} -Pv "\([nc\*]\)" || true ) \
+| ( ${GREP} -Pv "FAILED" || true ) \
+| ( ${GREP} -Pv "project\s*[':]" || true ) \
 | perl -pe 's/([\w\.\-]+):([\w\.\-]+):(?:[\w\.\-]+ -> )?([\w\.\-]+).*$/$1:$2:$3/gmi;t' \
 | perl -pe 's/([\w\.\-]+):([\w\.\-]+) -> ([\w\.\-]+).*$/$1:$2:$3/gmi;t' \
 | sort -u \

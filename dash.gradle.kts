@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,5 +22,5 @@ tasks.register<Exec>("createDashFile") {
 
     workingDir("$rootDir")
     commandLine("buildscripts/dash.sh")
-    args(project.name)
+    args(project.path)
 }
