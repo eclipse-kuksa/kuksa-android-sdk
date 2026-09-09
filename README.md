@@ -13,6 +13,12 @@ The KUKSA Android SDK allows you to interact with [VSS data](https://covesa.gith
 from the [KUKSA Databroker](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker)
 within an Android App. The main functionality consists of fetching, updating and subscribing to VSS data. 
 
+## Architecture
+
+> [!IMPORTANT]
+> The `kuksa-android-sdk` is a thin wrapper around the [kuksa-java-sdk](https://github.com/eclipse-kuksa/kuksa-java-sdk) (version 0.4.1). 
+> It delegates all core functionality to the Java SDK and primarily provides Android-specific test infrastructure, examples, and integration tests and test apps.
+
 ## Integration
 
 *app/build.gradle.kts*
