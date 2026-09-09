@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ plugins {
     alias(libs.plugins.gradle.nexus.publish.plugin)
 }
 
+apply(from = "$rootDir/databroker.gradle.kts")
+
 nexusPublishing {
     repositories {
         sonatype {
@@ -78,6 +80,7 @@ subprojects {
 
 @OptIn(ExperimentalPathApi::class)
 tasks.register("mergeDashFiles") {
+    description = "Merges all dash files from subprojects into a single dash file"
     group = "oss"
 
     dependsOn(
@@ -141,7 +144,6 @@ subprojects {
 
     if (plugins.hasPlugin("com.android.application")) {
         configure<ApplicationExtension> {
-            @Suppress("UnstableApiUsage")
             testOptions {
                 buildTypes {
                     named("debug") {
@@ -155,6 +157,7 @@ subprojects {
 }
 
 tasks.register<JacocoReport>("jacocoRootReport") {
+    description = "Generates a code coverage report for all subprojects"
     group = "report"
 
     reports {
