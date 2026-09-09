@@ -62,11 +62,11 @@ class OutputViewModel : ViewModel() {
 
 class OutputEntry(
     val localDateTime: LocalDateTime = LocalDateTime.now(),
-    messages: List<String> = mutableListOf(),
+    messages: List<String> = emptyList(),
 ) {
-    private var _messages: MutableList<String> = messages.toMutableList()
+    private val _messages: MutableList<String> = messages.toMutableList()
     val messages: List<String>
-        get() = _messages
+        get() = _messages.toList()
 
     fun addMessage(message: String) {
         _messages.add(message)
