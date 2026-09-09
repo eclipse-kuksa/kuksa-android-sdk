@@ -17,7 +17,7 @@
  *
  */
 
-val ktlint by configurations.creating
+val ktlint = configurations.create("ktlint")
 
 dependencies {
     // can't use Project.lib exension here because the plugin is applied before the versionCatalog is available
@@ -28,7 +28,7 @@ dependencies {
     }
 }
 
-val ktlintCheck by tasks.registering(JavaExec::class) {
+tasks.register<JavaExec>("ktlintCheck") {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Check Kotlin code style"
     classpath = ktlint

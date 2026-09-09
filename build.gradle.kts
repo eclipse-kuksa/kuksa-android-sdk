@@ -154,7 +154,7 @@ subprojects {
     }
 }
 
-tasks.create("jacocoRootReport", JacocoReport::class.java) {
+tasks.register<JacocoReport>("jacocoRootReport") {
     group = "report"
 
     reports {
