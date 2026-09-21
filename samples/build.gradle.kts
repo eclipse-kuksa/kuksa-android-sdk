@@ -87,7 +87,7 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
-    implementation(project(":kuksa-sdk"))
+    implementation(project(":kuksa-android-sdk"))
 
     // app dependencies
     implementation(libs.androidx.appcompat)

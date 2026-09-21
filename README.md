@@ -1,4 +1,4 @@
-# kuksa-sdk-android
+# kuksa-android-sdk
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Gitter](https://img.shields.io/gitter/room/kuksa-val/community)](https://gitter.im/kuksa-val/community)
@@ -23,7 +23,7 @@ within an Android App. The main functionality consists of fetching, updating and
 
 *app/build.gradle.kts*
 ```
-implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
+implementation("org.eclipse.kuksa:kuksa-android-sdk:<VERSION>")
 ```
 
 The latest release version can be seen [here](https://github.com/eclipse-kuksa/kuksa-android-sdk/releases).

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="samples" type="AndroidRunConfigurationType" factoryName="Android App" singleton="true">
-    <module name="kuksa-sdk-android.samples.main" />
+    <module name="kuksa-android-sdk.samples.main" />
     <option name="DEPLOY" value="true" />
     <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
     <option name="DEPLOY_AS_INSTANT" value="false" />

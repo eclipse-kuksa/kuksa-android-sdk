@@ -1,7 +1,7 @@
 {
-  "name": "kuksa-sdk-android",
+  "name": "kuksa-android-sdk",
   "main": "index.js",
-  "repository": "https://github.com/SoftwareDefinedVehicle/kuksa-sdk-android.git",
+  "repository": "https://github.com/eclipse-kuksa/kuksa-android-sdk.git",
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {

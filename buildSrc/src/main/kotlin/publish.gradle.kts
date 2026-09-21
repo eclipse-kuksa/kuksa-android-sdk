@@ -37,10 +37,14 @@ afterEvaluate {
     publishing {
         publications {
             register<MavenPublication>(extension.mavenPublicationName.get()) {
+                groupId = extension.artifactGroup.get()
+                artifactId = extension.artifactName.get()
+                version = extension.artifactVersion.get()
+
                 from(components[extension.componentName.get()])
 
                 pom {
-                    name = "${project.group}:${project.name}"
+                    name = "${extension.artifactGroup.get()}:${extension.artifactName.get()}"
                     description = extension.description.get()
                     url = "https://github.com/eclipse-kuksa/kuksa-android-sdk"
                     licenses {

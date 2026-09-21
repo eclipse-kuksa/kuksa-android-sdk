@@ -136,7 +136,7 @@ vssProcessor {
 }
 
 dependencies {
-    implementation(project(":kuksa-sdk"))
+    implementation(project(":kuksa-android-sdk"))
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)

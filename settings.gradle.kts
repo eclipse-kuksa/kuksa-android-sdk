@@ -50,5 +50,5 @@ dependencyResolutionManagement {
 rootProject.name = "kuksa-android-sdk"
 
 include(":app")
-include(":kuksa-sdk")
+include(":kuksa-android-sdk")
 include(":samples")

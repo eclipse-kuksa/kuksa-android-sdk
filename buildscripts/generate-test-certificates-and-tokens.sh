@@ -22,8 +22,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-AUTH_DIR="${ROOT_DIR}/kuksa-java-sdk/src/test/resources/authentication"
-TLS_DIR="${ROOT_DIR}/kuksa-java-sdk/src/test/resources/tls"
+AUTH_DIR="${ROOT_DIR}/kuksa-android-sdk/src/test/resources/authentication"
+TLS_DIR="${ROOT_DIR}/kuksa-android-sdk/src/test/resources/tls"
 
 mkdir -p "${AUTH_DIR}"
 mkdir -p "${TLS_DIR}"

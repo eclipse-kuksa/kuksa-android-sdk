@@ -6,7 +6,7 @@ Get instantly bootstrapped into the world of the KUKSA SDK with the following co
 
 *app/build.gradle.kts*
 ```
-implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
+implementation("org.eclipse.kuksa:kuksa-android-sdk:<VERSION>")
 ```
 
 ## Connecting to the Databroker
