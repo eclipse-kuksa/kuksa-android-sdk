@@ -28,6 +28,4 @@ val eventuallyConfiguration = eventuallyConfig {
 }
 
 // https://kotest.io/docs/framework/project-config.html
-object KotestProjectConfig : AbstractProjectConfig() {
-    override var displayFullTestPath: Boolean? = true
-}
+object KotestProjectConfig : AbstractProjectConfig()

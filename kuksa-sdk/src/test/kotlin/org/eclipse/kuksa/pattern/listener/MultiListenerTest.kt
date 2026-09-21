@@ -49,7 +49,7 @@ class MultiListenerTest : BehaviorSpec({
                 classUnderTest.isEmpty() shouldBe false
             }
 
-            `when`("Trying to register the same listener again") {
+            and("Trying to register the same listener again") {
                 classUnderTest.register(testListener)
 
                 then("The same listener should not be added a second time") {
@@ -57,7 +57,7 @@ class MultiListenerTest : BehaviorSpec({
                 }
             }
 
-            `when`("Trying to unregister the already registered listener") {
+            and("Trying to unregister the already registered listener") {
                 classUnderTest.unregister(testListener)
 
                 then("It should be correctly removed") {

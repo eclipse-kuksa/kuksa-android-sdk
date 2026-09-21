@@ -25,25 +25,20 @@ import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 plugins {
     id("com.android.application")
-    id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.2"
+    id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.3"
     kotlin("plugin.serialization")
-    kotlin("android")
+    kotlin("plugin.compose")
 }
 
 android {
+    val jvmTarget = libs.versions.jvmTarget.get()
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        val javaVersion = JavaVersion.toVersion(jvmTarget)
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtension.get()
     }
 
     packaging {
@@ -53,12 +48,12 @@ android {
         }
     }
 
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "org.eclipse.kuksa.testapp"
         minSdk = 27
-        targetSdk = 35
+        targetSdk = 37
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -140,6 +135,10 @@ tasks.withType<Test>().configureEach {
     }
 }
 
+vssProcessor {
+    searchPath = "$rootDir/vss"
+}
+
 dependencies {
     implementation(project(":kuksa-sdk"))
 
@@ -163,6 +162,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
 
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     androidTestImplementation(libs.androidx.compose.ui.tooling.test.junit4)

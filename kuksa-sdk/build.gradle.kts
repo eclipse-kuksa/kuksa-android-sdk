@@ -24,7 +24,6 @@ import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     publish
 }
 
@@ -44,7 +43,7 @@ publish {
 
 android {
     namespace = "org.eclipse.kuksa"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 27
@@ -53,12 +52,11 @@ android {
 
         consumerProguardFiles("consumer-rules.pro")
     }
+    val jvmTarget = libs.versions.jvmTarget.get()
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
+        val javaVersion = JavaVersion.toVersion(jvmTarget)
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
     testOptions {
         unitTests {

@@ -126,7 +126,7 @@ private fun TopBar(
 ) {
     TopAppBar(
         title = { Text("TestApp") },
-        colors = TopAppBarDefaults.mediumTopAppBarColors(
+        colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
         actions = {

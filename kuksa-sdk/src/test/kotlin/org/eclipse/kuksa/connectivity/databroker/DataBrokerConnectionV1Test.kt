@@ -89,7 +89,7 @@ class DataBrokerConnectionV1Test : BehaviorSpec({
                     }
                 }
 
-                `when`("The observed VSS path changes") {
+                and("The observed VSS path changes") {
                     vssPathListener.reset()
 
                     val random = Random(System.currentTimeMillis())
@@ -297,7 +297,7 @@ class DataBrokerConnectionV1Test : BehaviorSpec({
         }
 
         // this test closes the connection, the connection can't be used afterward anymore
-        `when`("A DisconnectListener is registered successfully") {
+        and("A DisconnectListener is registered successfully") {
             val disconnectListener = mockk<DisconnectListener>(relaxed = true)
             val disconnectListeners = dataBrokerConnection.disconnectListeners
             disconnectListeners.register(disconnectListener)

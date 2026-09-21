@@ -197,16 +197,8 @@ class DataBrokerConnectorAuthenticationTest : BehaviorSpec({
                 jwtFileStream = null,
             )
 
-            `when`("Trying to connect") {
-                val result = runCatching {
-                    dataBrokerConnector.connect()
-                }
-
-                then("The connection should be successful") {
-                    result.getOrNull() shouldNotBe null
-                }
-
-                val connection = result.getOrNull()!!
+            and("a successfully established connection") {
+                val connection = dataBrokerConnector.connect()
 
                 `when`("Reading the VALUE of Vehicle.Speed") {
                     val fetchRequest = FetchRequest(speedVssPath)

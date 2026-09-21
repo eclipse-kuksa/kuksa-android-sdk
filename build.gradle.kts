@@ -17,8 +17,8 @@
  *
  */
 
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.LibraryExtension
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import org.eclipse.kuksa.version.SemanticVersion
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
@@ -140,7 +140,7 @@ subprojects {
     }
 
     if (plugins.hasPlugin("com.android.application")) {
-        configure<BaseAppModuleExtension> {
+        configure<ApplicationExtension> {
             @Suppress("UnstableApiUsage")
             testOptions {
                 buildTypes {

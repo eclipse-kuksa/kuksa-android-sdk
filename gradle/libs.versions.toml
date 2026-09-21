@@ -1,24 +1,24 @@
 [versions]
-activityKtx = "1.10.1"
-androidGradlePlugin = "8.6.1" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
-detekt = "1.23.6"
-datastore = "1.1.3"
-constraintlayoutCompose = "1.1.1"
-datastorePreferences = "1.1.3"
-dockerJavaCore = "3.4.1"
-kotlin = "1.9.22"
-kotlinxSerializationJson = "1.6.3"
-runtimeLivedata = "1.7.8"
+activityKtx = "1.13.0"
+androidGradlePlugin = "9.3.2" # Check with detekt table first: https://detekt.dev/docs/introduction/compatibility/
+detekt = "1.23.8"
+datastore = "1.2.1"
+constraintlayoutCompose = "1.1.2"
+datastorePreferences = "1.2.1"
+dockerJavaCore = "3.7.1"
+kotlin = "2.4.10"
+kotlinxSerializationJson = "1.11.0"
+runtimeLivedata = "1.12.0"
 ktlint = "0.0" # Maintained inside ktlint.gradle.kts
-androidxAppCompat = "1.7.0"
-kotest = "5.9.1"
-mockk = "1.13.7"
-androidxLifecycle = "2.8.7"
-kotlinxCoroutines = "1.8.1"
-kotlinCompilerExtension = "1.5.10"
-composeBom = "2025.02.00"
-grpc = "1.65.1"
-kuksaVersion = "0.4.0"
+androidxAppCompat = "1.8.0"
+kotest = "6.2.4"
+mockk = "1.14.11"
+androidxLifecycle = "2.11.0"
+kotlinxCoroutines = "1.11.0"
+composeBom = "2026.08.00"
+grpc = "1.84.0"
+kuksaVersion = "0.4.1"
+jvmTarget = "17"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityKtx" }
@@ -32,9 +32,9 @@ docker-java-core = { module = "com.github.docker-java:docker-java-core", version
 docker-java-transport-httpclient5 = { module = "com.github.docker-java:docker-java-transport-httpclient5", version.ref = "dockerJavaCore" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
-grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
 
 kuksa-java-sdk = { group = "org.eclipse.kuksa", name = "kuksa-java-sdk", version.ref = "kuksaVersion" }
+grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
 
 # app specific libraries
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
@@ -48,6 +48,8 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-tooling-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-tooling-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 # build specific libraries
 kotest = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
@@ -56,6 +58,7 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 # buildSrc specific libraries
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-composePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 detekt-gradlePlugin = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
 

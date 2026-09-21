@@ -95,9 +95,9 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
             }
         }
 
-        `when`("no ActuationProvider exists for Vehicle.Cabin.Seat.Row1.DriverSide.Heating") {
-            `when`("trying to actuate Vehicle.Cabin.Seat.Row1.DriverSide.Heating") {
-                val signalId = "Vehicle.Cabin.Seat.Row1.DriverSide.Heating".toSignalId()
+        and("no ActuationProvider exists for Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling") {
+            `when`("trying to actuate Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling") {
+                val signalId = "Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling".toSignalId()
                 val value = Types.Value.newBuilder().setInt32(50).build()
 
                 val request = ActuateRequestV2(signalId, value)
@@ -113,7 +113,7 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
             }
         }
 
-        `when`("an ActuationProvider exists for Vehicle.Cabin.Seat.Row1.DriverSide.Heating") {
+        and("an ActuationProvider exists for Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling") {
             val responseStream = object : StreamObserver<OpenProviderStreamResponse> {
                 override fun onNext(value: OpenProviderStreamResponse) {
                     // unimplemented
@@ -129,7 +129,7 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
             }
             val requestStream = dataBrokerConnection.kuksaValV2.openProviderStream(responseStream)
 
-            val signalId = "Vehicle.Cabin.Seat.Row1.DriverSide.Heating".toSignalId()
+            val signalId = "Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling".toSignalId()
 
             val provideActuationRequest = ProvideActuationRequest.newBuilder()
                 .addActuatorIdentifiers(signalId)
@@ -139,7 +139,7 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
                 .build()
             requestStream.onNext(openProviderStreamRequest)
 
-            `when`("trying to actuate Vehicle.Cabin.Seat.Row1.DriverSide.Heating") {
+            `when`("trying to actuate Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling") {
                 val value = Types.Value.newBuilder().setInt32(50).build()
 
                 val request = ActuateRequestV2(signalId, value)
@@ -171,7 +171,7 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
                     subscribeResponse.entriesMap[vssPath]?.value?.float shouldBe initialValue
                 }
 
-                `when`("The observed VSS path changes") {
+                and("The observed VSS path changes") {
                     val randomFloatDatapoint = createRandomFloatDatapoint()
                     dataBrokerConnection.kuksaValV2.publishValue(PublishValueRequestV2(signalId, randomFloatDatapoint))
 
@@ -305,7 +305,7 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
         }
 
         // this test closes the connection, the connection can't be used afterward anymore
-        `when`("A DisconnectListener is registered successfully") {
+        and("A DisconnectListener is registered successfully") {
             val disconnectListener = mockk<DisconnectListener>(relaxed = true)
             val disconnectListeners = dataBrokerConnection.disconnectListeners
             disconnectListeners.register(disconnectListener)
