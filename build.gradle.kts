@@ -24,14 +24,7 @@ import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.bufferedWriter
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createFile
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.name
-import kotlin.io.path.useLines
-import kotlin.io.path.visitFileTree
+import kotlin.io.path.*
 
 val versionDefaultPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
 rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
@@ -53,8 +46,14 @@ apply(from = "$rootDir/databroker.gradle.kts")
 nexusPublishing {
     repositories {
         sonatype {
-            username = System.getenv("ORG_OSSRH_USERNAME")
-            password = System.getenv("ORG_OSSRH_PASSWORD")
+            val releaseUri = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
+            nexusUrl.set(releaseUri)
+
+            val snapshotUri = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            snapshotRepositoryUrl.set(snapshotUri)
+
+            username = System.getenv("SONATYPE_USERNAME")
+            password = System.getenv("SONATYPE_PASSWORD")
         }
     }
 }
