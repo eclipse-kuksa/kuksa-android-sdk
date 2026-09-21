@@ -10,7 +10,7 @@ inputs:
     default: 'false'
   databroker-version:
     description: "Databroker Version"
-    default: 'main'
+    default: 'latest'
   kotest-tag:
     description: >
       The Kotest Tag to use when executing the tests. Check Tag.kt for valid options. Different Tags might require the
@@ -25,7 +25,7 @@ runs:
       shell: bash
 
     - name: Upload Test Reports
-      if: ${{ inputs.upload-test-reports == 'true' }}
+      if: ${{ always() && inputs['upload-test-reports'] == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: test-reports
