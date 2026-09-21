@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@
 package org.eclipse.kuksa.connectivity.databroker.docker
 
 import com.github.dockerjava.api.command.CreateContainerResponse
-import org.eclipse.kuksa.connectivity.databroker.DATABROKER_CONTAINER_NAME
+import com.github.dockerjava.api.model.ExposedPort
+import com.github.dockerjava.api.model.InternetProtocol
 
 // no tls, no authentication
 class InsecureDataBrokerDockerContainer(
-    containerName: String = DATABROKER_CONTAINER_NAME,
+    containerName: String = "databroker_test_insecure",
 ) : DataBrokerDockerContainer(containerName) {
 
     @Suppress("ArgumentListWrapping", "ktlint:standard:argument-list-wrapping") // better key-value pair readability
@@ -32,9 +33,12 @@ class InsecureDataBrokerDockerContainer(
         return dockerClient.createContainerCmd("$repository:$tag")
             .withName("${containerName}_${System.nanoTime()}")
             .withHostConfig(hostConfig)
+            .withExposedPorts(ExposedPort(port, InternetProtocol.TCP))
             .withCmd(
+                "--address", "0.0.0.0",
                 "--port", "$port",
                 "--insecure",
+                "--vss", vssMount,
             )
             .exec()
     }

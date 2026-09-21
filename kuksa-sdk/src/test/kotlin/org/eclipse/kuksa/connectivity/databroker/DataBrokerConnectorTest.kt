@@ -61,8 +61,8 @@ class DataBrokerConnectorTest : BehaviorSpec({
         }
 
         and("a DataBrokerConnector with INVALID Host and Port") {
-            val invalidHost = "192.168.5.10"
-            val invalidPort = 11111
+            val invalidHost = "0.0.0.0"
+            val invalidPort = 12345
             val dataBrokerConnector = dataBrokerConnectorProvider.createInsecure(invalidHost, invalidPort)
 
             `when`("Trying to establish a connection") {
