@@ -89,6 +89,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotest)
     testImplementation(libs.mockk)
+    testImplementation(libs.grpc.stub)
 
     testImplementation(libs.docker.java.core)
     testImplementation(libs.docker.java.transport.httpclient5)

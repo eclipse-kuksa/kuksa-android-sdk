@@ -17,6 +17,7 @@ androidxLifecycle = "2.8.7"
 kotlinxCoroutines = "1.8.1"
 kotlinCompilerExtension = "1.5.10"
 composeBom = "2025.02.00"
+grpc = "1.65.1"
 kuksaVersion = "0.4.0"
 
 [libraries]
@@ -31,6 +32,7 @@ docker-java-core = { module = "com.github.docker-java:docker-java-core", version
 docker-java-transport-httpclient5 = { module = "com.github.docker-java:docker-java-transport-httpclient5", version.ref = "dockerJavaCore" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
 
 kuksa-java-sdk = { group = "org.eclipse.kuksa", name = "kuksa-java-sdk", version.ref = "kuksaVersion" }
 

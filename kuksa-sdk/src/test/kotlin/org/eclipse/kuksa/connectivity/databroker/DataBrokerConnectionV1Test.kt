@@ -46,7 +46,7 @@ import org.eclipse.kuksa.vssNode.VssDriver
 import org.junit.jupiter.api.Assertions
 import kotlin.random.Random
 
-class DataBrokerConnectionTest : BehaviorSpec({
+class DataBrokerConnectionV1Test : BehaviorSpec({
     tags(Integration, Insecure, InsecureDataBroker)
 
     var databrokerContainer: DataBrokerDockerContainer? = null
