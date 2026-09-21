@@ -97,7 +97,9 @@ android {
         }
 
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfigs.findByName("release")?.let { releaseSigningConfig ->
+                signingConfig = releaseSigningConfig
+            }
         }
     }
     namespace = "org.eclipse.kuksa.testapp"
@@ -177,8 +179,8 @@ data class SigningCredentials(
 )
 
 fun resolveKeystoreFile(localProperties: Properties?): File? {
-    val rawKeystorePath = System.getenv("KEYSTORE_PATH")
-        ?: localProperties?.getProperty("release.keystore.path")
+    val rawKeystorePath = System.getenv("KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
+        ?: localProperties?.getProperty("release.keystore.path")?.takeIf { it.isNotBlank() }
     val keystorePath = rawKeystorePath?.replaceFirst(
         "^~".toRegex(),
         System.getProperty("user.home"),
