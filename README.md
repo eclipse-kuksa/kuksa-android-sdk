@@ -7,6 +7,12 @@
 
 This is an Android SDK for the [KUKSA Vehicle Abstraction Layer](https://github.com/eclipse/kuksa.val).
 
+> [!IMPORTANT]
+> **AI Usage Notice**
+>
+> This repository partially contains AI-generated code using GitHub Copilot Business.
+> This notice must remain attached to any reproduction of this repository.
+
 ## Overview
 
 The KUKSA Android SDK allows you to interact with [VSS data](https://covesa.github.io/vehicle_signal_specification/) 
