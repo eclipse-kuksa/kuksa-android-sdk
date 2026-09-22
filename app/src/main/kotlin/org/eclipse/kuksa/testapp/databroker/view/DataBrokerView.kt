@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
@@ -125,9 +124,10 @@ private fun TopBar(
     connectionViewModel: ConnectionViewModel,
 ) {
     TopAppBar(
-        title = { Text("TestApp") },
-        colors = TopAppBarDefaults.mediumTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        title = { Text("Kuksa TestApp", color = MaterialTheme.colorScheme.onPrimary) },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
         ),
         actions = {
             ConnectionStatusIcon(connectionViewModel)
@@ -227,7 +227,7 @@ fun DataBrokerOutput(viewModel: OutputViewModel, modifier: Modifier = Modifier) 
     ) {
         Column(modifier = Modifier.verticalScroll(scrollState)) {
             val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS")
-            Headline(name = "Output", color = Color.White)
+            Headline(name = "Output", color = MaterialTheme.colorScheme.onPrimary)
             outputEntries.forEach { outputEntry ->
                 val date = outputEntry.localDateTime.format(dateFormatter)
                 val newLine = System.lineSeparator()
@@ -264,6 +264,7 @@ private fun OutputText(
         fontSize = 14.sp,
         textAlign = TextAlign.Start,
         onTextLayout = onTextLayout,
+        color = MaterialTheme.colorScheme.onPrimary,
     )
 }
 

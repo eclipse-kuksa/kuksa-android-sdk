@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,14 @@
  *
  */
 
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.LibraryExtension
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import org.eclipse.kuksa.version.SemanticVersion
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_NAME
 import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.bufferedWriter
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createFile
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.name
-import kotlin.io.path.useLines
-import kotlin.io.path.visitFileTree
+import kotlin.io.path.*
 
 val versionDefaultPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
 rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
@@ -48,11 +41,19 @@ plugins {
     alias(libs.plugins.gradle.nexus.publish.plugin)
 }
 
+apply(from = "$rootDir/databroker.gradle.kts")
+
 nexusPublishing {
     repositories {
         sonatype {
-            username = System.getenv("ORG_OSSRH_USERNAME")
-            password = System.getenv("ORG_OSSRH_PASSWORD")
+            val releaseUri = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
+            nexusUrl.set(releaseUri)
+
+            val snapshotUri = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            snapshotRepositoryUrl.set(snapshotUri)
+
+            username = System.getenv("SONATYPE_USERNAME")
+            password = System.getenv("SONATYPE_PASSWORD")
         }
     }
 }
@@ -78,6 +79,7 @@ subprojects {
 
 @OptIn(ExperimentalPathApi::class)
 tasks.register("mergeDashFiles") {
+    description = "Merges all dash files from subprojects into a single dash file"
     group = "oss"
 
     dependsOn(
@@ -140,8 +142,7 @@ subprojects {
     }
 
     if (plugins.hasPlugin("com.android.application")) {
-        configure<BaseAppModuleExtension> {
-            @Suppress("UnstableApiUsage")
+        configure<ApplicationExtension> {
             testOptions {
                 buildTypes {
                     named("debug") {
@@ -154,7 +155,8 @@ subprojects {
     }
 }
 
-tasks.create("jacocoRootReport", JacocoReport::class.java) {
+tasks.register<JacocoReport>("jacocoRootReport") {
+    description = "Generates a code coverage report for all subprojects"
     group = "report"
 
     reports {

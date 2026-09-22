@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,12 +136,11 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
                 Text(text = "Update")
             }
             if (viewModel.isSubscribed) {
-                Button(onClick = {
-                    focusManager.clearFocus()
-                    viewModel.subscribedNodes.remove(currentNode)
-                    viewModel.onUnsubscribeNode(currentNode)
-                }) {
-                    Text(text = "Unsubscribe")
+                Button(
+                    onClick = { },
+                    enabled = false,
+                ) {
+                    Text(text = "Subscribe")
                 }
             } else {
                 Button(onClick = {

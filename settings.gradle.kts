@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 pluginManagement {
     repositories {
+        mavenLocal()
         gradlePluginPortal()
         google()
         mavenCentral()
@@ -26,10 +27,15 @@ pluginManagement {
 
     // Version catalog can't be used here
     plugins {
-        id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+        id("com.google.devtools.ksp") version "2.3.11"
+        id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.3"
         kotlin("jvm")
-        kotlin("plugin.serialization") version "1.9.22"
+        kotlin("plugin.serialization") version "2.4.10"
     }
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 dependencyResolutionManagement {
@@ -44,5 +50,5 @@ dependencyResolutionManagement {
 rootProject.name = "kuksa-android-sdk"
 
 include(":app")
-include(":kuksa-sdk")
+include(":kuksa-android-sdk")
 include(":samples")

@@ -23,7 +23,7 @@ runs:
   using: "composite"
   steps:
     - name: Decode Keystore
-      uses: timheuer/base64-to-file@v1
+      uses: timheuer/base64-to-file@v2
       with:
         fileName: 'keystore.jks'
         encodedString: ${{ inputs.keystore }}

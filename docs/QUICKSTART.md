@@ -6,7 +6,7 @@ Get instantly bootstrapped into the world of the KUKSA SDK with the following co
 
 *app/build.gradle.kts*
 ```
-implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
+implementation("org.eclipse.kuksa:kuksa-android-sdk:<VERSION>")
 ```
 
 ## Connecting to the Databroker
@@ -14,6 +14,10 @@ implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
 You can use the following snippet for a simple (unsecure) connection to the Databroker. This highly depends on your 
 setup so see the [samples package](https://github.com/eclipse-kuksa/kuksa-android-sdk/blob/main/samples/src/main/kotlin/com/example/sample/KotlinActivity.kt)
 for a detailed implementation or how to connect in a secure way with a certificate.
+
+> [!TIP]
+> **Connecting to a Databroker running locally on your PC?**
+> If your Databroker is running on your host machine and your Android device cannot reach it, see the [Troubleshooting Guide](TROUBLESHOOTING.md) for steps on using `adb reverse` or emulator loopback aliases.
 
 *Kotlin*
 ```kotlin
@@ -327,3 +331,23 @@ void subscribe() {
     );
 }
 ```
+
+## Troubleshooting
+
+If you are running the KUKSA Databroker on your local development machine (PC) and your Android device cannot connect:
+
+- **Physical Android Device (via USB):**
+  Forward the Databroker port using ADB reverse:
+  ```bash
+  adb reverse tcp:55555 tcp:55555
+  ```
+  Then connect to `localhost:55555` (or `127.0.0.1:55555`) in your app.
+
+- **Android Emulator:**
+  Use `10.0.2.2:55555` to access `localhost` on the host PC from the emulator.
+
+> [!NOTE]
+> **macOS limitation:** On macOS, the Databroker cannot bind to port `55555` because it is reserved / in use by macOS system services (`Address already in use`). Use port `55556` (the sample test app default) or `55557` (the `startDatabroker` Gradle task default) instead.
+
+For a full step-by-step walkthrough, firewall settings, and additional tips, see the [Troubleshooting Guide](TROUBLESHOOTING.md).
+

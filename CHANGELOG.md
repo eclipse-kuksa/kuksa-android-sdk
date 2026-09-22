@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.2](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.2.1...release/v0.2.2) (2026-09-21)
+
+### Features
+
+* Replace / Remove existing functionality from kuksa-java-sdk ([7787411](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/77874118216de620619657fa985ddbfe1f78341a))
+* Set Source- and TargetCompability to  JavaVersion 11 ([73bd18d](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/73bd18d74a5411b48fa7cc426ce54e06e28a85eb))
+
+### Bug Fixes
+
+* Add error callback for null connection in DataBrokerEngine ([3f97f02](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/3f97f02cd8bec13a0361619798594eb9c87603b2))
+* Add null check for certificate input stream ([b8561ae](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/b8561aea5d74a38a8d38eda964d826d8c432c6b7))
+* Remove unnecessary Dispatcher switches in OutputViewModel ([3dc9a36](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/3dc9a368aff04f2e330c8de1e46d30fd842d5f74))
+* Return defensive copy in OutputEntry.messages getter ([b76c1d1](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/b76c1d1f31e4a45e8ba7ba7816d29356ec10971e))
+
+### Documentation
+
+* Add Troubleshooting Guide ([590ea55](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/590ea55e87b518f4ca67aab31a78e5324d075908))
+* Document wrapper SDK architecture ([7b06ea3](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/7b06ea3791ae4e13cd32f85bb018b0b14d60ab23))
+
+### Refactoring
+
+* Change Design to use Kuksa Colors ([d2a3cca](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/d2a3cca0f409ff929583d3c6c69fe6e75a4da975))
 ## [0.2.1](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.2.0...release/v0.2.1) (2024-03-25)
 
 

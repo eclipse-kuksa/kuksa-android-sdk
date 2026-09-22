@@ -1,4 +1,4 @@
-# kuksa-sdk-android
+# kuksa-android-sdk
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Gitter](https://img.shields.io/gitter/room/kuksa-val/community)](https://gitter.im/kuksa-val/community)
@@ -7,17 +7,29 @@
 
 This is an Android SDK for the [KUKSA Vehicle Abstraction Layer](https://github.com/eclipse/kuksa.val).
 
+> [!IMPORTANT]
+> **AI Usage Notice**
+>
+> This repository partially contains AI-generated code using GitHub Copilot Business.
+> This notice must remain attached to any reproduction of this repository.
+
 ## Overview
 
 The KUKSA Android SDK allows you to interact with [VSS data](https://covesa.github.io/vehicle_signal_specification/) 
 from the [KUKSA Databroker](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker)
 within an Android App. The main functionality consists of fetching, updating and subscribing to VSS data. 
 
+## Architecture
+
+> [!IMPORTANT]
+> The `kuksa-android-sdk` is a thin wrapper around the [kuksa-java-sdk](https://github.com/eclipse-kuksa/kuksa-java-sdk) (version 0.4.1). 
+> It delegates all core functionality to the Java SDK and primarily provides Android-specific test infrastructure, examples, and integration tests and test apps.
+
 ## Integration
 
 *app/build.gradle.kts*
 ```
-implementation("org.eclipse.kuksa:kuksa-sdk:<VERSION>")
+implementation("org.eclipse.kuksa:kuksa-android-sdk:<VERSION>")
 ```
 
 The latest release version can be seen [here](https://github.com/eclipse-kuksa/kuksa-android-sdk/releases).
@@ -77,6 +89,10 @@ further insight into the KUKSA SDK API. You can also checkout the [sample](https
 - Optional: The [KUKSA Databroker CLI](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker) can be used to manually feed data and test your app. 
   See [this chapter](https://github.com/eclipse/kuksa.val/tree/master/kuksa_databroker#reading-and-writing-vss-data-using-the-cli) on how to read and write data via the CLI.
 - Optional: The [Mock Service](https://github.com/eclipse/kuksa.val.services/tree/main/mock_service) can be used to simulate a "real" environment. 
+
+## Troubleshooting
+
+If you are running the Databroker locally on your PC and cannot reach it from your Android device or emulator, see the [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for step-by-step instructions on setting up port forwarding using `adb reverse` or configuring the emulator alias.
 
 ## Contribution
 

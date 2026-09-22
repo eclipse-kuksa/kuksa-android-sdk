@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,18 +41,17 @@ import org.eclipse.kuksa.version.VERSION_FILE_DEFAULT_PATH_KEY
 
 plugins {
     id("com.android.application")
-    id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.2"
-    kotlin("android")
+    id("org.eclipse.velocitas.vss-processor-plugin")
 }
 
 android {
     namespace = "org.eclipse.kuksa.samples"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "org.eclipse.kuksa.samples"
         minSdk = 27
-        targetSdk = 35
+        targetSdk = 37
 
         val versionPath = rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] as String
         val semanticVersion = SemanticVersion(versionPath)
@@ -65,12 +64,11 @@ android {
         }
     }
 
+    val jvmTarget = libs.versions.jvmTarget.get()
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
+        val javaVersion = JavaVersion.toVersion(jvmTarget)
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
     packaging {
         resources {
@@ -84,8 +82,12 @@ vssProcessor {
     searchPath = "$rootDir/vss"
 }
 
+tasks.withType<Test>().configureEach {
+    failOnNoDiscoveredTests = false
+}
+
 dependencies {
-    implementation(project(":kuksa-sdk"))
+    implementation(project(":kuksa-android-sdk"))
 
     // app dependencies
     implementation(libs.androidx.appcompat)

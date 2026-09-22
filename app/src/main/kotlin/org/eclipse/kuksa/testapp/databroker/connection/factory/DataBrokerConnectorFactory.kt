@@ -27,7 +27,7 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.TlsChannelCredentials
 import org.eclipse.kuksa.connectivity.authentication.JsonWebToken
-import org.eclipse.kuksa.connectivity.databroker.v1.DataBrokerConnector
+import org.eclipse.kuksa.connectivity.databroker.DataBrokerConnector
 import org.eclipse.kuksa.model.TimeoutConfig
 import org.eclipse.kuksa.testapp.databroker.connection.model.ConnectionInfo
 import org.eclipse.kuksa.testapp.extension.readAsText
@@ -69,23 +69,26 @@ class DataBrokerConnectorFactory {
     private fun createSecureManagedChannel(context: Context, connectionInfo: ConnectionInfo): ManagedChannel {
         val certificate = connectionInfo.certificate
         val rootCertFile = context.contentResolver.openInputStream(certificate.uri)
+            ?: throw IOException("Failed to open certificate file: ${certificate.uri}")
 
-        val tlsCredentials: ChannelCredentials = TlsChannelCredentials.newBuilder()
-            .trustManager(rootCertFile)
-            .build()
+        rootCertFile.use { certStream ->
+            val tlsCredentials: ChannelCredentials = TlsChannelCredentials.newBuilder()
+                .trustManager(certStream)
+                .build()
 
-        val host = connectionInfo.host.trim()
-        val port = connectionInfo.port
-        val channelBuilder = Grpc
-            .newChannelBuilderForAddress(host, port, tlsCredentials)
+            val host = connectionInfo.host.trim()
+            val port = connectionInfo.port
+            val channelBuilder = Grpc
+                .newChannelBuilderForAddress(host, port, tlsCredentials)
 
-        val overrideAuthority = certificate.overrideAuthority.trim()
-        val hasOverrideAuthority = overrideAuthority.isNotEmpty()
-        if (hasOverrideAuthority) {
-            channelBuilder.overrideAuthority(overrideAuthority)
+            val overrideAuthority = certificate.overrideAuthority.trim()
+            val hasOverrideAuthority = overrideAuthority.isNotEmpty()
+            if (hasOverrideAuthority) {
+                channelBuilder.overrideAuthority(overrideAuthority)
+            }
+
+            return channelBuilder.build()
         }
-
-        return channelBuilder.build()
     }
 
     @Throws(IOException::class)

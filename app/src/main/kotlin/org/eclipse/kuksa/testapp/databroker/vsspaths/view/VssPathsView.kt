@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 package org.eclipse.kuksa.testapp.databroker.vsspaths.view
@@ -196,11 +197,11 @@ fun VssPathsView(viewModel: VSSPathsViewModel) {
                 Text(text = "Set")
             }
             if (viewModel.isSubscribed) {
-                Button(onClick = {
-                    viewModel.subscribedProperties.remove(dataBrokerProperty)
-                    viewModel.onUnsubscribeProperty(dataBrokerProperty)
-                }) {
-                    Text(text = "Unsubscribe")
+                Button(
+                    onClick = { },
+                    enabled = false,
+                ) {
+                    Text(text = "Subscribe")
                 }
             } else {
                 Button(onClick = {
