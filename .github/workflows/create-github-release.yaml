@@ -14,7 +14,7 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-project
 
@@ -33,7 +33,7 @@ jobs:
         run: mv app/build/outputs/apk/release/app-release.apk kuksa_sdk_testapp.apk
 
       - name: Publish Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           prerelease: true
           body_path: CHANGELOG.md
