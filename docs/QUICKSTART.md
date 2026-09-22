@@ -347,7 +347,7 @@ If you are running the KUKSA Databroker on your local development machine (PC) a
   Use `10.0.2.2:55555` to access `localhost` on the host PC from the emulator.
 
 > [!NOTE]
-> **macOS limitation:** On macOS, the Databroker cannot run on port `55556`. Use port `55555` instead (and make sure to update the port in your app if using the sample test app).
+> **macOS limitation:** On macOS, the Databroker cannot bind to port `55555` because it is reserved / in use by macOS system services (`Address already in use`). Use port `55556` (the sample test app default) or `55557` (the `startDatabroker` Gradle task default) instead.
 
 For a full step-by-step walkthrough, firewall settings, and additional tips, see the [Troubleshooting Guide](TROUBLESHOOTING.md).
 

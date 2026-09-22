@@ -37,7 +37,7 @@ adb reverse tcp:55555 tcp:55555
 ```
 > **Note:** Replace `55555` with the port your Databroker is listening on if different (e.g., `55556` for the sample testapp on Linux/Windows).
 >
-> **Important (macOS):** On macOS, the Databroker **cannot run on port `55556`**. Always use port `55555` (or another available port) on Mac. If you are using the sample test app (which defaults to `55556`), update the port in the app's connection settings to `55555`.
+> **Important (macOS):** On macOS, the Databroker **cannot run on port `55555`** because it is reserved / in use by macOS system services (`Address already in use`). Always use port `55556` (the sample test app default) or `55557` (the `startDatabroker` Gradle task default) on Mac. Make sure the port in the app matches the host port.
 
 #### Step 4: Connect from the App
 In your Android app, configure the Databroker host and port as:
@@ -95,6 +95,6 @@ If you are still unable to connect after following the steps above, check the fo
 
 - [ ] **Is the Databroker actually running?** Check your terminal or Docker container to verify the Databroker process is active.
 - [ ] **Are the ports matching?** Ensure the port specified in your app matches the Databroker port (default Databroker is `55555`; testapp sample is `55556`).
-- [ ] **macOS Port 55556 limitation:** On macOS, the Databroker cannot run on port `55556`. If running on a Mac, use port `55555` and ensure the app is also set to port `55555`.
+- [ ] **macOS Port 55555 limitation:** On macOS, the Databroker cannot run on port `55555` (`Address already in use`). If running on a Mac, use port `55556` or `55557` and ensure the app is configured with the matching port.
 - [ ] **Insecure vs. Secure (TLS):** If your Databroker requires TLS certificates, connecting via `connectInsecure()` / plaintext will fail. Ensure TLS settings match your Databroker configuration.
 - [ ] **Authentication (JWT):** If the Databroker has authentication enabled, ensure you pass a valid JSON Web Token.
