@@ -27,6 +27,21 @@ VSS_FILE="${DATABROKER_VSS:-vss/vss_release_6.0.json}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+# Check if container exists and validate configuration against current environment
+if docker ps -a --filter "name=^/${CONTAINER_NAME}$" --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    EXISTING_IMAGE="$(docker inspect --format '{{.Config.Image}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
+    EXISTING_PORT="$(docker inspect --format '{{(index (index .HostConfig.PortBindings "55555/tcp") 0).HostPort}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
+    EXISTING_CMD="$(docker inspect --format '{{json .Config.Cmd}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
+    EXPECTED_IMAGE="${DATABROKER_IMAGE}:${DATABROKER_TAG}"
+
+    if [[ "${EXISTING_IMAGE}" != "${EXPECTED_IMAGE}" ]] || \
+       [[ "${EXISTING_PORT}" != "${DATABROKER_PORT}" ]] || \
+       [[ "${EXISTING_CMD}" != *"$(basename "${VSS_FILE}")"* ]]; then
+        echo "→ Existing container '${CONTAINER_NAME}' configuration differs from requested environment. Recreating..."
+        docker rm -f "${CONTAINER_NAME}" >/dev/null
+    fi
+fi
+
 # Check if container is already running
 if docker ps --filter "name=${CONTAINER_NAME}" --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo "✓ Databroker container '${CONTAINER_NAME}' is already running on port ${DATABROKER_PORT}"
