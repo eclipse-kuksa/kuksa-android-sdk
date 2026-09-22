@@ -96,6 +96,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
     @Override
     public void fetch(@NonNull FetchRequest request, @NonNull CoroutineCallback<GetResponse> callback) {
         if (dataBrokerConnection == null) {
+            callback.onError(new IllegalStateException("Not connected to DataBroker"));
             return;
         }
 
@@ -108,6 +109,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         @NonNull CoroutineCallback<T> callback
     ) {
         if (dataBrokerConnection == null) {
+            callback.onError(new IllegalStateException("Not connected to DataBroker"));
             return;
         }
 
@@ -120,6 +122,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         @NonNull CoroutineCallback<SetResponse> callback
     ) {
         if (dataBrokerConnection == null) {
+            callback.onError(new IllegalStateException("Not connected to DataBroker"));
             return;
         }
 
@@ -132,6 +135,7 @@ public class JavaDataBrokerEngine implements DataBrokerEngine {
         @NonNull CoroutineCallback<VssNodeUpdateResponse> callback
     ) {
         if (dataBrokerConnection == null) {
+            callback.onError(new IllegalStateException("Not connected to DataBroker"));
             return;
         }
 
