@@ -55,12 +55,15 @@ case "${unameOut}" in
         if command -v ggrep > /dev/null 2>&1; then
             GREP="ggrep"
         else
-            GREP="grep"
+            echo "Error: GNU grep ('ggrep') is required on macOS. Install it with: brew install grep" >&2
+            exit 1
         fi
         ;;
-    *)          GREP="UNKNOWN:${unameOut}"
+    *)
+        echo "Error: Unsupported OS ${unameOut}" >&2
+        exit 1
+        ;;
 esac
-echo "${GREP}"
 
 deps_output=$(./gradlew "${gradleProjectPath}:dependencies")
 
