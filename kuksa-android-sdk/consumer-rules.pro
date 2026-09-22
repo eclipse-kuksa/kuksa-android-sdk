@@ -1,4 +1,4 @@
--keep class org.eclipse.kuksa.proto.v1.** { *; }
+-keep class org.eclipse.kuksa.proto.** { *; }
 -keep class com.google.protobuf.** { *; }
 
 # Generated data classes have to keep their copy method for reflection methods
