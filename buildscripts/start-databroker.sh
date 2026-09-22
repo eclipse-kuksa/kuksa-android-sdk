@@ -27,16 +27,31 @@ VSS_FILE="${DATABROKER_VSS:-vss/vss_release_6.0.json}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+# Resolve VSS file path
+if [[ -f "${VSS_FILE}" ]]; then
+    RESOLVED_VSS_FILE="$(cd "$(dirname "${VSS_FILE}")" && pwd)/$(basename "${VSS_FILE}")"
+elif [[ -f "${PROJECT_ROOT}/${VSS_FILE}" ]]; then
+    RESOLVED_VSS_FILE="$(cd "${PROJECT_ROOT}/$(dirname "${VSS_FILE}")" && pwd)/$(basename "${VSS_FILE}")"
+else
+    echo "Error: VSS file not found at ${VSS_FILE} or ${PROJECT_ROOT}/${VSS_FILE}" >&2
+    exit 1
+fi
+
+VSS_DIR="$(dirname "${RESOLVED_VSS_FILE}")"
+VSS_BASENAME="$(basename "${RESOLVED_VSS_FILE}")"
+
 # Check if container exists and validate configuration against current environment
 if docker ps -a --filter "name=^/${CONTAINER_NAME}$" --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     EXISTING_IMAGE="$(docker inspect --format '{{.Config.Image}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
     EXISTING_PORT="$(docker inspect --format '{{(index (index .HostConfig.PortBindings "55555/tcp") 0).HostPort}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
+    EXISTING_VSS_DIR="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/vss"}}{{.Source}}{{end}}{{end}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
     EXISTING_CMD="$(docker inspect --format '{{json .Config.Cmd}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
     EXPECTED_IMAGE="${DATABROKER_IMAGE}:${DATABROKER_TAG}"
 
     if [[ "${EXISTING_IMAGE}" != "${EXPECTED_IMAGE}" ]] || \
        [[ "${EXISTING_PORT}" != "${DATABROKER_PORT}" ]] || \
-       [[ "${EXISTING_CMD}" != *"$(basename "${VSS_FILE}")"* ]]; then
+       [[ "${EXISTING_VSS_DIR}" != "${VSS_DIR}" ]] || \
+       [[ "${EXISTING_CMD}" != *"/${VSS_BASENAME}"* ]]; then
         echo "→ Existing container '${CONTAINER_NAME}' configuration differs from requested environment. Recreating..."
         docker rm -f "${CONTAINER_NAME}" >/dev/null
     fi
@@ -84,20 +99,14 @@ docker pull "${DATABROKER_IMAGE}:${DATABROKER_TAG}"
 
 echo "→ Starting new databroker container '${CONTAINER_NAME}'..."
 
-# Resolve VSS file path
-if [[ ! -f "${PROJECT_ROOT}/${VSS_FILE}" ]]; then
-    echo "Error: VSS file not found at ${PROJECT_ROOT}/${VSS_FILE}"
-    exit 1
-fi
-
 # Start the container
 docker run -d \
     --name "${CONTAINER_NAME}" \
     -p "${DATABROKER_PORT}:55555" \
-    -v "${PROJECT_ROOT}/vss:/vss:ro" \
+    -v "${VSS_DIR}:/vss:ro" \
     "${DATABROKER_IMAGE}:${DATABROKER_TAG}" \
     --insecure \
-    --metadata "/vss/vss_release_6.0.json"
+    --metadata "/vss/${VSS_BASENAME}"
 
 echo "✓ Databroker container started successfully on port ${DATABROKER_PORT}"
 
