@@ -304,7 +304,7 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
             val subscribeRequest = SubscribeRequestV2(signalPaths, -128)
 
             val result = runCatching {
-                dataBrokerConnection.kuksaValV2.subscribe(subscribeRequest)
+                dataBrokerConnection.kuksaValV2.subscribe(subscribeRequest).first()
             }
 
             then("It should throw a DataBrokerException") {
