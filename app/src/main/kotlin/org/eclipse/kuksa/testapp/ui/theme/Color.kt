@@ -55,7 +55,7 @@ val DarkOutlineVariant = Color(0xFF5B6661)
 
 // Light theme colors
 val LightPrimary = KuksaTeal
-val LightOnPrimary = Color(0xFFFFFFFF)
+val LightOnPrimary = Color(0xFF00201B)
 val LightPrimaryContainer = Color(0xFFA8F2DC)
 val LightOnPrimaryContainer = Color(0xFF00201B)
 
