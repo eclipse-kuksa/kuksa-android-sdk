@@ -77,6 +77,10 @@ android {
                 keyPassword = credentials.keyPassword
                 storePassword = credentials.storePassword
             }
+        } else {
+            create("release") {
+                initWith(getByName("debug"))
+            }
         }
     }
     buildTypes {
@@ -97,9 +101,7 @@ android {
         }
 
         release {
-            signingConfigs.findByName("release")?.let { releaseSigningConfig ->
-                signingConfig = releaseSigningConfig
-            }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     namespace = "org.eclipse.kuksa.testapp"
