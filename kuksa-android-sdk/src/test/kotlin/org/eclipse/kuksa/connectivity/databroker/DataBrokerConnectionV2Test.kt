@@ -39,6 +39,7 @@ import org.eclipse.kuksa.connectivity.databroker.v2.request.PublishValueRequestV
 import org.eclipse.kuksa.connectivity.databroker.v2.request.SubscribeRequestV2
 import org.eclipse.kuksa.extensions.toSignalId
 import org.eclipse.kuksa.extensions.updateRandomFloatValue
+import org.eclipse.kuksa.proto.v2.KuksaValV2.BatchActuateStreamResponse
 import org.eclipse.kuksa.proto.v2.KuksaValV2.OpenProviderStreamRequest
 import org.eclipse.kuksa.proto.v2.KuksaValV2.OpenProviderStreamResponse
 import org.eclipse.kuksa.proto.v2.KuksaValV2.ProvideActuationRequest
@@ -114,9 +115,21 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
         }
 
         and("an ActuationProvider exists for Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling") {
+            lateinit var requestStream: StreamObserver<OpenProviderStreamRequest>
             val responseStream = object : StreamObserver<OpenProviderStreamResponse> {
                 override fun onNext(value: OpenProviderStreamResponse) {
-                    // unimplemented
+                    if (value.hasBatchActuateStreamRequest()) {
+                        val batchActuateRequest = value.batchActuateStreamRequest
+                        for (actuateRequest in batchActuateRequest.actuateRequestsList) {
+                            val batchResponse = BatchActuateStreamResponse.newBuilder()
+                                .setSignalId(actuateRequest.signalId)
+                                .build()
+                            val streamRequest = OpenProviderStreamRequest.newBuilder()
+                                .setBatchActuateStreamResponse(batchResponse)
+                                .build()
+                            requestStream.onNext(streamRequest)
+                        }
+                    }
                 }
 
                 override fun onError(t: Throwable) {
@@ -127,7 +140,7 @@ class DataBrokerConnectionV2Test : BehaviorSpec({
                     // unimplemented
                 }
             }
-            val requestStream = dataBrokerConnection.kuksaValV2.openProviderStream(responseStream)
+            requestStream = dataBrokerConnection.kuksaValV2.openProviderStream(responseStream)
 
             val signalId = "Vehicle.Cabin.Seat.Row1.DriverSide.HeatingCooling".toSignalId()
 
