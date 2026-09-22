@@ -196,10 +196,10 @@ fun VssPathsView(viewModel: VSSPathsViewModel) {
                 Text(text = "Set")
             }
             if (viewModel.isSubscribed) {
-                Button(onClick = {
-                    viewModel.subscribedProperties.remove(dataBrokerProperty)
-                    viewModel.onUnsubscribeProperty(dataBrokerProperty)
-                }) {
+                Button(
+                    onClick = { },
+                    enabled = false,
+                ) {
                     Text(text = "Unsubscribe")
                 }
             } else {

@@ -136,11 +136,10 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
                 Text(text = "Update")
             }
             if (viewModel.isSubscribed) {
-                Button(onClick = {
-                    focusManager.clearFocus()
-                    viewModel.subscribedNodes.remove(currentNode)
-                    viewModel.onUnsubscribeNode(currentNode)
-                }) {
+                Button(
+                    onClick = { },
+                    enabled = false,
+                ) {
                     Text(text = "Unsubscribe")
                 }
             } else {
