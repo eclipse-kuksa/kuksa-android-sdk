@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 - 2026 Contributors to the Eclipse Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ fun VssNodesView(viewModel: VssNodesViewModel) {
                     onClick = { },
                     enabled = false,
                 ) {
-                    Text(text = "Unsubscribe")
+                    Text(text = "Subscribe")
                 }
             } else {
                 Button(onClick = {
