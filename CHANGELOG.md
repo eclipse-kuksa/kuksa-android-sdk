@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.3](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.2.2...release/v0.2.3) (2026-09-23)
+
+### Bug Fixes
+
+* Wrong Artifact Group Name ([76ba94e](https://github.com/eclipse-kuksa/kuksa-android-sdk/commit/76ba94ee372700ebe8b504704121b4c65dd71f11))
+
 ## [0.2.2](https://github.com/eclipse-kuksa/kuksa-android-sdk/compare/release/release/v0.2.1...release/v0.2.2) (2026-09-21)
 
 ### Features
