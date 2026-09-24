@@ -30,7 +30,7 @@ val versionDefaultPath = "$rootDir/$VERSION_FILE_DEFAULT_NAME"
 rootProject.ext[VERSION_FILE_DEFAULT_PATH_KEY] = versionDefaultPath
 val semanticVersion = SemanticVersion(versionDefaultPath)
 version = semanticVersion.versionName
-group = "org.eclipse.velocitas"
+group = "org.eclipse.kuksa"
 
 plugins {
     base
