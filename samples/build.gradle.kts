@@ -46,7 +46,11 @@ plugins {
 
 android {
     namespace = "org.eclipse.kuksa.samples"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "org.eclipse.kuksa.samples"

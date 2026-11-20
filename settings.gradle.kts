@@ -27,10 +27,10 @@ pluginManagement {
 
     // Version catalog can't be used here
     plugins {
-        id("com.google.devtools.ksp") version "2.3.11"
+        id("com.google.devtools.ksp") version "2.3.14"
         id("org.eclipse.velocitas.vss-processor-plugin") version "0.1.3"
         kotlin("jvm")
-        kotlin("plugin.serialization") version "2.4.10"
+        kotlin("plugin.serialization") version "2.4.21"
     }
 }
 
