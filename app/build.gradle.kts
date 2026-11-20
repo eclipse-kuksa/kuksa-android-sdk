@@ -49,7 +49,11 @@ android {
         }
     }
 
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "org.eclipse.kuksa.testapp"
