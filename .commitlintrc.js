@@ -1,5 +1,7 @@
-{
-    "extends": ["@commitlint/config-conventional"],
+module.exports = {
+    "extends": [
+        "@commitlint/config-conventional"
+    ],
     "rules": {
         "subject-case": [
             2,
@@ -31,5 +33,7 @@
                 "revert"
             ]
         ]
-    }
-}
+    },
+    // Dependabot generates long release note lines in the commit body
+    ignores: [(message) => message.includes("Signed-off-by: dependabot[bot]")]
+};
